@@ -1,1 +1,1 @@
-export { ProductImageVariantsEdit as Component } from "./product-image-variants-edit"
+export { ProductImageVariantsEdit as Component } from "./product-image-variants-edit";

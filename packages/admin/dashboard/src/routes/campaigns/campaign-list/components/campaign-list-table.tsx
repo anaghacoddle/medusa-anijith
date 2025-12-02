@@ -1,26 +1,23 @@
-import { PencilSquare, Trash } from "@medusajs/icons"
-import { AdminCampaign } from "@medusajs/types"
-import { Button, Container, Heading, toast, usePrompt } from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
-import { ActionMenu } from "../../../../components/common/action-menu"
-import { _DataTable } from "../../../../components/table/data-table"
-import {
-  useCampaigns,
-  useDeleteCampaign,
-} from "../../../../hooks/api/campaigns"
-import { useCampaignTableColumns } from "../../../../hooks/table/columns/use-campaign-table-columns"
-import { useCampaignTableQuery } from "../../../../hooks/table/query/use-campaign-table-query"
-import { useDataTable } from "../../../../hooks/use-data-table"
+import { PencilSquare, Trash } from "@medusajs/icons";
+import { AdminCampaign } from "@medusajs/types";
+import { Button, Container, Heading, toast, usePrompt } from "@medusajs/ui";
+import { keepPreviousData } from "@tanstack/react-query";
+import { createColumnHelper } from "@tanstack/react-table";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import { ActionMenu } from "../../../../components/common/action-menu";
+import { _DataTable } from "../../../../components/table/data-table";
+import { useCampaigns, useDeleteCampaign } from "../../../../hooks/api/campaigns";
+import { useCampaignTableColumns } from "../../../../hooks/table/columns/use-campaign-table-columns";
+import { useCampaignTableQuery } from "../../../../hooks/table/query/use-campaign-table-query";
+import { useDataTable } from "../../../../hooks/use-data-table";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export const CampaignListTable = () => {
-  const { t } = useTranslation()
-  const { raw, searchParams } = useCampaignTableQuery({ pageSize: PAGE_SIZE })
+  const { t } = useTranslation();
+  const { raw, searchParams } = useCampaignTableQuery({ pageSize: PAGE_SIZE });
 
   const {
     campaigns,
@@ -30,21 +27,21 @@ export const CampaignListTable = () => {
     error,
   } = useCampaigns(searchParams, {
     placeholderData: keepPreviousData,
-  })
+  });
 
-  const columns = useColumns()
+  const columns = useColumns();
 
   const { table } = useDataTable({
     data: campaigns ?? [],
     columns,
     count,
     enablePagination: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
     pageSize: PAGE_SIZE,
-  })
+  });
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
@@ -65,7 +62,7 @@ export const CampaignListTable = () => {
         pageSize={PAGE_SIZE}
         pagination
         search
-        navigateTo={(row) => row.id}
+        navigateTo={row => row.id}
         isLoading={isLoading}
         queryObject={raw}
         orderBy={[
@@ -75,13 +72,13 @@ export const CampaignListTable = () => {
         ]}
       />
     </Container>
-  )
-}
+  );
+};
 
 const CampaignActions = ({ campaign }: { campaign: AdminCampaign }) => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
-  const { mutateAsync } = useDeleteCampaign(campaign.id)
+  const { t } = useTranslation();
+  const prompt = usePrompt();
+  const { mutateAsync } = useDeleteCampaign(campaign.id);
 
   const handleDelete = async () => {
     const confirm = await prompt({
@@ -93,23 +90,21 @@ const CampaignActions = ({ campaign }: { campaign: AdminCampaign }) => {
       verificationText: campaign.name,
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
-    })
+    });
 
     if (!confirm) {
-      return
+      return;
     }
 
     await mutateAsync(undefined, {
       onSuccess: () => {
-        toast.success(
-          t("campaigns.delete.successToast", { name: campaign.name })
-        )
+        toast.success(t("campaigns.delete.successToast", { name: campaign.name }));
       },
-      onError: (e) => {
-        toast.error(e.message)
+      onError: e => {
+        toast.error(e.message);
       },
-    })
-  }
+    });
+  };
 
   return (
     <ActionMenu
@@ -134,13 +129,13 @@ const CampaignActions = ({ campaign }: { campaign: AdminCampaign }) => {
         },
       ]}
     />
-  )
-}
+  );
+};
 
-const columnHelper = createColumnHelper<AdminCampaign>()
+const columnHelper = createColumnHelper<AdminCampaign>();
 
 const useColumns = () => {
-  const base = useCampaignTableColumns()
+  const base = useCampaignTableColumns();
 
   return useMemo(
     () => [
@@ -148,10 +143,10 @@ const useColumns = () => {
       columnHelper.display({
         id: "actions",
         cell: ({ row }) => {
-          return <CampaignActions campaign={row.original} />
+          return <CampaignActions campaign={row.original} />;
         },
       }),
     ],
     [base]
-  )
-}
+  );
+};

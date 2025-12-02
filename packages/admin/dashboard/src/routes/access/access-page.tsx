@@ -7,7 +7,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 const AccessPage = () => {
   const [passcode, setPasscode] = useState("");
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState(true);
   const [showResetInfo, setShowResetInfo] = useState(false);
 
   const [error, setError] = useState("");
@@ -116,7 +116,9 @@ const AccessPage = () => {
             setError("Session expired. Please refresh the page and try again.");
             break;
           case "NO_MFA_SECRET":
-            setError("MFA setup expired. Please refresh the page to generate a new QR code.");
+            setError(
+              "MFA setup expired. Please refresh the page to generate a new QR code.",
+            );
             setTimeout(() => {
               fetchQrCode();
             }, 2000);
@@ -188,7 +190,9 @@ const AccessPage = () => {
           <div className="space-y-6">
             {qrCodeUrl ? (
               <div className="text-center relative">
-                <Text className="mb-2 font-medium">Scan this QR code to set up MFA</Text>
+                <Text className="mb-2 font-medium">
+                  Scan this QR code to set up MFA
+                </Text>
                 <img
                   src={qrCodeUrl}
                   alt="MFA QR Code"
@@ -203,7 +207,12 @@ const AccessPage = () => {
                 <Text className="text-xs text-gray-500 mt-2">
                   Microsoft Authenticator App Recommended
                 </Text>
-                <Button variant="secondary" size="small" onClick={handleRefreshQR} className="mt-2">
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={handleRefreshQR}
+                  className="mt-2"
+                >
                   Refresh QR Code
                 </Button>
               </div>
@@ -216,7 +225,9 @@ const AccessPage = () => {
               </div>
             ) : (
               <div className="text-center">
-                <Text className="text-text-gray-600 mb-2">Enter The Access Code</Text>
+                <Text className="text-text-gray-600 mb-2">
+                  Enter The Access Code
+                </Text>
               </div>
             )}
 
@@ -228,7 +239,10 @@ const AccessPage = () => {
 
             <form onSubmit={verifyMfaAndUnlockAccess} className="space-y-4">
               <div>
-                <label htmlFor="passcode" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="passcode"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Access Code
                 </label>
                 <Input
@@ -266,7 +280,7 @@ const AccessPage = () => {
                 variant="secondary"
                 type="button"
                 className="bg-gray-800 text-white hover:bg-gray-700 rounded-md px-4 py-2 text-sm transition"
-                onClick={() => setShowResetInfo(prev => !prev)}
+                onClick={() => setShowResetInfo((prev) => !prev)}
               >
                 Need to reset your access code?{" "}
                 <span className="ml-2">{showResetInfo ? "▴" : "▾"}</span>
@@ -277,14 +291,15 @@ const AccessPage = () => {
                   <p className="mb-1">
                     <strong>To reset your QR code, please contact: </strong>
                     <a
-                      href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL}`}
+                      href={`mailto:${__SUPPORT_EMAIL__}`}
                       className="text-gray-400 underline hover:text-gray-300"
                     >
-                      {import.meta.env.VITE_SUPPORT_EMAIL}
+                      {__SUPPORT_EMAIL__}
                     </a>
                   </p>
                   <p className="text-gray-400 text-xs">
-                    Include your account details and reason for reset in your email.
+                    Include your account details and reason for reset in your
+                    email.
                   </p>
                 </div>
               )}

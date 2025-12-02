@@ -33,7 +33,7 @@ const isVideoFile = (url: string): boolean => {
 export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
   const { t } = useTranslation();
   const prompt = usePrompt();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [selection, setSelection] = useState<Record<string, boolean>>({});
 
@@ -274,8 +274,8 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
           {Object.keys(selection).length === 1 && (
             <CommandBar.Command
               action={() => {
-                navigate(`images/${Object.keys(selection)[0]}/variants`)
-                setSelection({})
+                navigate(`images/${Object.keys(selection)[0]}/variants`);
+                setSelection({});
               }}
               label={t("products.media.manageImageVariants")}
               shortcut="m"

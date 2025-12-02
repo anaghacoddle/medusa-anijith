@@ -2,7 +2,7 @@ import inject from "@medusajs/admin-vite-plugin";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 import inspect from "vite-plugin-inspect";
-import * as path from 'path'
+import * as path from "path";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
   const ENCRYPTION_KEY = env.VITE_MEDUSA_ENCRYPTION_KEY;
   const FILE_SIZE_LIMIT_MB = env.VITE_FILE_SIZE_LIMIT_MB || "10";
   const SUPPORT_EMAIL = env.VITE_SUPPORT_EMAIL || "admin@botanical.com";
+  const STOCK_MONITOR_THRESHOLD = env.STOCK_MONITOR_THRESHOLD || "10";
 
   const MEDUSA_PROJECT = env.VITE_MEDUSA_PROJECT || null;
   const sources = MEDUSA_PROJECT ? [MEDUSA_PROJECT] : [];
@@ -29,7 +30,7 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "src"),  // ✅ Add this block
+        "@": path.resolve(__dirname, "src"), // ✅ Add this block
       },
     },
     define: {
@@ -39,6 +40,7 @@ export default defineConfig(({ mode }) => {
       __ENCRYPTION_KEY__: JSON.stringify(ENCRYPTION_KEY),
       __FILE_SIZE_LIMIT_MB__: JSON.stringify(FILE_SIZE_LIMIT_MB),
       __SUPPORT_EMAIL__: JSON.stringify(SUPPORT_EMAIL),
+      __STOCK_MONITOR_THRESHOLD__: JSON.stringify(STOCK_MONITOR_THRESHOLD),
     },
     server: {
       open: true,

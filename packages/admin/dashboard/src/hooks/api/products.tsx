@@ -359,7 +359,8 @@ export const useDeleteProduct = (
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({ queryKey: productsQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: productsQueryKeys.detail(id) });
-
+      // Also invalidate digital products cache since digital products are linked to products
+      queryClient.invalidateQueries({ queryKey: ["digital-products"] });
       options?.onSuccess?.(data, variables, context);
     },
     ...options,
@@ -426,6 +427,7 @@ export const useDeletedProducts = (
       // Construct query with all parameters including search, filters, and sorting
       const deletedQuery = {
         ...query,
+        with_deleted: true,
         // Ensure deleted_at filter is always included for soft-deleted products
         deleted_at: query?.deleted_at || {
           $ne: null, // Get products where deleted_at is not null
@@ -494,20 +496,19 @@ export const useBatchImageVariants = (
   >
 ) => {
   return useMutation({
-    mutationFn: (payload) =>
-      sdk.admin.product.batchImageVariants(productId, imageId, payload),
+    mutationFn: payload => sdk.admin.product.batchImageVariants(productId, imageId, payload),
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({
         queryKey: productsQueryKeys.detail(productId),
-      })
-      queryClient.invalidateQueries({ queryKey: variantsQueryKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: variantsQueryKeys.details() })
+      });
+      queryClient.invalidateQueries({ queryKey: variantsQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: variantsQueryKeys.details() });
 
-      options?.onSuccess?.(data, variables, context)
+      options?.onSuccess?.(data, variables, context);
     },
     ...options,
-  })
-}
+  });
+};
 
 export const useBatchVariantImages = (
   productId: string,
@@ -519,21 +520,20 @@ export const useBatchVariantImages = (
   >
 ) => {
   return useMutation({
-    mutationFn: (payload) =>
-      sdk.admin.product.batchVariantImages(productId, variantId, payload),
+    mutationFn: payload => sdk.admin.product.batchVariantImages(productId, variantId, payload),
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({
         queryKey: productsQueryKeys.detail(productId),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: variantsQueryKeys.list({ productId }),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: variantsQueryKeys.detail(variantId),
-      })
+      });
 
-      options?.onSuccess?.(data, variables, context)
+      options?.onSuccess?.(data, variables, context);
     },
     ...options,
-  })
-}
+  });
+};

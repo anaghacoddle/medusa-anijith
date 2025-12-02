@@ -1,5 +1,5 @@
-import { PencilSquare, Trash } from "@medusajs/icons"
-import { AdminApiKeyResponse, HttpTypes } from "@medusajs/types"
+import { PencilSquare, Trash } from "@medusajs/icons";
+import { AdminApiKeyResponse, HttpTypes } from "@medusajs/types";
 import {
   Container,
   createDataTableColumnHelper,
@@ -7,46 +7,44 @@ import {
   DataTableRowSelectionState,
   toast,
   usePrompt,
-} from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import { RowSelectionState } from "@tanstack/react-table"
-import { useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { DataTable } from "../../../../../components/data-table"
-import * as hooks from "../../../../../components/data-table/helpers/sales-channels"
-import { useBatchRemoveSalesChannelsFromApiKey } from "../../../../../hooks/api/api-keys"
-import { useSalesChannels } from "../../../../../hooks/api/sales-channels"
+} from "@medusajs/ui";
+import { keepPreviousData } from "@tanstack/react-query";
+import { RowSelectionState } from "@tanstack/react-table";
+import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { DataTable } from "../../../../../components/data-table";
+import * as hooks from "../../../../../components/data-table/helpers/sales-channels";
+import { useBatchRemoveSalesChannelsFromApiKey } from "../../../../../hooks/api/api-keys";
+import { useSalesChannels } from "../../../../../hooks/api/sales-channels";
 
 type ApiKeySalesChannelSectionProps = {
-  apiKey: AdminApiKeyResponse["api_key"]
-}
+  apiKey: AdminApiKeyResponse["api_key"];
+};
 
-const PAGE_SIZE = 10
-const PREFIX = "sc"
+const PAGE_SIZE = 10;
+const PREFIX = "sc";
 
-export const ApiKeySalesChannelSection = ({
-  apiKey,
-}: ApiKeySalesChannelSectionProps) => {
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const { t } = useTranslation()
+export const ApiKeySalesChannelSection = ({ apiKey }: ApiKeySalesChannelSectionProps) => {
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const { t } = useTranslation();
 
   const searchParams = hooks.useSalesChannelTableQuery({
     pageSize: PAGE_SIZE,
     prefix: PREFIX,
-  })
+  });
 
   const { sales_channels, count, isPending } = useSalesChannels(
     { ...searchParams, publishable_key_id: apiKey.id },
     {
       placeholderData: keepPreviousData,
     }
-  )
+  );
 
-  const columns = useColumns(apiKey.id)
-  const filters = hooks.useSalesChannelTableFilters()
-  const commands = useCommands(apiKey.id, setRowSelection)
-  const emptyState = hooks.useSalesChannelTableEmptyState()
+  const columns = useColumns(apiKey.id);
+  const filters = hooks.useSalesChannelTableFilters();
+  const commands = useCommands(apiKey.id, setRowSelection);
+  const emptyState = hooks.useSalesChannelTableEmptyState();
 
   return (
     <Container className="divide-y p-0">
@@ -57,7 +55,7 @@ export const ApiKeySalesChannelSection = ({
         commands={commands}
         heading={t("salesChannels.domain")}
         headingLevel="h2"
-        getRowId={(row) => row.id}
+        getRowId={row => row.id}
         rowCount={count}
         isLoading={isPending}
         emptyState={emptyState}
@@ -65,7 +63,7 @@ export const ApiKeySalesChannelSection = ({
           state: rowSelection,
           onRowSelectionChange: setRowSelection,
         }}
-        rowHref={(row) => `/settings/sales-channels/${row.id}`}
+        rowHref={row => `/settings/sales-channels/${row.id}`}
         action={{
           label: t("actions.add"),
           to: "sales-channels",
@@ -74,19 +72,19 @@ export const ApiKeySalesChannelSection = ({
         pageSize={PAGE_SIZE}
       />
     </Container>
-  )
-}
+  );
+};
 
-const columnHelper = createDataTableColumnHelper<HttpTypes.AdminSalesChannel>()
+const columnHelper = createDataTableColumnHelper<HttpTypes.AdminSalesChannel>();
 
 const useColumns = (id: string) => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const prompt = usePrompt()
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const prompt = usePrompt();
 
-  const base = hooks.useSalesChannelTableColumns()
+  const base = hooks.useSalesChannelTableColumns();
 
-  const { mutateAsync } = useBatchRemoveSalesChannelsFromApiKey(id)
+  const { mutateAsync } = useBatchRemoveSalesChannelsFromApiKey(id);
 
   const handleDelete = useCallback(
     async (salesChannel: HttpTypes.AdminSalesChannel) => {
@@ -97,10 +95,10 @@ const useColumns = (id: string) => {
         }),
         confirmText: t("actions.delete"),
         cancelText: t("actions.cancel"),
-      })
+      });
 
       if (!res) {
-        return
+        return;
       }
 
       await mutateAsync([salesChannel.id], {
@@ -109,28 +107,28 @@ const useColumns = (id: string) => {
             t("apiKeyManagement.removeSalesChannel.successToast", {
               count: 1,
             })
-          )
+          );
         },
-        onError: (err) => {
-          toast.error(err.message)
+        onError: err => {
+          toast.error(err.message);
         },
-      })
+      });
     },
     [mutateAsync, prompt, t]
-  )
+  );
 
   return useMemo(
     () => [
       columnHelper.select(),
       ...base,
       columnHelper.action({
-        actions: (ctx) => [
+        actions: ctx => [
           [
             {
               label: t("actions.edit"),
               icon: <PencilSquare />,
               onClick: () => {
-                navigate(`/settings/sales-channels/${ctx.row.original.id}/edit`)
+                navigate(`/settings/sales-channels/${ctx.row.original.id}/edit`);
               },
             },
           ],
@@ -145,23 +143,20 @@ const useColumns = (id: string) => {
       }),
     ],
     [base, handleDelete, navigate, t]
-  )
-}
+  );
+};
 
-const commandHelper = createDataTableCommandHelper()
+const commandHelper = createDataTableCommandHelper();
 
-const useCommands = (
-  id: string,
-  setRowSelection: (state: DataTableRowSelectionState) => void
-) => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
+const useCommands = (id: string, setRowSelection: (state: DataTableRowSelectionState) => void) => {
+  const { t } = useTranslation();
+  const prompt = usePrompt();
 
-  const { mutateAsync } = useBatchRemoveSalesChannelsFromApiKey(id)
+  const { mutateAsync } = useBatchRemoveSalesChannelsFromApiKey(id);
 
   const handleRemove = useCallback(
     async (rowSelection: DataTableRowSelectionState) => {
-      const keys = Object.keys(rowSelection)
+      const keys = Object.keys(rowSelection);
 
       const res = await prompt({
         title: t("general.areYouSure"),
@@ -170,10 +165,10 @@ const useCommands = (
         }),
         confirmText: t("actions.continue"),
         cancelText: t("actions.cancel"),
-      })
+      });
 
       if (!res) {
-        return
+        return;
       }
 
       await mutateAsync(keys, {
@@ -182,16 +177,16 @@ const useCommands = (
             t("apiKeyManagement.removeSalesChannel.successToastBatch", {
               count: keys.length,
             })
-          )
-          setRowSelection({})
+          );
+          setRowSelection({});
         },
-        onError: (err) => {
-          toast.error(err.message)
+        onError: err => {
+          toast.error(err.message);
         },
-      })
+      });
     },
     [mutateAsync, prompt, t, setRowSelection]
-  )
+  );
 
   return useMemo(
     () => [
@@ -202,5 +197,5 @@ const useCommands = (
       }),
     ],
     [handleRemove, t]
-  )
-}
+  );
+};

@@ -1,15 +1,12 @@
-import { HttpTypes } from "@medusajs/types"
-import { useQueryParams } from "../../use-query-params"
+import { HttpTypes } from "@medusajs/types";
+import { useQueryParams } from "../../use-query-params";
 
 type UseOrderTableQueryProps = {
-  prefix?: string
-  pageSize?: number
-}
+  prefix?: string;
+  pageSize?: number;
+};
 
-export const useOrderTableQuery = ({
-  prefix,
-  pageSize = 20,
-}: UseOrderTableQueryProps) => {
+export const useOrderTableQuery = ({ prefix, pageSize = 20 }: UseOrderTableQueryProps) => {
   const queryObject = useQueryParams(
     [
       "offset",
@@ -23,7 +20,7 @@ export const useOrderTableQuery = ({
       "order",
     ],
     prefix
-  )
+  );
 
   const {
     offset,
@@ -35,7 +32,7 @@ export const useOrderTableQuery = ({
     region_id,
     q,
     order,
-  } = queryObject
+  } = queryObject;
 
   const searchParams: HttpTypes.AdminOrderFilters = {
     limit: pageSize,
@@ -48,10 +45,10 @@ export const useOrderTableQuery = ({
     region_id: region_id?.split(","),
     order: order ? order : "-created_at",
     q,
-  }
+  };
 
   return {
     searchParams,
     raw: queryObject,
-  }
-}
+  };
+};

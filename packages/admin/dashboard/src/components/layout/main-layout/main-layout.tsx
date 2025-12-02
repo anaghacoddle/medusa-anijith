@@ -213,6 +213,10 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
           label: t("deleteProducts.domain"),
           to: "/deleted-products",
         },
+        hasPermission("/admin/collections", "GET") && {
+          label: t("digitalProducts.domain"),
+          to: "/digital-products",
+        },
         // TODO: Enable when domin is introduced
         // {
         //   label: t("giftCards.domain"),

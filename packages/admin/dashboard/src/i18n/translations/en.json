@@ -147,7 +147,8 @@
     "hide": "Hide",
     "export": "Export",
     "import": "Import",
-    "cannotUndo": "This action cannot be undone"
+    "cannotUndo": "This action cannot be undone",
+    "viewProduct": "View Product"
   },
   "operators": {
     "in": "In"
@@ -837,7 +838,7 @@
     }
   },
   "deleteProducts": {
-    "domain": "Delete products",
+    "domain": "Delete Products",
     "list": {
       "noRecordsMessage": "Create your first product to start selling."
     },
@@ -3108,6 +3109,39 @@
       }
     }
   },
+  "digitalProducts": {
+    "domain": "Digital Products",
+    "create": {
+      "header": "Create Digital Product",
+      "hint": "Create a new diigital product manage their details.",
+      "successToast": "Customer {{email}} was successfully created."
+    },
+    "fields": {
+      "previewFiles": "Preview files",
+      "mainFiles": " Main files"
+    },
+    "media": {
+      "label": "Media (Images & Videos)",
+      "editHint": "Add product images or videos to showcase it in your storefront."
+    },
+    "files": {
+      "label": "Product Files",
+      "addMedia": "Add File",
+      "file": "File",
+      "editHint": "Add product images or videos to showcase it in your storefront.",
+      "emptyState": {
+        "header": "No downloadable files added yet",
+        "description": "Click \"Add File\" to get started",
+        "action": "Add File"
+      },
+      "fileTypes": {
+        "preview": "Preview File",
+        "main": "Main File"
+      },
+      "selectFile": "Select File",
+      "type": "Type"
+    }
+  },
   "profile": {
     "domain": "Profile",
     "manageYourProfileDetails": "Manage your profile details.",
@@ -3890,7 +3924,8 @@
     "startDate": "Start date",
     "endDate": "End date",
     "draft": "Draft",
-    "values": "Values"
+    "values": "Values",
+    "action": "Action"
   },
   "dateTime": {
     "years_one": "Year",

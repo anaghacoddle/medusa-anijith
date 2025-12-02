@@ -147,7 +147,19 @@ export const ProductEditVariantForm = ({ variant, product }: ProductEditVariantF
       await mutateAsync(
         {
           id: variant.id,
-          ...additionalData,
+          weight: transformNullableFormNumber(weight),
+          height: transformNullableFormNumber(height),
+          width: transformNullableFormNumber(width),
+          length: transformNullableFormNumber(length),
+          title,
+          allow_backorder,
+          manage_inventory,
+          options,
+          ...nullableData,
+          additional_data: {
+            changedValues: changedFields,
+            existing_variant_id: variant.id,
+          },
         },
         {
           onSuccess: () => {
@@ -163,6 +175,8 @@ export const ProductEditVariantForm = ({ variant, product }: ProductEditVariantF
       toast.error(error.message || "Something went wrong");
     }
   });
+
+  const hasDigitalProduct = (variant as any).digital_product;
 
   return (
     <RouteDrawer.Form form={form}>
@@ -225,86 +239,88 @@ export const ProductEditVariantForm = ({ variant, product }: ProductEditVariantF
           <Divider />
 
           {/* Inventory Section */}
-          <div className="flex flex-col gap-y-8">
-            <div className="flex flex-col gap-y-4">
-              <Heading level="h2">{t("products.variant.inventory.header")}</Heading>
-              {["sku", "ean", "upc", "barcode"].map(fieldName => (
-                <Form.Field
-                  key={fieldName}
-                  control={form.control}
-                  name={fieldName as keyof z.infer<typeof ProductEditVariantSchema>}
-                  render={({ field }) => (
+          {!hasDigitalProduct && (
+            <div className="flex flex-col gap-y-8">
+              <div className="flex flex-col gap-y-4">
+                <Heading level="h2">{t("products.variant.inventory.header")}</Heading>
+                {["sku", "ean", "upc", "barcode"].map(fieldName => (
+                  <Form.Field
+                    key={fieldName}
+                    control={form.control}
+                    name={fieldName as keyof z.infer<typeof ProductEditVariantSchema>}
+                    render={({ field }) => (
+                      <Form.Item>
+                        <Form.Label optional>{t(`fields.${fieldName}` as any)}</Form.Label>
+                        <Form.Control>
+                          <Input {...field} value={field.value as string} />
+                        </Form.Control>
+                        <Form.ErrorMessage />
+                      </Form.Item>
+                    )}
+                  />
+                ))}
+              </div>
+
+              {/* Switch Controls */}
+              <Form.Field
+                control={form.control}
+                name="manage_inventory"
+                render={({ field: { value, onChange, ...field } }) => {
+                  return (
                     <Form.Item>
-                      <Form.Label optional>{t(`fields.${fieldName}` as any)}</Form.Label>
-                      <Form.Control>
-                        <Input {...field} value={field.value as string} />
-                      </Form.Control>
+                      <div className="flex flex-col gap-y-1">
+                        <div className="flex items-center justify-between">
+                          <Form.Label>
+                            {t("products.variant.inventory.manageInventoryLabel")}
+                          </Form.Label>
+                          <Form.Control>
+                            <Switch
+                              dir="ltr"
+                              checked={value}
+                              className="rtl:rotate-180"
+                              onCheckedChange={checked => onChange(!!checked)}
+                              {...field}
+                            />
+                          </Form.Control>
+                        </div>
+                        <Form.Hint>{t("products.variant.inventory.manageInventoryHint")}</Form.Hint>
+                      </div>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )}
-                />
-              ))}
-            </div>
+                  );
+                }}
+              />
 
-            {/* Switch Controls */}
-            <Form.Field
-              control={form.control}
-              name="manage_inventory"
-              render={({ field: { value, onChange, ...field } }) => {
-                return (
+              <Form.Field
+                control={form.control}
+                name="allow_backorder"
+                render={({ field: { value, onChange, ...field } }) => (
                   <Form.Item>
                     <div className="flex flex-col gap-y-1">
                       <div className="flex items-center justify-between">
                         <Form.Label>
-                          {t("products.variant.inventory.manageInventoryLabel")}
+                          {t("products.variant.inventory.allowBackordersLabel")}
                         </Form.Label>
                         <Form.Control>
                           <Switch
                             dir="ltr"
-                            checked={value}
                             className="rtl:rotate-180"
+                            checked={value}
                             onCheckedChange={checked => onChange(!!checked)}
                             {...field}
                           />
                         </Form.Control>
                       </div>
-                      <Form.Hint>{t("products.variant.inventory.manageInventoryHint")}</Form.Hint>
+                      <Form.Hint>{t("products.variant.inventory.allowBackordersHint")}</Form.Hint>
                     </div>
                     <Form.ErrorMessage />
                   </Form.Item>
-                );
-              }}
-            />
+                )}
+              />
+            </div>
+          )}
 
-            <Form.Field
-              control={form.control}
-              name="allow_backorder"
-              render={({ field: { value, onChange, ...field } }) => (
-                <Form.Item>
-                  <div className="flex flex-col gap-y-1">
-                    <div className="flex items-center justify-between">
-                      <Form.Label>
-                        {t("products.variant.inventory.allowBackordersLabel")}
-                      </Form.Label>
-                      <Form.Control>
-                        <Switch
-                          dir="ltr"
-                          className="rtl:rotate-180"
-                          checked={value}
-                          onCheckedChange={checked => onChange(!!checked)}
-                          {...field}
-                        />
-                      </Form.Control>
-                    </div>
-                    <Form.Hint>{t("products.variant.inventory.allowBackordersHint")}</Form.Hint>
-                  </div>
-                  <Form.ErrorMessage />
-                </Form.Item>
-              )}
-            />
-          </div>
-
-          <Divider />
+          {!hasDigitalProduct && <Divider />}
 
           {/* Attributes */}
           <div className="flex flex-col gap-y-4">

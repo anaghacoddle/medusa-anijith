@@ -11,7 +11,7 @@ import {
   InventorySectionPlaceholder,
   VariantInventorySection,
 } from "./components/variant-inventory-section";
-import { VariantMediaSection } from "./components/variant-media-section"
+import { VariantMediaSection } from "./components/variant-media-section";
 import { VariantPricesSection } from "./components/variant-prices-section";
 import { VariantPreorderSection } from "./components/variant-preorder-section/variant-preorder-section";
 import { VARIANT_DETAIL_FIELDS } from "./constants";
@@ -42,6 +42,9 @@ export const ProductVariantDetail = () => {
     throw error;
   }
   console.log("preorderVariant", preorderVariant);
+
+  const hasDigitalProduct = (variant as any).digital_product;
+
   return (
     <TwoColumnPage
       data={variant}
@@ -56,22 +59,24 @@ export const ProductVariantDetail = () => {
       }}
     >
       <TwoColumnPage.Main>
-        <VariantGeneralSection variant={variant} />
+        <VariantGeneralSection variant={variant} hasDigitalProduct={hasDigitalProduct} />
         <VariantMediaSection variant={variant} />
         <VariantPreorderSection variant={variant} preorderVariant={preorderVariant} />
-        {!variant.manage_inventory ? (
-          <InventorySectionPlaceholder />
-        ) : (
-          <VariantInventorySection
-            inventoryItems={variant?.inventory_items?.map(i => {
-              return {
-                ...i.inventory,
-                required_quantity: i?.required_quantity,
-                variant,
-              };
-            })}
-          />
-        )}
+
+        {!hasDigitalProduct &&
+          (!variant.manage_inventory ? (
+            <InventorySectionPlaceholder />
+          ) : (
+            <VariantInventorySection
+              inventoryItems={variant?.inventory_items?.map(i => {
+                return {
+                  ...i.inventory,
+                  required_quantity: i?.required_quantity,
+                  variant,
+                };
+              })}
+            />
+          ))}
       </TwoColumnPage.Main>
       <TwoColumnPage.Sidebar>
         <VariantPricesSection variant={variant} />

@@ -153,13 +153,13 @@ const SettingsSidebar = () => {
           {routes.length > 0 && (
             <RadixCollapsibleSection label={t("app.nav.settings.general")} items={routes} />
           )}
-          {/* <div className="flex items-center justify-center px-3">
+          <div className="flex items-center justify-center px-3">
             <Divider variant="dashed" />
           </div>
           <RadixCollapsibleSection
             label={t("app.nav.settings.developer")}
             items={developerRoutes}
-          /> */}
+          />
           {routes.length > 0 && (
             <div className="flex items-center justify-center px-3">
               <Divider variant="dashed" />

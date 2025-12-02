@@ -52,10 +52,12 @@ export const UploadMediaFormItem = ({
   form,
   append,
   showHint = true,
+  productType = "product",
 }: {
   form: UseFormReturn<ProductCreateSchemaType> | UseFormReturn<EditProductMediaSchemaType>;
   append: (value: Media) => void;
   showHint?: boolean;
+  productType?: "product" | "digital";
 }) => {
   const { t } = useTranslation();
 
@@ -86,8 +88,19 @@ export const UploadMediaFormItem = ({
           <Form.Item>
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-col gap-y-1">
-                <Form.Label optional>{t("products.media.label")}</Form.Label>
-                {showHint && <Form.Hint>{t("products.media.editHint")}</Form.Hint>}
+                <Form.Label optional>
+                  {productType === "digital"
+                    ? t("digitalProducts.media.label")
+                    : t("products.media.label")}{" "}
+                </Form.Label>
+                {showHint && (
+                  <Form.Hint>
+                    {" "}
+                    {productType === "digital"
+                      ? t("digitalProducts.media.editHint")
+                      : t("products.media.editHint")}
+                  </Form.Hint>
+                )}
               </div>
               <Form.Control>
                 <div className="flex flex-col gap-y-3">

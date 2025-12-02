@@ -119,10 +119,7 @@ export function getRouteMap({
                         },
                         {
                           path: "images/:image_id/variants",
-                          lazy: () =>
-                            import(
-                              "../../routes/products/product-image-variants-edit"
-                            ),
+                          lazy: () => import("../../routes/products/product-image-variants-edit"),
                         },
                         {
                           path: "prices",
@@ -193,10 +190,7 @@ export function getRouteMap({
                         },
                         {
                           path: "media",
-                          lazy: () =>
-                            import(
-                              "../../routes/product-variants/product-variant-media"
-                            ),
+                          lazy: () => import("../../routes/product-variants/product-variant-media"),
                         },
                         {
                           path: "metadata/edit",
@@ -404,6 +398,26 @@ export function getRouteMap({
                             import("../../routes/product-variants/product-variant-metadata"),
                         },
                       ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              path: "/digital-products",
+              errorElement: <ErrorBoundary />,
+              element: createPermissionWrapper("/admin/digital-products")(<Outlet />),
+              handle: {
+                breadcrumb: () => t("digitalProducts.domain"),
+              },
+              children: [
+                {
+                  path: "",
+                  lazy: () => import("../../routes/digital-products/digital-products-list"),
+                  children: [
+                    {
+                      path: "create",
+                      lazy: () => import("../../routes/digital-products/digital-product-create"),
                     },
                   ],
                 },
@@ -1619,7 +1633,9 @@ export function getRouteMap({
             {
               path: "workflows",
               errorElement: <ErrorBoundary />,
-              element: createPermissionWrapper("/admin/workflow-executions")(<Outlet />),
+              // element: createPermissionWrapper("/admin/workflow-executions")(
+              //   <Outlet />,
+              // ),
               handle: {
                 breadcrumb: () => t("workflowExecutions.domain"),
               },
@@ -1698,7 +1714,7 @@ export function getRouteMap({
             },
             {
               path: "publishable-api-keys",
-              element: createPermissionWrapper("/admin/api-keys")(<Outlet />),
+              // element: createPermissionWrapper("/admin/api-keys")(<Outlet />),
               handle: {
                 breadcrumb: () => t("apiKeyManagement.domain.publishable"),
               },
@@ -1753,7 +1769,7 @@ export function getRouteMap({
             },
             {
               path: "secret-api-keys",
-              element: createPermissionWrapper("/admin/api-keys")(<Outlet />),
+              // element: createPermissionWrapper("/admin/api-keys")(<Outlet />),
               handle: {
                 breadcrumb: () => t("apiKeyManagement.domain.secret"),
               },

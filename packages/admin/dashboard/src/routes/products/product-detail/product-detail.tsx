@@ -14,6 +14,7 @@ import { ProductVariantSection } from "./components/product-variant-section";
 import { PRODUCT_DETAIL_FIELDS } from "./constants";
 import { productLoader } from "./loader";
 import { ProductDetailInfoSection } from "./components/product-detail-info-section";
+import { DigitalProductFilesSection } from "./components/digital-products-file-section";
 
 import { useExtension } from "../../../providers/extension-provider";
 import { ProductShippingProfileSection } from "./components/product-shipping-profile-section";
@@ -29,6 +30,14 @@ export const ProductDetail = () => {
       initialData: initialData,
     }
   );
+
+  // Get digital product from the first variant (or iterate through all variants)
+  const digitalProduct = product?.variants?.[0]?.digital_product;
+  const medias = digitalProduct?.medias || [];
+
+  // Separate main and preview files
+  const mainFiles = medias.filter(media => media.type === "main");
+  const previewFiles = medias.filter(media => media.type === "preview");
 
   const { getWidgets } = useExtension();
 
@@ -59,6 +68,13 @@ export const ProductDetail = () => {
     >
       <TwoColumnPage.Main>
         <ProductGeneralSection product={product} />
+        <DigitalProductFilesSection
+          mainFiles={mainFiles}
+          previewFiles={previewFiles}
+          productId={product.id}
+          digitalProductId={digitalProduct?.id}
+        />
+
         <ProductMediaSection product={product} />
         <ProductOptionSection product={product} />
         <ProductVariantSection product={product} />

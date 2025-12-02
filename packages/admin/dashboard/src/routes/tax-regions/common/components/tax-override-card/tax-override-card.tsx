@@ -13,7 +13,7 @@ import { formatPercentage } from "../../../../../lib/percentage-helpers";
 import { TaxRateRuleReferenceType } from "../../constants";
 import { useDeleteTaxRateAction } from "../../hooks";
 import { useShippingOptions } from "../../../../../hooks/api";
-import { DISPLAY_OVERRIDE_ITEMS_LIMIT } from "../../../tax-region-tax-override-edit/components/tax-region-tax-override-edit-form"
+import { DISPLAY_OVERRIDE_ITEMS_LIMIT } from "../../../tax-region-tax-override-edit/components/tax-region-tax-override-edit-form";
 
 interface TaxOverrideCardProps extends ComponentPropsWithoutRef<"div"> {
   taxRate: HttpTypes.AdminTaxRate;
@@ -296,9 +296,7 @@ const useReferenceValues = (
   //   }
   // )
   const additionalCount =
-    ids.length > DISPLAY_OVERRIDE_ITEMS_LIMIT
-      ? ids.length - DISPLAY_OVERRIDE_ITEMS_LIMIT
-      : 0
+    ids.length > DISPLAY_OVERRIDE_ITEMS_LIMIT ? ids.length - DISPLAY_OVERRIDE_ITEMS_LIMIT : 0;
   switch (type) {
     case TaxRateRuleReferenceType.PRODUCT:
       return {

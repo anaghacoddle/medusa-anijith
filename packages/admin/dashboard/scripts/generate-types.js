@@ -15,17 +15,12 @@ async function generateTypes() {
   const filePath = path.join(distDir, "index.d.ts");
 
   const fileContent = `
-declare function App(props: {
-  plugins?: any[]
-}): JSX.Element
+    declare function App(props: {
+      plugins?: any[]
+    }): JSX.Element
 
-export default App
-
-import type enTranslation from "./en.json"
-export type Resources = {
-  translation: typeof enTranslation
-}
-`;
+    export default App
+  `;
 
   // Ensure the dist directory exists
   if (!fs.existsSync(distDir)) {
@@ -34,13 +29,6 @@ export type Resources = {
 
   // Write the content to the index.d.ts file
   fs.writeFileSync(filePath, fileContent.trim(), "utf8");
-
-  // Copy the canonical en translation for type inference
-  const enTranslationSrcPath = path.join(
-    __dirname, "../src/i18n/translations/en.json"
-  )
-  const enTranslationDistPath = path.join(distDir, "en.json")
-  fs.copyFileSync(enTranslationSrcPath, enTranslationDistPath)
 
   console.log(`File created at ${filePath}`);
 }

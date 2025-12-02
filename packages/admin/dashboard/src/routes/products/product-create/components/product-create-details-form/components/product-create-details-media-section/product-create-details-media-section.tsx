@@ -50,6 +50,9 @@ export const ProductCreateMediaSection = ({ form }: ProductCreateMediaSectionPro
 
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 
+  // Get form errors
+  const mediaError = form.formState.errors.media;
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -112,6 +115,14 @@ export const ProductCreateMediaSection = ({ form }: ProductCreateMediaSectionPro
   return (
     <div id="media" className="flex flex-col gap-y-2">
       <UploadMediaFormItem form={form} append={append} showHint={false} />
+      {/* Error message display */}
+      {mediaError?.message && (
+        <div className="bg-ui-bg-error-subtle border-ui-border-error rounded-md border px-3 py-2">
+          <Text size="small" className="text-ui-fg-error">
+            {mediaError.message}
+          </Text>
+        </div>
+      )}
       <DndContext
         sensors={sensors}
         onDragEnd={handleDragEnd}

@@ -711,9 +711,6 @@ export const CreatePromotionForm = () => {
                                   <CurrencyInput
                                     {...field}
                                     min={0}
-                                    onValueChange={value => {
-                                      onChange(value ? parseInt(value) : "");
-                                    }}
                                     code={currencyCode || "USD"}
                                     onValueChange={(_value, _name, values) =>
                                       onChange(values?.value)

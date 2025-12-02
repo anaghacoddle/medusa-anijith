@@ -358,13 +358,13 @@ export const ProductAttributesForm = ({ product }: ProductAttributesFormProps) =
                           min={0}
                           step="any"
                           value={value || ""}
-                          onChange={(e) => {
-                            const value = e.target.value
+                          onChange={e => {
+                            const value = e.target.value;
 
                             if (value === "") {
-                              onChange(null)
+                              onChange(null);
                             } else {
-                              onChange(parseFloat(value))
+                              onChange(parseFloat(value));
                             }
                           }}
                           {...field}

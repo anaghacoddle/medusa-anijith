@@ -23,6 +23,8 @@ function DetailsTab({ form, product }: DetailsTabProps) {
     name: "manage_inventory",
   });
 
+  const hasDigitalProduct = product?.variants?.some(variant => (variant as any).digital_product);
+
   return (
     <div className="flex flex-1 flex-col items-center overflow-y-auto">
       <div className="flex w-full max-w-[720px] flex-col gap-y-8 px-8 py-16">
@@ -45,22 +47,23 @@ function DetailsTab({ form, product }: DetailsTabProps) {
             }}
           />
 
-          <Form.Field
-            control={form.control}
-            name="sku"
-            render={({ field }) => {
-              return (
-                <Form.Item>
-                  <Form.Label optional>{t("fields.sku")}</Form.Label>
-                  <Form.Control>
-                    <Input {...field} />
-                  </Form.Control>
-                  <Form.ErrorMessage />
-                </Form.Item>
-              );
-            }}
-          />
-
+          {!hasDigitalProduct && (
+            <Form.Field
+              control={form.control}
+              name="sku"
+              render={({ field }) => {
+                return (
+                  <Form.Item>
+                    <Form.Label optional>{t("fields.sku")}</Form.Label>
+                    <Form.Control>
+                      <Input {...field} />
+                    </Form.Control>
+                    <Form.ErrorMessage />
+                  </Form.Item>
+                );
+              }}
+            />
+          )}
           {product.options.map((option: any) => (
             <Form.Field
               key={option.id}
@@ -89,94 +92,97 @@ function DetailsTab({ form, product }: DetailsTabProps) {
             />
           ))}
         </div>
-        <div className="flex flex-col gap-y-4">
-          <Form.Field
-            control={form.control}
-            name="manage_inventory"
-            render={({ field: { value, onChange, ...field } }) => {
-              return (
-                <Form.Item>
-                  <div className="bg-ui-bg-component shadow-elevation-card-rest flex gap-x-3 rounded-lg p-4">
-                    <Form.Control>
-                      <Switch
-                        dir="ltr"
-                        className="mt-[2px] rtl:rotate-180"
-                        checked={value}
-                        onCheckedChange={checked => onChange(!!checked)}
-                        {...field}
-                      />
-                    </Form.Control>
+        {/* ✅ Render this block only if a digital product exists */}
+        {!hasDigitalProduct && (
+          <div className="flex flex-col gap-y-4">
+            <Form.Field
+              control={form.control}
+              name="manage_inventory"
+              render={({ field: { value, onChange, ...field } }) => {
+                return (
+                  <Form.Item>
+                    <div className="bg-ui-bg-component shadow-elevation-card-rest flex gap-x-3 rounded-lg p-4">
+                      <Form.Control>
+                        <Switch
+                          dir="ltr"
+                          className="mt-[2px] rtl:rotate-180"
+                          checked={value}
+                          onCheckedChange={checked => onChange(!!checked)}
+                          {...field}
+                        />
+                      </Form.Control>
 
-                    <div className="flex flex-col">
-                      <Form.Label>
-                        {t("products.variant.inventory.manageInventoryLabel")}
-                      </Form.Label>
-                      <Form.Hint>{t("products.variant.inventory.manageInventoryHint")}</Form.Hint>
+                      <div className="flex flex-col">
+                        <Form.Label>
+                          {t("products.variant.inventory.manageInventoryLabel")}
+                        </Form.Label>
+                        <Form.Hint>{t("products.variant.inventory.manageInventoryHint")}</Form.Hint>
+                      </div>
                     </div>
-                  </div>
-                  <Form.ErrorMessage />
-                </Form.Item>
-              );
-            }}
-          />
-          <Form.Field
-            control={form.control}
-            name="allow_backorder"
-            disabled={!manageInventoryEnabled}
-            render={({ field: { value, onChange, ...field } }) => {
-              return (
-                <Form.Item>
-                  <div className="bg-ui-bg-component shadow-elevation-card-rest flex gap-x-3 rounded-lg p-4">
-                    <Form.Control>
-                      <Switch
-                        dir="ltr"
-                        className="rtl:rotate-180"
-                        checked={value}
-                        onCheckedChange={checked => onChange(!!checked)}
-                        {...field}
-                        disabled={!manageInventoryEnabled}
-                      />
-                    </Form.Control>
-                    <div className="flex flex-col">
-                      <Form.Label>
-                        {t("products.variant.inventory.allowBackordersLabel")}
-                      </Form.Label>
-                      <Form.Hint>{t("products.variant.inventory.allowBackordersHint")}</Form.Hint>
+                    <Form.ErrorMessage />
+                  </Form.Item>
+                );
+              }}
+            />
+            <Form.Field
+              control={form.control}
+              name="allow_backorder"
+              disabled={!manageInventoryEnabled}
+              render={({ field: { value, onChange, ...field } }) => {
+                return (
+                  <Form.Item>
+                    <div className="bg-ui-bg-component shadow-elevation-card-rest flex gap-x-3 rounded-lg p-4">
+                      <Form.Control>
+                        <Switch
+                          dir="ltr"
+                          className="rtl:rotate-180"
+                          checked={value}
+                          onCheckedChange={checked => onChange(!!checked)}
+                          {...field}
+                          disabled={!manageInventoryEnabled}
+                        />
+                      </Form.Control>
+                      <div className="flex flex-col">
+                        <Form.Label>
+                          {t("products.variant.inventory.allowBackordersLabel")}
+                        </Form.Label>
+                        <Form.Hint>{t("products.variant.inventory.allowBackordersHint")}</Form.Hint>
+                      </div>
                     </div>
-                  </div>
-                  <Form.ErrorMessage />
-                </Form.Item>
-              );
-            }}
-          />
-          <Form.Field
-            control={form.control}
-            name="inventory_kit"
-            render={({ field: { value, onChange, ...field } }) => {
-              return (
-                <Form.Item>
-                  <div className="bg-ui-bg-component shadow-elevation-card-rest flex gap-x-3 rounded-lg p-4">
-                    <Form.Control>
-                      <Switch
-                        dir="ltr"
-                        className="rtl:rotate-180"
-                        checked={value}
-                        onCheckedChange={checked => onChange(!!checked)}
-                        {...field}
-                        disabled={!manageInventoryEnabled}
-                      />
-                    </Form.Control>
-                    <div className="flex flex-col">
-                      <Form.Label>{t("products.variant.inventory.inventoryKit")}</Form.Label>
-                      <Form.Hint>{t("products.variant.inventory.inventoryKitHint")}</Form.Hint>
+                    <Form.ErrorMessage />
+                  </Form.Item>
+                );
+              }}
+            />
+            <Form.Field
+              control={form.control}
+              name="inventory_kit"
+              render={({ field: { value, onChange, ...field } }) => {
+                return (
+                  <Form.Item>
+                    <div className="bg-ui-bg-component shadow-elevation-card-rest flex gap-x-3 rounded-lg p-4">
+                      <Form.Control>
+                        <Switch
+                          dir="ltr"
+                          className="rtl:rotate-180"
+                          checked={value}
+                          onCheckedChange={checked => onChange(!!checked)}
+                          {...field}
+                          disabled={!manageInventoryEnabled}
+                        />
+                      </Form.Control>
+                      <div className="flex flex-col">
+                        <Form.Label>{t("products.variant.inventory.inventoryKit")}</Form.Label>
+                        <Form.Hint>{t("products.variant.inventory.inventoryKitHint")}</Form.Hint>
+                      </div>
                     </div>
-                  </div>
-                  <Form.ErrorMessage />
-                </Form.Item>
-              );
-            }}
-          />
-        </div>
+                    <Form.ErrorMessage />
+                  </Form.Item>
+                );
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

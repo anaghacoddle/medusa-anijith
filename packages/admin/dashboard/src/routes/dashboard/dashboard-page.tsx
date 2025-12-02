@@ -10,6 +10,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAdminLogs, useMe } from "../../hooks/api";
 import { formatActivityLog } from "./activityLog";
 import { decryptObject } from "../../utils/encryption";
+import { useInventoryItems } from "../../hooks/api/inventory";
+import LowStockItems from "../../components/dashboard/low-stock-items";
 
 type AdminLog = {
   level: string;
@@ -64,6 +66,24 @@ const DashboardPage = () => {
     limit: 20,
     offset: adminOffset,
   });
+
+  const threshold = __STOCK_MONITOR_THRESHOLD__ ? parseInt(__STOCK_MONITOR_THRESHOLD__, 10) : 10;
+
+  const { inventory_items, isLoading: inventoryLoading } = useInventoryItems({
+    fields:
+      "id,*location_levels,location_levels.stock_locations.name,variants.*,variants.product.title",
+    limit: 50,
+  });
+
+  const lowStockItems = useMemo(() => {
+    if (!inventory_items) return [];
+
+    return inventory_items.filter(item => {
+      const totalAvailable =
+        item.location_levels?.reduce((sum, level) => sum + (level.available_quantity || 0), 0) || 0;
+      return totalAvailable < threshold; // Adjust threshold as needed
+    });
+  }, [inventory_items, threshold]);
 
   // Decrypt current user
   useEffect(() => {
@@ -160,19 +180,24 @@ const DashboardPage = () => {
         <MetricCards />
       </div> */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <RecentActivity
-          title="Admin Activity"
-          activities={adminActivities}
-          isLoading={adminLoading}
-          onLoadMore={loadMoreAdminLogs}
-        />
-        <RecentActivity
-          title="Customer Activity"
-          activities={customerActivities}
-          isLoading={customerLoading}
-          onLoadMore={loadMoreCustomerLogs}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div>
+          <LowStockItems items={lowStockItems} isLoading={inventoryLoading} />{" "}
+        </div>
+        <div className="flex flex-col gap-6">
+          <RecentActivity
+            title="Admin Activity"
+            activities={adminActivities}
+            isLoading={adminLoading}
+            onLoadMore={loadMoreAdminLogs}
+          />
+          <RecentActivity
+            title="Customer Activity"
+            activities={customerActivities}
+            isLoading={customerLoading}
+            onLoadMore={loadMoreCustomerLogs}
+          />
+        </div>
       </div>
     </Container>
   );

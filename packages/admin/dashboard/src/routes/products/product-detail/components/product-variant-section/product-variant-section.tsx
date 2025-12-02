@@ -44,7 +44,6 @@ export const ProductVariantSection = ({ product }: ProductVariantSectionProps) =
     );
 
   const { hasPermission } = usePermission();
-  const columns = useColumns(product, hasPermission);
   const filters = useFilters();
   const commands = useCommands();
 
@@ -60,12 +59,13 @@ export const ProductVariantSection = ({ product }: ProductVariantSectionProps) =
       created_at: created_at ? JSON.parse(created_at) : undefined,
       updated_at: updated_at ? JSON.parse(updated_at) : undefined,
       fields:
-        "title,sku,thumbnail,*options,created_at,*inventory_items.inventory.location_levels,inventory_quantity,manage_inventory",
+        "title,sku,thumbnail,*options,created_at,*inventory_items.inventory.location_levels,inventory_quantity,manage_inventory,*digital_product",
     },
     {
       placeholderData: keepPreviousData,
     }
   );
+  const columns = useColumns(product, hasPermission, variants);
 
   if (isError) {
     throw error;
@@ -133,7 +133,8 @@ const columnHelper = createDataTableColumnHelper<HttpTypes.AdminProductVariant>(
 
 const useColumns = (
   product: HttpTypes.AdminProduct,
-  hasPermission: (route: string, method?: string) => boolean
+  hasPermission: (route: string, method?: string) => boolean,
+  variants: HttpTypes.AdminProductVariant[] | undefined
 ) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -305,7 +306,18 @@ const useColumns = (
         };
       }
 
-      const quantity = variant.inventory_quantity;
+      const itemSums = variant?.inventory_items.map(item => {
+        const totalAvailable = item.inventory?.location_levels?.reduce(
+          (sum, level) => sum + (level.available_quantity || 0),
+          0
+        );
+        return {
+          variant_id: item.variant_id,
+          totalAvailable,
+        };
+      });
+
+      const totalQuantity = itemSums.reduce((sum, item) => sum + item.totalAvailable, 0);
 
       const inventoryItems = castVariant.inventory_items
         ?.map(i => i.inventory)
@@ -325,74 +337,87 @@ const useColumns = (
 
       const text = hasInventoryKit
         ? t("products.variant.tableItemAvailable", {
-            availableCount: quantity,
+            availableCount: totalQuantity,
           })
         : t("products.variant.tableItem", {
-            availableCount: quantity,
+            availableCount: totalQuantity,
             locationCount,
             count: locationCount,
           });
 
-      return { text, hasInventoryKit, quantity, notManaged: false };
+      return { text, hasInventoryKit, totalQuantity, notManaged: false };
     },
     [t]
   );
 
+  const hasDigitalProduct = variants?.some(variant => (variant as any).digital_product);
+
   return useMemo(() => {
-    return [
+    const columns = [
       columnHelper.accessor("thumbnail", {
         header: "",
         headerAlign: "center",
         maxSize: 72,
-        cell: ({ row }) => {
-          return (
-            <div className="flex items-center pl-[1px]">
-              <Thumbnail src={row.original.thumbnail} />
-            </div>
-          );
-        },
+        cell: ({ row }) => (
+          <div className="flex items-center pl-[1px]">
+            <Thumbnail src={row.original.thumbnail} />
+          </div>
+        ),
       }),
+
       columnHelper.accessor("title", {
         header: t("fields.title"),
         enableSorting: true,
         sortAscLabel: t("filters.sorting.alphabeticallyAsc"),
         sortDescLabel: t("filters.sorting.alphabeticallyDesc"),
       }),
-      columnHelper.accessor("sku", {
-        header: t("fields.sku"),
-        enableSorting: true,
-        sortAscLabel: t("filters.sorting.alphabeticallyAsc"),
-        sortDescLabel: t("filters.sorting.alphabeticallyDesc"),
-      }),
-      ...optionColumns,
-      columnHelper.display({
-        id: "inventory",
-        header: t("fields.inventory"),
-        cell: ({ row }) => {
-          const { text, hasInventoryKit, quantity, notManaged } = getInventory(row.original);
 
-          return (
-            <Tooltip content={text}>
-              <div className="flex h-full w-full items-center gap-2 overflow-hidden">
-                {hasInventoryKit && <Component />}
-                <span
-                  className={clx("truncate", {
-                    "text-ui-fg-error": !quantity && !notManaged,
-                  })}
-                >
-                  {text}
-                </span>
-              </div>
-            </Tooltip>
-          );
-        },
-        maxSize: 250,
-      }),
+      ...optionColumns,
+    ];
+
+    if (!hasDigitalProduct) {
+      columns.push(
+        columnHelper.accessor("sku", {
+          header: t("fields.sku"),
+          enableSorting: true,
+          sortAscLabel: t("filters.sorting.alphabeticallyAsc"),
+          sortDescLabel: t("filters.sorting.alphabeticallyDesc"),
+        }),
+
+        columnHelper.display({
+          id: "inventory",
+          header: t("fields.inventory"),
+          cell: ({ row }) => {
+            const { text, hasInventoryKit, totalQuantity, notManaged } = getInventory(row.original);
+
+            return (
+              <Tooltip content={text}>
+                <div className="flex h-full w-full items-center gap-2 overflow-hidden">
+                  {hasInventoryKit && <Component />}
+                  <span
+                    className={clx("truncate", {
+                      "text-ui-fg-error": !totalQuantity && !notManaged,
+                    })}
+                  >
+                    {text}
+                  </span>
+                </div>
+              </Tooltip>
+            );
+          },
+          maxSize: 250,
+        })
+      );
+    }
+
+    columns.push(
       columnHelper.action({
         actions: getActions,
-      }),
-    ];
-  }, [t, optionColumns, getActions, getInventory]);
+      })
+    );
+
+    return columns;
+  }, [t, optionColumns, getActions, getInventory, hasDigitalProduct]);
 };
 
 const filterHelper = createDataTableFilterHelper<HttpTypes.AdminProductVariant>();

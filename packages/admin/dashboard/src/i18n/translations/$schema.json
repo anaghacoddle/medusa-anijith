@@ -518,6 +518,9 @@
         },
         "cannotUndo": {
           "type": "string"
+        },
+        "viewProduct": {
+          "type": "string"
         }
       },
       "required": [
@@ -565,7 +568,8 @@
         "hide",
         "export",
         "import",
-        "cannotUndo"
+        "cannotUndo",
+        "viewProduct"
       ],
       "additionalProperties": false
     },
@@ -10909,6 +10913,81 @@
       ],
       "additionalProperties": false
     },
+    "digitalProducts": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "header": {
+              "type": "string"
+            },
+            "hint": {
+              "type": "string"
+            },
+            "successToast": {
+              "type": "string"
+            }
+          },
+          "required": ["header", "hint", "successToast"],
+          "additionalProperties": false
+        },
+        "fields": {
+          "type": "object",
+          "properties": {
+            "previewFiles": {
+              "type": "string"
+            },
+            "mainFiles": {
+              "type": "string"
+            }
+          },
+          "required": ["previewFiles", "mainFiles"],
+          "additionalProperties": false
+        },
+        "media": {
+          "type": "object",
+          "properties": {
+            "label": { "type": "string" },
+            "editHint": { "type": "string" }
+          },
+          "required": ["label", "editHint"],
+          "additionalProperties": false
+        },
+        "files": {
+          "type": "object",
+          "properties": {
+            "label": { "type": "string" },
+            "addMedia": { "type": "string" },
+            "file": { "type": "string" },
+            "editHint": { "type": "string" },
+            "emptyState": {
+              "type": "object",
+              "properties": {
+                "header": { "type": "string" },
+                "description": { "type": "string" },
+                "action": { "type": "string" }
+              },
+              "required": ["header", "description", "action"],
+              "additionalProperties": false
+            },
+            "fileTypes": {
+              "preview": "string",
+              "main": "string"
+            },
+            "selectFile": { "type": "string" },
+            "type": { "type": "string" }
+          },
+          "required": ["label", "editHint", "emptyState"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["domain", "create", "fields", "media", "files"],
+      "additionalProperties": false
+    },
     "dashboard": {
       "type": "object",
       "properties": {
@@ -14293,6 +14372,7 @@
     "campaigns",
     "priceLists",
     "review",
+    "digitalProducts",
     "dashboard",
     "profile",
     "users",

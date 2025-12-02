@@ -1,1 +1,1 @@
-export { VariantsTableForm } from "./variants-table-form"
+export { VariantsTableForm } from "./variants-table-form";

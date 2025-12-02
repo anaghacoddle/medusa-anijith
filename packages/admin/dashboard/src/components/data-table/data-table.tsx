@@ -77,7 +77,7 @@ interface DataTableProps<TData> {
   rowHref?: (row: TData) => string;
   emptyState?: DataTableEmptyStateProps;
   heading?: string;
-  headingLevel?: "h1" | "h2" | "h3"
+  headingLevel?: "h1" | "h2" | "h3";
   subHeading?: string;
   prefix?: string;
   pageSize?: number;

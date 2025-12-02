@@ -1,21 +1,21 @@
-import { Container, Heading, Text, Tooltip } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { HttpTypes } from "@medusajs/types"
-import { PencilSquare, ThumbnailBadge } from "@medusajs/icons"
+import { Container, Heading, Text, Tooltip } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { HttpTypes } from "@medusajs/types";
+import { PencilSquare, ThumbnailBadge } from "@medusajs/icons";
 
-import { ActionMenu } from "../../../../../components/common/action-menu"
+import { ActionMenu } from "../../../../../components/common/action-menu";
 
 type VariantMediaSectionProps = {
-  variant: HttpTypes.AdminProductVariant
-}
+  variant: HttpTypes.AdminProductVariant;
+};
 
 export const VariantMediaSection = ({ variant }: VariantMediaSectionProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   // show only variant scoped images
-  const media = (variant.images || []).filter((image) =>
-    image.variants?.some((variant) => variant.id === variant.id)
-  )
+  const media = (variant.images || []).filter(image =>
+    image.variants?.some(variant => variant.id === variant.id)
+  );
 
   return (
     <Container className="divide-y p-0">
@@ -37,7 +37,7 @@ export const VariantMediaSection = ({ variant }: VariantMediaSectionProps) => {
       </div>
       {media.length > 0 ? (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-4 px-6 py-4">
-          {media.map((i) => {
+          {media.map(i => {
             return (
               <div
                 className="shadow-elevation-card-rest hover:shadow-elevation-card-hover transition-fg group relative aspect-square size-full overflow-hidden rounded-[8px]"
@@ -52,18 +52,13 @@ export const VariantMediaSection = ({ variant }: VariantMediaSectionProps) => {
                 )}
                 <img src={i.url} className="size-full object-cover" />
               </div>
-            )
+            );
           })}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-y-4 pb-8 pt-6">
           <div className="flex flex-col items-center">
-            <Text
-              size="small"
-              leading="compact"
-              weight="plus"
-              className="text-ui-fg-subtle"
-            >
+            <Text size="small" leading="compact" weight="plus" className="text-ui-fg-subtle">
               {t("products.media.emptyState.header")}
             </Text>
             <Text size="small" className="text-ui-fg-muted">
@@ -73,5 +68,5 @@ export const VariantMediaSection = ({ variant }: VariantMediaSectionProps) => {
         </div>
       )}
     </Container>
-  )
-}
+  );
+};
