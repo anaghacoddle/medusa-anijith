@@ -1,35 +1,24 @@
-import { HttpTypes } from "@medusajs/types"
-import { Heading, Text, Tooltip, clx } from "@medusajs/ui"
-import ReactCountryFlag from "react-country-flag"
+import { HttpTypes } from "@medusajs/types";
+import { Heading, Text, Tooltip, clx } from "@medusajs/ui";
+import ReactCountryFlag from "react-country-flag";
 
-import {
-  ExclamationCircle,
-  MapPin,
-  Plus,
-  Trash,
-  PencilSquare,
-} from "@medusajs/icons"
-import { ComponentPropsWithoutRef, ReactNode } from "react"
-import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
-import {
-  Action,
-  ActionMenu,
-} from "../../../../../components/common/action-menu"
-import { IconAvatar } from "../../../../../components/common/icon-avatar"
-import { getCountryByIso2 } from "../../../../../lib/data/countries"
-import {
-  getProvinceByIso2,
-  isProvinceInCountry,
-} from "../../../../../lib/data/country-states"
-import { useDeleteTaxRegionAction } from "../../hooks"
+import { ExclamationCircle, MapPin, Plus, Trash, PencilSquare } from "@medusajs/icons";
+import { ComponentPropsWithoutRef, ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import { Action, ActionMenu } from "../../../../../components/common/action-menu";
+import { IconAvatar } from "../../../../../components/common/icon-avatar";
+import { getCountryByIso2 } from "../../../../../lib/data/countries";
+import { getProvinceByIso2, isProvinceInCountry } from "../../../../../lib/data/country-states";
+import { useDeleteTaxRegionAction } from "../../hooks";
+import { usePermission } from "../../../../../hooks/use-permission";
 
 interface TaxRegionCardProps extends ComponentPropsWithoutRef<"div"> {
-  taxRegion: HttpTypes.AdminTaxRegion
-  type?: "header" | "list"
-  variant?: "country" | "province"
-  asLink?: boolean
-  badge?: ReactNode
+  taxRegion: HttpTypes.AdminTaxRegion;
+  type?: "header" | "list";
+  variant?: "country" | "province";
+  asLink?: boolean;
+  badge?: ReactNode;
 }
 
 export const TaxRegionCard = ({
@@ -39,39 +28,31 @@ export const TaxRegionCard = ({
   asLink = true,
   badge,
 }: TaxRegionCardProps) => {
-  const { t } = useTranslation()
-  const { id, country_code, province_code } = taxRegion
+  const { t } = useTranslation();
+  const { id, country_code, province_code } = taxRegion;
 
-  const country = getCountryByIso2(country_code)
-  const province = getProvinceByIso2(province_code)
+  const country = getCountryByIso2(country_code);
+  const province = getProvinceByIso2(province_code);
 
-  let name = "N/A"
-  let misconfiguredSublevelTooltip: string | null = null
+  let name = "N/A";
+  let misconfiguredSublevelTooltip: string | null = null;
 
   if (province || province_code) {
-    name = province ? province : province_code!.toUpperCase()
+    name = province ? province : province_code!.toUpperCase();
   } else if (country || country_code) {
-    name = country ? country.display_name : country_code!.toUpperCase()
+    name = country ? country.display_name : country_code!.toUpperCase();
   }
 
-  if (
-    country_code &&
-    province_code &&
-    !isProvinceInCountry(country_code, province_code)
-  ) {
-    name = province_code.toUpperCase()
-    misconfiguredSublevelTooltip = t(
-      "taxRegions.fields.sublevels.tooltips.notPartOfCountry",
-      {
-        country: country?.display_name,
-        province: province_code.toUpperCase(),
-      }
-    )
+  if (country_code && province_code && !isProvinceInCountry(country_code, province_code)) {
+    name = province_code.toUpperCase();
+    misconfiguredSublevelTooltip = t("taxRegions.fields.sublevels.tooltips.notPartOfCountry", {
+      country: country?.display_name,
+      province: province_code.toUpperCase(),
+    });
   }
 
   const showCreateDefaultTaxRate =
-    !taxRegion.tax_rates.filter((tr) => tr.is_default).length &&
-    type === "header"
+    !taxRegion.tax_rates.filter(tr => tr.is_default).length && type === "header";
 
   const Component = (
     <div
@@ -149,7 +130,7 @@ export const TaxRegionCard = ({
         />
       </div>
     </div>
-  )
+  );
 
   if (asLink) {
     return (
@@ -160,27 +141,26 @@ export const TaxRegionCard = ({
       >
         {Component}
       </Link>
-    )
+    );
   }
 
-  return Component
-}
+  return Component;
+};
 
 const TaxRegionCardActions = ({
   taxRegion,
   showCreateDefaultTaxRate,
 }: {
-  taxRegion: HttpTypes.AdminTaxRegion
-  showCreateDefaultTaxRate?: boolean
+  taxRegion: HttpTypes.AdminTaxRegion;
+  showCreateDefaultTaxRate?: boolean;
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
+  const { hasPermission } = usePermission();
 
-  const hasParent = !!taxRegion.parent_id
+  const hasParent = !!taxRegion.parent_id;
 
-  const to = hasParent
-    ? `/settings/tax-regions/${taxRegion.parent_id}`
-    : undefined
-  const handleDelete = useDeleteTaxRegionAction({ taxRegion, to })
+  const to = hasParent ? `/settings/tax-regions/${taxRegion.parent_id}` : undefined;
+  const handleDelete = useDeleteTaxRegionAction({ taxRegion, to });
 
   return (
     <ActionMenu
@@ -193,6 +173,7 @@ const TaxRegionCardActions = ({
                     icon: <Plus />,
                     label: t("taxRegions.fields.defaultTaxRate.action"),
                     to: `tax-rates/create`,
+                    disabled: !hasPermission("/admin/tax-regions", "POST"),
                   },
                 ],
               },
@@ -204,15 +185,19 @@ const TaxRegionCardActions = ({
               icon: <PencilSquare />,
               label: t("actions.edit"),
               to: `/settings/tax-regions/${taxRegion.id}/edit`,
+              disabled:
+                !hasPermission("/admin/tax-regions", "PUT") ||
+                !hasPermission("/admin/tax-regions", "POST"),
             },
             {
               icon: <Trash />,
               label: t("actions.delete"),
               onClick: handleDelete,
+              disabled: !hasPermission("/admin/tax-regions", "DELETE"),
             },
           ].filter(Boolean) as unknown as Action[],
         },
       ]}
     />
-  )
-}
+  );
+};

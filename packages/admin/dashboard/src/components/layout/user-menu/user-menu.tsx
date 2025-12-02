@@ -7,42 +7,35 @@ import {
   TimelineVertical,
   User as UserIcon,
   XMark,
-} from "@medusajs/icons"
-import {
-  Avatar,
-  DropdownMenu,
-  Heading,
-  IconButton,
-  Input,
-  Kbd,
-  Text,
-  clx,
-} from "@medusajs/ui"
-import { Dialog as RadixDialog } from "radix-ui"
-import { useTranslation } from "react-i18next"
+} from "@medusajs/icons";
+import { Avatar, DropdownMenu, Heading, IconButton, Input, Kbd, Text, clx } from "@medusajs/ui";
+import { Dialog as RadixDialog } from "radix-ui";
+import { useTranslation } from "react-i18next";
 
-import { Skeleton } from "../../common/skeleton"
+import { Skeleton } from "../../common/skeleton";
 
-import { useState } from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useLogout, useMe } from "../../../hooks/api"
-import { queryClient } from "../../../lib/query-client"
-import { useGlobalShortcuts } from "../../../providers/keybind-provider/hooks"
-import { useTheme } from "../../../providers/theme-provider"
-import { useDocumentDirection } from "../../../hooks/use-document-direction"
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLogout, useMe } from "../../../hooks/api";
+import { queryClient } from "../../../lib/query-client";
+import { useGlobalShortcuts } from "../../../providers/keybind-provider/hooks";
+import { useTheme } from "../../../providers/theme-provider";
+import { decryptObject } from "../../../utils/encryption";
+import { HttpTypes } from "@medusajs/types";
+import { useDocumentDirection } from "../../../hooks/use-document-direction";
 
 export const UserMenu = () => {
-  const { t } = useTranslation()
-  const location = useLocation()
-  const direction = useDocumentDirection()
+  const { t } = useTranslation();
+  const location = useLocation();
+  const direction = useDocumentDirection();
 
-  const [openMenu, setOpenMenu] = useState(false)
-  const [openModal, setOpenModal] = useState(false)
+  const [openMenu, setOpenMenu] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   const toggleModal = () => {
-    setOpenMenu(false)
-    setOpenModal(!openModal)
-  }
+    setOpenMenu(false);
+    setOpenModal(!openModal);
+  };
 
   return (
     <div>
@@ -58,7 +51,7 @@ export const UserMenu = () => {
             </Link>
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
-          <DropdownMenu.Item asChild>
+          {/* <DropdownMenu.Item asChild>
             <Link to="https://docs.medusajs.com" target="_blank">
               <BookOpen className="text-ui-fg-subtle me-2" />
               {t("app.menus.user.documentation")}
@@ -69,8 +62,8 @@ export const UserMenu = () => {
               <TimelineVertical className="text-ui-fg-subtle me-2" />
               {t("app.menus.user.changelog")}
             </Link>
-          </DropdownMenu.Item>
-          <DropdownMenu.Separator />
+          </DropdownMenu.Item> */}
+          {/* <DropdownMenu.Separator /> */}
           <DropdownMenu.Item onClick={toggleModal}>
             <Keyboard className="text-ui-fg-subtle me-2" />
             {t("app.menus.user.shortcuts")}
@@ -82,16 +75,26 @@ export const UserMenu = () => {
       </DropdownMenu>
       <GlobalKeybindsModal open={openModal} onOpenChange={setOpenModal} />
     </div>
-  )
-}
+  );
+};
 
 const UserBadge = () => {
-  const { user, isPending, isError, error } = useMe()
+  const { user, isPending, isError, error } = useMe();
 
-  const name = [user?.first_name, user?.last_name].filter(Boolean).join(" ")
-  const displayName = name || user?.email
+  const [decryptedUser, setDecryptedUser] = useState<HttpTypes.AdminUser | null>(null);
 
-  const fallback = displayName ? displayName[0].toUpperCase() : null
+  useEffect(() => {
+    if (user) {
+      decryptObject(user).then(result => {
+        setDecryptedUser(result as HttpTypes.AdminUser);
+      });
+    }
+  }, [user]);
+
+  const name = [decryptedUser?.first_name, decryptedUser?.last_name].filter(Boolean).join(" ");
+  const displayName = name || decryptedUser?.email;
+
+  const fallback = displayName ? displayName[0].toUpperCase() : null;
 
   if (isPending) {
     return (
@@ -99,17 +102,17 @@ const UserBadge = () => {
         <Skeleton className="h-5 w-5 rounded-full" />
         <Skeleton className="h-[9px] w-[70px]" />
       </button>
-    )
+    );
   }
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
     <div className="p-3">
       <DropdownMenu.Trigger
-        disabled={!user}
+        disabled={!decryptedUser}
         className={clx(
           "bg-ui-bg-subtle grid w-full cursor-pointer grid-cols-[24px_1fr_15px] items-center gap-2 rounded-md py-1 ps-0.5 pe-2 outline-none",
           "hover:bg-ui-bg-subtle-hover",
@@ -126,12 +129,7 @@ const UserBadge = () => {
         </div>
         <div className="flex items-center overflow-hidden">
           {displayName ? (
-            <Text
-              size="xsmall"
-              weight="plus"
-              leading="compact"
-              className="truncate"
-            >
+            <Text size="xsmall" weight="plus" leading="compact" className="truncate">
               {displayName}
             </Text>
           ) : (
@@ -141,12 +139,12 @@ const UserBadge = () => {
         <EllipsisHorizontal className="text-ui-fg-muted" />
       </DropdownMenu.Trigger>
     </div>
-  )
-}
+  );
+};
 
 const ThemeToggle = () => {
-  const { t } = useTranslation()
-  const { theme, setTheme } = useTheme()
+  const { t } = useTranslation();
+  const { theme, setTheme } = useTheme();
 
   return (
     <DropdownMenu.SubMenu>
@@ -158,27 +156,27 @@ const ThemeToggle = () => {
         <DropdownMenu.RadioGroup value={theme}>
           <DropdownMenu.RadioItem
             value="system"
-            onClick={(e) => {
-              e.preventDefault()
-              setTheme("system")
+            onClick={e => {
+              e.preventDefault();
+              setTheme("system");
             }}
           >
             {t("app.menus.user.theme.system")}
           </DropdownMenu.RadioItem>
           <DropdownMenu.RadioItem
             value="light"
-            onClick={(e) => {
-              e.preventDefault()
-              setTheme("light")
+            onClick={e => {
+              e.preventDefault();
+              setTheme("light");
             }}
           >
             {t("app.menus.user.theme.light")}
           </DropdownMenu.RadioItem>
           <DropdownMenu.RadioItem
             value="dark"
-            onClick={(e) => {
-              e.preventDefault()
-              setTheme("dark")
+            onClick={e => {
+              e.preventDefault();
+              setTheme("dark");
             }}
           >
             {t("app.menus.user.theme.dark")}
@@ -186,14 +184,14 @@ const ThemeToggle = () => {
         </DropdownMenu.RadioGroup>
       </DropdownMenu.SubMenuContent>
     </DropdownMenu.SubMenu>
-  )
-}
+  );
+};
 
 const Logout = () => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
+  const { t } = useTranslation();
+  const navigate = useNavigate();
 
-  const { mutateAsync: logoutMutation } = useLogout()
+  const { mutateAsync: logoutMutation } = useLogout();
 
   const handleLogout = async () => {
     await logoutMutation(undefined, {
@@ -201,11 +199,12 @@ const Logout = () => {
         /**
          * When the user logs out, we want to clear the query cache
          */
-        queryClient.clear()
-        navigate("/login")
+        queryClient.clear();
+        sessionStorage.removeItem("admin_verified");
+        navigate("/login");
       },
-    })
-  }
+    });
+  };
 
   return (
     <DropdownMenu.Item onClick={handleLogout}>
@@ -214,23 +213,20 @@ const Logout = () => {
         <span>{t("app.menus.actions.logout")}</span>
       </div>
     </DropdownMenu.Item>
-  )
-}
+  );
+};
 
-const GlobalKeybindsModal = (props: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) => {
-  const { t } = useTranslation()
-  const globalShortcuts = useGlobalShortcuts()
+const GlobalKeybindsModal = (props: { open: boolean; onOpenChange: (open: boolean) => void }) => {
+  const { t } = useTranslation();
+  const globalShortcuts = useGlobalShortcuts();
 
-  const [searchValue, onSearchValueChange] = useState("")
+  const [searchValue, onSearchValueChange] = useState("");
 
   const searchResults = searchValue
-    ? globalShortcuts.filter((shortcut) => {
-        return shortcut.label.toLowerCase().includes(searchValue?.toLowerCase())
+    ? globalShortcuts.filter(shortcut => {
+        return shortcut.label.toLowerCase().includes(searchValue?.toLowerCase());
       })
-    : globalShortcuts
+    : globalShortcuts;
 
   return (
     <RadixDialog.Root {...props}>
@@ -258,7 +254,7 @@ const GlobalKeybindsModal = (props: {
               <Input
                 type="search"
                 value={searchValue}
-                onChange={(e) => onSearchValueChange(e.target.value)}
+                onChange={e => onSearchValueChange(e.target.value)}
               />
             </div>
           </div>
@@ -281,45 +277,56 @@ const GlobalKeybindsModal = (props: {
                             </span>
                           )}
                         </div>
-                      )
+                      );
                     })}
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         </RadixDialog.Content>
       </RadixDialog.Portal>
     </RadixDialog.Root>
-  )
-}
+  );
+};
 
 const UserItem = () => {
-  const { user, isPending, isError, error } = useMe()
+  const { user, isPending, isError, error } = useMe();
 
-  const loaded = !isPending && !!user
+  const loaded = !isPending && !!user;
+  const [decryptedUser, setDecryptedUser] = useState<HttpTypes.AdminUser | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      decryptObject(user).then(result => {
+        setDecryptedUser(result as HttpTypes.AdminUser);
+      });
+    }
+  }, [user]);
 
   if (!loaded) {
-    return <div></div>
+    return <div></div>;
   }
 
-  const name = [user.first_name, user.last_name].filter(Boolean).join(" ")
-  const email = user.email
-  const fallback = name ? name[0].toUpperCase() : email[0].toUpperCase()
-  const avatar = user.avatar_url
+  let name = "";
+  let email = "";
+  let fallback = "";
+  let avatar = "";
+
+  if (decryptedUser && Object.keys(decryptedUser).length > 0) {
+    name = [decryptedUser.first_name, decryptedUser.last_name].filter(Boolean).join(" ");
+    email = decryptedUser.email;
+    fallback = name ? name[0].toUpperCase() : email?.[0]?.toUpperCase() || "";
+    avatar = decryptedUser.avatar_url || "";
+  }
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
     <div className="flex items-center gap-x-3 overflow-hidden px-2 py-1">
-      <Avatar
-        size="small"
-        variant="rounded"
-        src={avatar || undefined}
-        fallback={fallback}
-      />
+      <Avatar size="small" variant="rounded" src={avatar || undefined} fallback={fallback} />
       <div className="block w-full min-w-0 max-w-[187px] overflow-hidden whitespace-nowrap">
         <Text
           size="small"
@@ -340,5 +347,5 @@ const UserItem = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};

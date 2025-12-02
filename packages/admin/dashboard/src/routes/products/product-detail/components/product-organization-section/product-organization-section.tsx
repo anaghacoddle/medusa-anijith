@@ -1,22 +1,21 @@
-import { PencilSquare } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import { Badge, Container, Heading, Tooltip } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { SectionRow } from "../../../../../components/common/section"
-import { useExtension } from "../../../../../providers/extension-provider"
+import { PencilSquare } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Badge, Container, Heading, Tooltip } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { SectionRow } from "../../../../../components/common/section";
+import { useExtension } from "../../../../../providers/extension-provider";
+import { usePermission } from "../../../../../hooks/use-permission";
 
 type ProductOrganizationSectionProps = {
-  product: HttpTypes.AdminProduct
-}
+  product: HttpTypes.AdminProduct;
+};
 
-export const ProductOrganizationSection = ({
-  product,
-}: ProductOrganizationSectionProps) => {
-  const { t } = useTranslation()
-  const { getDisplays } = useExtension()
-
+export const ProductOrganizationSection = ({ product }: ProductOrganizationSectionProps) => {
+  const { t } = useTranslation();
+  const { getDisplays } = useExtension();
+  const { hasPermission } = usePermission();
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
@@ -29,6 +28,9 @@ export const ProductOrganizationSection = ({
                   label: t("actions.edit"),
                   to: "organization",
                   icon: <PencilSquare />,
+                  disabled:
+                    !hasPermission("/admin/products", "PUT") ||
+                    !hasPermission("/admin/products", "POST"),
                 },
               ],
             },
@@ -40,7 +42,7 @@ export const ProductOrganizationSection = ({
         title={t("fields.tags")}
         value={
           product.tags?.length
-            ? product.tags.map((tag) => (
+            ? product.tags.map(tag => (
                 <OrganizationTag
                   key={tag.id}
                   label={tag.value}
@@ -78,23 +80,19 @@ export const ProductOrganizationSection = ({
         title={t("fields.categories")}
         value={
           product.categories?.length
-            ? product.categories.map((pcat) => (
-                <OrganizationTag
-                  key={pcat.id}
-                  label={pcat.name}
-                  to={`/categories/${pcat.id}`}
-                />
+            ? product.categories.map(pcat => (
+                <OrganizationTag key={pcat.id} label={pcat.name} to={`/categories/${pcat.id}`} />
               ))
             : undefined
         }
       />
 
       {getDisplays("product", "organize").map((Component, i) => {
-        return <Component key={i} data={product} />
+        return <Component key={i} data={product} />;
       })}
     </Container>
-  )
-}
+  );
+};
 
 const OrganizationTag = ({ label, to }: { label: string; to: string }) => {
   return (
@@ -103,5 +101,5 @@ const OrganizationTag = ({ label, to }: { label: string; to: string }) => {
         <Link to={to}>{label}</Link>
       </Badge>
     </Tooltip>
-  )
-}
+  );
+};

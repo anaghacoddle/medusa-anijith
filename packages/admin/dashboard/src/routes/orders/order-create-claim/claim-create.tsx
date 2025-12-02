@@ -67,7 +67,7 @@ export const ClaimCreate = () => {
     }
 
     run()
-  }, [preview])
+  }, [preview, createClaim, navigate, t])
 
   return (
     <RouteFocusModal>

@@ -4,27 +4,20 @@ import {
   SquareTwoStack,
   TriangleDownMini,
   XMarkMini,
-} from "@medusajs/icons"
-import {
-  Badge,
-  Container,
-  Drawer,
-  Heading,
-  IconButton,
-  Kbd,
-} from "@medusajs/ui"
-import Primitive from "@uiw/react-json-view"
-import { CSSProperties, MouseEvent, Suspense, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+} from "@medusajs/icons";
+import { Badge, Container, Drawer, Heading, IconButton, Kbd } from "@medusajs/ui";
+import Primitive from "@uiw/react-json-view";
+import { CSSProperties, MouseEvent, Suspense, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 type JsonViewSectionProps = {
-  data: object
-  title?: string
-}
+  data: object;
+  title?: string;
+};
 
 export const JsonViewSection = ({ data }: JsonViewSectionProps) => {
-  const { t } = useTranslation()
-  const numberOfKeys = Object.keys(data).length
+  const { t } = useTranslation();
+  const numberOfKeys = Object.keys(data).length;
 
   return (
     <Container className="flex items-center justify-between px-6 py-4">
@@ -57,9 +50,7 @@ export const JsonViewSection = ({ data }: JsonViewSectionProps) => {
                   <Trans
                     i18nKey="json.drawer.header"
                     count={numberOfKeys}
-                    components={[
-                      <span key="count-span" className="text-ui-fg-subtle" />,
-                    ]}
+                    components={[<span key="count-span" className="text-ui-fg-subtle" />]}
                   />
                 </Heading>
               </Drawer.Title>
@@ -84,9 +75,7 @@ export const JsonViewSection = ({ data }: JsonViewSectionProps) => {
           </div>
           <Drawer.Body className="flex flex-1 flex-col overflow-hidden px-[5px] py-0 pb-[5px]">
             <div className="bg-ui-contrast-bg-subtle flex-1 overflow-auto rounded-b-[4px] rounded-t-lg p-3">
-              <Suspense
-                fallback={<div className="flex size-full flex-col"></div>}
-              >
+              <Suspense fallback={<div className="flex size-full flex-col"></div>}>
                 <Primitive
                   value={data}
                   displayDataTypes={false}
@@ -94,8 +83,7 @@ export const JsonViewSection = ({ data }: JsonViewSectionProps) => {
                     {
                       "--w-rjv-font-family": "Roboto Mono, monospace",
                       "--w-rjv-line-color": "var(--contrast-border-base)",
-                      "--w-rjv-curlybraces-color":
-                        "var(--contrast-fg-secondary)",
+                      "--w-rjv-curlybraces-color": "var(--contrast-fg-secondary)",
                       "--w-rjv-brackets-color": "var(--contrast-fg-secondary)",
                       "--w-rjv-key-string": "var(--contrast-fg-primary)",
                       "--w-rjv-info-color": "var(--contrast-fg-secondary)",
@@ -108,8 +96,7 @@ export const JsonViewSection = ({ data }: JsonViewSectionProps) => {
                       "--w-rjv-key-number": "var(--contrast-fg-secondary)",
                       "--w-rjv-arrow-color": "var(--contrast-fg-secondary)",
                       "--w-rjv-copied-color": "var(--contrast-fg-secondary)",
-                      "--w-rjv-copied-success-color":
-                        "var(--contrast-fg-primary)",
+                      "--w-rjv-copied-success-color": "var(--contrast-fg-primary)",
                       "--w-rjv-colon-color": "var(--contrast-fg-primary)",
                       "--w-rjv-ellipsis-color": "var(--contrast-fg-secondary)",
                     } as CSSProperties
@@ -118,14 +105,10 @@ export const JsonViewSection = ({ data }: JsonViewSectionProps) => {
                 >
                   <Primitive.Quote render={() => <span />} />
                   <Primitive.Null
-                    render={() => (
-                      <span className="text-ui-tag-red-icon">null</span>
-                    )}
+                    render={() => <span className="text-ui-tag-red-icon">null</span>}
                   />
                   <Primitive.Undefined
-                    render={() => (
-                      <span className="text-ui-tag-blue-icon">undefined</span>
-                    )}
+                    render={() => <span className="text-ui-tag-blue-icon">undefined</span>}
                   />
                   <Primitive.CountInfo
                     render={(_props, { value }) => {
@@ -135,7 +118,7 @@ export const JsonViewSection = ({ data }: JsonViewSectionProps) => {
                             count: Object.keys(value as object).length,
                           })}
                         </span>
-                      )
+                      );
                     }}
                   />
                   <Primitive.Arrow>
@@ -146,7 +129,7 @@ export const JsonViewSection = ({ data }: JsonViewSectionProps) => {
                   </Primitive.Colon>
                   <Primitive.Copied
                     render={({ style }, { value }) => {
-                      return <Copied style={style} value={value} />
+                      return <Copied style={style} value={value} />;
                     }}
                   />
                 </Primitive>
@@ -156,46 +139,46 @@ export const JsonViewSection = ({ data }: JsonViewSectionProps) => {
         </Drawer.Content>
       </Drawer>
     </Container>
-  )
-}
+  );
+};
 
 type CopiedProps = {
-  style?: CSSProperties
-  value: object | undefined
-}
+  style?: CSSProperties;
+  value: object | undefined;
+};
 
 const Copied = ({ style, value }: CopiedProps) => {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
 
   const handler = (e: MouseEvent<HTMLSpanElement>) => {
-    e.stopPropagation()
-    setCopied(true)
+    e.stopPropagation();
+    setCopied(true);
 
     if (typeof value === "string") {
-      navigator.clipboard.writeText(value)
+      navigator.clipboard.writeText(value);
     } else {
-      const json = JSON.stringify(value, null, 2)
-      navigator.clipboard.writeText(json)
+      const json = JSON.stringify(value, null, 2);
+      navigator.clipboard.writeText(json);
     }
 
     setTimeout(() => {
-      setCopied(false)
-    }, 2000)
-  }
+      setCopied(false);
+    }, 2000);
+  };
 
-  const styl = { whiteSpace: "nowrap", width: "20px" }
+  const styl = { whiteSpace: "nowrap", width: "20px" };
 
   if (copied) {
     return (
       <span style={{ ...style, ...styl }}>
         <Check className="text-ui-contrast-fg-primary" />
       </span>
-    )
+    );
   }
 
   return (
     <span style={{ ...style, ...styl }} onClick={handler}>
       <SquareTwoStack className="text-ui-contrast-fg-secondary" />
     </span>
-  )
-}
+  );
+};

@@ -1,42 +1,31 @@
-import { PencilSquare, Trash } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import {
-  Container,
-  createDataTableColumnHelper,
-  toast,
-  usePrompt,
-} from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import { useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { DataTable } from "../../../../../components/data-table"
-import {
-  useDeleteRefundReasonLazy,
-  useRefundReasons,
-} from "../../../../../hooks/api"
-import { useRefundReasonTableColumns } from "../../../../../hooks/table/columns"
-import { useRefundReasonTableQuery } from "../../../../../hooks/table/query"
+import { PencilSquare, Trash } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Container, createDataTableColumnHelper, toast, usePrompt } from "@medusajs/ui";
+import { keepPreviousData } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { DataTable } from "../../../../../components/data-table";
+import { useDeleteRefundReasonLazy, useRefundReasons } from "../../../../../hooks/api";
+import { useRefundReasonTableColumns } from "../../../../../hooks/table/columns";
+import { useRefundReasonTableQuery } from "../../../../../hooks/table/query";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export const RefundReasonListTable = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const { searchParams } = useRefundReasonTableQuery({
     pageSize: PAGE_SIZE,
-  })
+  });
 
-  const { refund_reasons, count, isLoading, isError, error } = useRefundReasons(
-    searchParams,
-    {
-      placeholderData: keepPreviousData,
-    }
-  )
+  const { refund_reasons, count, isLoading, isError, error } = useRefundReasons(searchParams, {
+    placeholderData: keepPreviousData,
+  });
 
-  const columns = useColumns()
+  const columns = useColumns();
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
@@ -46,7 +35,7 @@ export const RefundReasonListTable = () => {
         columns={columns}
         rowCount={count}
         pageSize={PAGE_SIZE}
-        getRowId={(row) => row.id}
+        getRowId={row => row.id}
         heading={t("refundReasons.domain")}
         subHeading={t("refundReasons.subtitle")}
         emptyState={{
@@ -68,18 +57,18 @@ export const RefundReasonListTable = () => {
         enableSearch={true}
       />
     </Container>
-  )
-}
+  );
+};
 
-const columnHelper = createDataTableColumnHelper<HttpTypes.AdminRefundReason>()
+const columnHelper = createDataTableColumnHelper<HttpTypes.AdminRefundReason>();
 
 const useColumns = () => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
-  const navigate = useNavigate()
-  const base = useRefundReasonTableColumns()
+  const { t } = useTranslation();
+  const prompt = usePrompt();
+  const navigate = useNavigate();
+  const base = useRefundReasonTableColumns();
 
-  const { mutateAsync } = useDeleteRefundReasonLazy()
+  const { mutateAsync } = useDeleteRefundReasonLazy();
 
   const handleDelete = useCallback(
     async (refundReason: HttpTypes.AdminRefundReason) => {
@@ -90,37 +79,34 @@ const useColumns = () => {
         }),
         confirmText: t("actions.delete"),
         cancelText: t("actions.cancel"),
-      })
+      });
 
       if (!confirm) {
-        return
+        return;
       }
 
       await mutateAsync(refundReason.id, {
         onSuccess: () => {
-          toast.success(t("refundReasons.delete.successToast"))
+          toast.success(t("refundReasons.delete.successToast"));
         },
-        onError: (e) => {
-          toast.error(e.message)
+        onError: e => {
+          toast.error(e.message);
         },
-      })
+      });
     },
     [t, prompt, mutateAsync]
-  )
+  );
 
   return useMemo(
     () => [
       ...base,
       columnHelper.action({
-        actions: (ctx) => [
+        actions: ctx => [
           [
             {
               icon: <PencilSquare />,
               label: t("actions.edit"),
-              onClick: () =>
-                navigate(
-                  `/settings/refund-reasons/${ctx.row.original.id}/edit`
-                ),
+              onClick: () => navigate(`/settings/refund-reasons/${ctx.row.original.id}/edit`),
             },
           ],
           [
@@ -134,5 +120,5 @@ const useColumns = () => {
       }),
     ],
     [base, handleDelete, navigate, t]
-  )
-}
+  );
+};

@@ -1,219 +1,183 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { ArrowRight } from "@medusajs/icons"
-import { AdminOrder, AdminReturn } from "@medusajs/types"
-import { Alert, Button, Input, Switch, Text, toast } from "@medusajs/ui"
-import { useEffect, useMemo } from "react"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import * as zod from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowRight } from "@medusajs/icons";
+import { AdminOrder, AdminReturn } from "@medusajs/types";
+import { Alert, Button, Input, Switch, Text, toast } from "@medusajs/ui";
+import { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import * as zod from "zod";
 
-import { Form } from "../../../../../components/common/form"
-import { Thumbnail } from "../../../../../components/common/thumbnail"
-import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useStockLocation } from "../../../../../hooks/api"
+import { Form } from "../../../../../components/common/form";
+import { Thumbnail } from "../../../../../components/common/thumbnail";
+import { RouteDrawer, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useStockLocation } from "../../../../../hooks/api";
 import {
   useAddReceiveItems,
   useCancelReceiveReturn,
   useConfirmReturnReceive,
   useRemoveReceiveItems,
   useUpdateReceiveItem,
-} from "../../../../../hooks/api/returns"
-import { getStylizedAmount } from "../../../../../lib/money-amount-helpers"
-import { ReceiveReturnSchema } from "./constants"
-import DismissedQuantity from "./dismissed-quantity"
+} from "../../../../../hooks/api/returns";
+import { getStylizedAmount } from "../../../../../lib/money-amount-helpers";
+import { ReceiveReturnSchema } from "./constants";
+import DismissedQuantity from "./dismissed-quantity";
 
 type OrderAllocateItemsFormProps = {
-  order: AdminOrder
-  preview: AdminOrder
-  orderReturn: AdminReturn
-}
+  order: AdminOrder;
+  preview: AdminOrder;
+  orderReturn: AdminReturn;
+};
 
 export function OrderReceiveReturnForm({
   order,
   preview,
   orderReturn,
 }: OrderAllocateItemsFormProps) {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
 
   /**
    * Items on the preview order that are part of the return we are receiving currently.
    */
   const previewItems = useMemo(() => {
-    const idsMap = {}
+    const idsMap = {};
 
-    orderReturn.items.forEach((i) => (idsMap[i.item_id] = true))
+    orderReturn.items.forEach(i => (idsMap[i.item_id] = true));
 
-    return preview.items.filter((i) => idsMap[i.id])
-  }, [preview.items, orderReturn])
+    return preview.items.filter(i => idsMap[i.id]);
+  }, [preview.items, orderReturn]);
 
-  const { mutateAsync: confirmReturnReceive } = useConfirmReturnReceive(
-    orderReturn.id,
-    order.id
-  )
+  const { mutateAsync: confirmReturnReceive } = useConfirmReturnReceive(orderReturn.id, order.id);
 
-  const { mutateAsync: cancelReceiveReturn } = useCancelReceiveReturn(
-    orderReturn.id,
-    order.id
-  )
+  const { mutateAsync: cancelReceiveReturn } = useCancelReceiveReturn(orderReturn.id, order.id);
 
-  const { mutateAsync: addReceiveItems } = useAddReceiveItems(
-    orderReturn.id,
-    order.id
-  )
-  const { mutateAsync: updateReceiveItem } = useUpdateReceiveItem(
-    orderReturn.id,
-    order.id
-  )
-  const { mutateAsync: removeReceiveItem } = useRemoveReceiveItems(
-    orderReturn.id,
-    order.id
-  )
+  const { mutateAsync: addReceiveItems } = useAddReceiveItems(orderReturn.id, order.id);
+  const { mutateAsync: updateReceiveItem } = useUpdateReceiveItem(orderReturn.id, order.id);
+  const { mutateAsync: removeReceiveItem } = useRemoveReceiveItems(orderReturn.id, order.id);
 
-  const { stock_location } = useStockLocation(
-    orderReturn.location_id,
-    undefined,
-    {
-      enabled: !!orderReturn.location_id,
-    }
-  )
+  const { stock_location } = useStockLocation(orderReturn.location_id, undefined, {
+    enabled: !!orderReturn.location_id,
+  });
 
   const itemsMap = useMemo(() => {
-    const ret = {}
-    order.items.forEach((i) => (ret[i.id] = i))
-    return ret
-  }, [order.items])
+    const ret = {};
+    order.items.forEach(i => (ret[i.id] = i));
+    return ret;
+  }, [order.items]);
 
   const form = useForm<zod.infer<typeof ReceiveReturnSchema>>({
     defaultValues: {
       items: previewItems
         ?.sort((i1, i2) => i1.id.localeCompare(i2.id))
-        .map((i) => ({
+        .map(i => ({
           item_id: i.id,
         })),
       send_notification: false,
     },
     resolver: zodResolver(ReceiveReturnSchema),
-  })
+  });
 
   useEffect(() => {
     previewItems
       ?.sort((i1, i2) => i1.id.localeCompare(i2.id))
       .forEach((item, index) => {
-        const receivedAction = item.actions?.find(
-          (a) => a.action === "RECEIVE_RETURN_ITEM"
-        )
-        const dismissedAction = item.actions?.find(
-          (a) => a.action === "RECEIVE_DAMAGED_RETURN_ITEM"
-        )
+        const receivedAction = item.actions?.find(a => a.action === "RECEIVE_RETURN_ITEM");
+        const dismissedAction = item.actions?.find(a => a.action === "RECEIVE_DAMAGED_RETURN_ITEM");
 
-        form.setValue(
-          `items.${index}.quantity`,
-          receivedAction?.details.quantity,
-          { shouldTouch: true, shouldDirty: true }
-        )
-        form.setValue(
-          `items.${index}.dismissed_quantity`,
-          dismissedAction?.details.quantity,
-          { shouldTouch: true, shouldDirty: true }
-        )
-      })
-  }, [previewItems])
+        form.setValue(`items.${index}.quantity`, receivedAction?.details.quantity, {
+          shouldTouch: true,
+          shouldDirty: true,
+        });
+        form.setValue(`items.${index}.dismissed_quantity`, dismissedAction?.details.quantity, {
+          shouldTouch: true,
+          shouldDirty: true,
+        });
+      });
+  }, [previewItems, form]);
 
   /**
    * HANDLERS
    */
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async data => {
     try {
-      await confirmReturnReceive({ no_notification: !data.send_notification })
+      await confirmReturnReceive({ no_notification: !data.send_notification });
 
-      handleSuccess(`/orders/${order.id}`)
+      handleSuccess(`/orders/${order.id}`);
 
       toast.success(t("general.success"), {
         description: t("orders.returns.receive.toast.success"),
         dismissLabel: t("actions.close"),
-      })
+      });
     } catch (e) {
       toast.error(t("general.error"), {
         description: e.message,
         dismissLabel: t("actions.close"),
-      })
+      });
     }
-  })
+  });
 
-  const handleQuantityChange = async (
-    itemId: string,
-    value: number | null,
-    index: number
-  ) => {
-    const item = previewItems?.find((i) => i.id === itemId)
-    const action = item?.actions?.find(
-      (a) => a.action === "RECEIVE_RETURN_ITEM"
-    )
+  const handleQuantityChange = async (itemId: string, value: number | null, index: number) => {
+    const item = previewItems?.find(i => i.id === itemId);
+    const action = item?.actions?.find(a => a.action === "RECEIVE_RETURN_ITEM");
 
     if (typeof value === "number" && value < 0) {
-      form.setValue(
-        `items.${index}.quantity`,
-        item.detail.return_received_quantity,
-        { shouldTouch: true, shouldDirty: true }
-      )
+      form.setValue(`items.${index}.quantity`, item.detail.return_received_quantity, {
+        shouldTouch: true,
+        shouldDirty: true,
+      });
 
-      toast.error(t("orders.returns.receive.toast.errorNegativeValue"))
+      toast.error(t("orders.returns.receive.toast.errorNegativeValue"));
 
-      return
+      return;
     }
 
     if (typeof value === "number" && value > item.quantity) {
       // reset value in the form and notify the user to be aware that we didn't chang anything
 
-      form.setValue(
-        `items.${index}.quantity`,
-        item.detail.return_received_quantity,
-        { shouldTouch: true, shouldDirty: true }
-      )
+      form.setValue(`items.${index}.quantity`, item.detail.return_received_quantity, {
+        shouldTouch: true,
+        shouldDirty: true,
+      });
 
-      toast.error(t("orders.returns.receive.toast.errorLargeValue"))
+      toast.error(t("orders.returns.receive.toast.errorLargeValue"));
 
-      return
+      return;
     }
 
     try {
       if (action) {
         if (value === null || value === 0) {
-          await removeReceiveItem(action.id)
+          await removeReceiveItem(action.id);
 
-          return
+          return;
         }
 
-        await updateReceiveItem({ actionId: action.id, quantity: value })
+        await updateReceiveItem({ actionId: action.id, quantity: value });
       } else {
         if (typeof value === "number" && value > 0 && value <= item.quantity) {
-          await addReceiveItems({ items: [{ id: item.id, quantity: value }] })
+          await addReceiveItems({ items: [{ id: item.id, quantity: value }] });
         }
       }
     } catch (e) {
-      toast.error(e.message)
+      toast.error(e.message);
     }
-  }
+  };
 
   const onFormClose = async (isSubmitSuccessful: boolean) => {
     try {
       if (!isSubmitSuccessful) {
-        await cancelReceiveReturn()
+        await cancelReceiveReturn();
       }
     } catch (e) {
-      toast.error(e.message)
+      toast.error(e.message);
     }
-  }
+  };
 
   return (
     <RouteDrawer.Form form={form} onClose={onFormClose}>
-      <KeyboundForm
-        onSubmit={handleSubmit}
-        className="flex size-full flex-col overflow-hidden"
-      >
+      <KeyboundForm onSubmit={handleSubmit} className="flex size-full flex-col overflow-hidden">
         <RouteDrawer.Body className="flex size-full flex-col overflow-auto">
           <div className="flex justify-between">
             <div>
@@ -231,7 +195,7 @@ export function OrderReceiveReturnForm({
             </span>
           </div>
           {previewItems.map((item, ind) => {
-            const originalItem = itemsMap[item.id]
+            const originalItem = itemsMap[item.id];
 
             return (
               <div
@@ -250,9 +214,7 @@ export function OrderReceiveReturnForm({
                         <Text className="txt-small" as="span" weight="plus">
                           {item.title}{" "}
                         </Text>
-                        {originalItem.variant_sku && (
-                          <span>({originalItem.variant_sku})</span>
-                        )}
+                        {originalItem.variant_sku && <span>({originalItem.variant_sku})</span>}
                       </div>
                       <Text as="div" className="text-ui-fg-subtle txt-small">
                         {originalItem.product_title}
@@ -281,52 +243,43 @@ export function OrderReceiveReturnForm({
                                 type="number"
                                 value={value}
                                 className="bg-ui-bg-field-component text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                onChange={(e) => {
+                                onChange={e => {
                                   const value =
-                                    e.target.value === ""
-                                      ? null
-                                      : parseFloat(e.target.value)
+                                    e.target.value === "" ? null : parseFloat(e.target.value);
 
-                                  onChange(value)
+                                  onChange(value);
                                 }}
                                 {...field}
                                 onBlur={() => {
-                                  field.onBlur()
-                                  handleQuantityChange(item.id, value, ind)
+                                  field.onBlur();
+                                  handleQuantityChange(item.id, value, ind);
                                 }}
                               />
                             </Form.Control>
                           </Form.Item>
-                        )
+                        );
                       }}
                     />
                   </div>
                 </div>
               </div>
-            )
+            );
           })}
 
           {/* TOTALS*/}
 
           <div className="my-6 border-b border-t border-dashed py-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="txt-small text-ui-fg-subtle">
-                {t("fields.total")}
-              </span>
+              <span className="txt-small text-ui-fg-subtle">{t("fields.total")}</span>
               <span className="txt-small text-ui-fg-subtle">
                 {getStylizedAmount(preview.total, order.currency_code)}
               </span>
             </div>
 
             <div className="mt-4 flex items-center justify-between border-t border-dotted pt-4">
+              <span className="txt-small font-medium">{t("orders.returns.outstandingAmount")}</span>
               <span className="txt-small font-medium">
-                {t("orders.returns.outstandingAmount")}
-              </span>
-              <span className="txt-small font-medium">
-                {getStylizedAmount(
-                  preview.summary.pending_difference || 0,
-                  order.currency_code
-                )}
+                {getStylizedAmount(preview.summary.pending_difference || 0, order.currency_code)}
               </span>
             </div>
           </div>
@@ -353,9 +306,7 @@ export function OrderReceiveReturnForm({
                         />
                       </Form.Control>
                       <div className="flex flex-col">
-                        <Form.Label>
-                          {t("orders.returns.sendNotification")}
-                        </Form.Label>
+                        <Form.Label>{t("orders.returns.sendNotification")}</Form.Label>
                         <Form.Hint className="!mt-1">
                           {t("orders.returns.receive.sendNotificationHint")}
                         </Form.Hint>
@@ -363,7 +314,7 @@ export function OrderReceiveReturnForm({
                     </div>
                     <Form.ErrorMessage />
                   </Form.Item>
-                )
+                );
               }}
             />
           </div>
@@ -382,5 +333,5 @@ export function OrderReceiveReturnForm({
         </RouteDrawer.Footer>
       </KeyboundForm>
     </RouteDrawer.Form>
-  )
+  );
 }

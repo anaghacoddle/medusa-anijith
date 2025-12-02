@@ -1,26 +1,27 @@
-import { PencilSquare, Trash } from "@medusajs/icons"
-import { AdminProductCategoryResponse } from "@medusajs/types"
-import { Button, Container, Heading, Text } from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
+import { PencilSquare, Trash } from "@medusajs/icons";
+import { AdminProductCategoryResponse } from "@medusajs/types";
+import { Button, Container, Heading, Text } from "@medusajs/ui";
+import { keepPreviousData } from "@tanstack/react-query";
+import { createColumnHelper } from "@tanstack/react-table";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
-import { Link } from "react-router-dom"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { _DataTable } from "../../../../../components/table/data-table"
-import { useProductCategories } from "../../../../../hooks/api/categories"
-import { useDataTable } from "../../../../../hooks/use-data-table"
-import { useDeleteProductCategoryAction } from "../../../common/hooks/use-delete-product-category-action"
-import { useCategoryTableColumns } from "./use-category-table-columns"
-import { useCategoryTableQuery } from "./use-category-table-query"
+import { Link } from "react-router-dom";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { _DataTable } from "../../../../../components/table/data-table";
+import { useProductCategories } from "../../../../../hooks/api/categories";
+import { useDataTable } from "../../../../../hooks/use-data-table";
+import { useDeleteProductCategoryAction } from "../../../common/hooks/use-delete-product-category-action";
+import { useCategoryTableColumns } from "./use-category-table-columns";
+import { useCategoryTableQuery } from "./use-category-table-query";
+import { usePermission } from "../../../../../hooks/use-permission";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export const CategoryListTable = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  const { raw, searchParams } = useCategoryTableQuery({ pageSize: PAGE_SIZE })
+  const { raw, searchParams } = useCategoryTableQuery({ pageSize: PAGE_SIZE });
 
   const query = raw.q
     ? {
@@ -33,35 +34,35 @@ export const CategoryListTable = () => {
         parent_category_id: "null",
         fields: "id,name,category_children,handle,is_internal,is_active",
         ...searchParams,
-      }
+      };
 
-  const { product_categories, count, isLoading, isError, error } =
-    useProductCategories(
-      {
-        ...query,
-      },
-      {
-        placeholderData: keepPreviousData,
-      }
-    )
+  const { product_categories, count, isLoading, isError, error } = useProductCategories(
+    {
+      ...query,
+    },
+    {
+      placeholderData: keepPreviousData,
+    }
+  );
 
-  const columns = useColumns()
+  const columns = useColumns();
 
   const { table } = useDataTable({
     data: product_categories || [],
     columns,
     count,
-    getRowId: (original) => original.id,
-    getSubRows: (original) => original.category_children,
+    getRowId: original => original.id,
+    getSubRows: original => original.category_children,
     enableExpandableRows: true,
     pageSize: PAGE_SIZE,
-  })
+  });
 
-  const showRankingAction =
-    !!product_categories && product_categories.length > 0
+  const showRankingAction = !!product_categories && product_categories.length > 0;
+
+  const { hasPermission } = usePermission();
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
@@ -79,9 +80,11 @@ export const CategoryListTable = () => {
               <Link to="organize">{t("categories.organize.action")}</Link>
             </Button>
           )}
-          <Button size="small" variant="secondary" asChild>
-            <Link to="create">{t("actions.create")}</Link>
-          </Button>
+          {hasPermission("/admin/product-categories", "POST") && (
+            <Button size="small" variant="secondary" asChild>
+              <Link to="create">{t("actions.create")}</Link>
+            </Button>
+          )}
         </div>
       </div>
       <_DataTable
@@ -90,22 +93,23 @@ export const CategoryListTable = () => {
         count={count}
         pageSize={PAGE_SIZE}
         isLoading={isLoading}
-        navigateTo={(row) => row.id}
+        navigateTo={row => row.id}
         queryObject={raw}
         search
         pagination
       />
     </Container>
-  )
-}
+  );
+};
 
 const CategoryRowActions = ({
   category,
 }: {
-  category: AdminProductCategoryResponse["product_category"]
+  category: AdminProductCategoryResponse["product_category"];
 }) => {
-  const { t } = useTranslation()
-  const handleDelete = useDeleteProductCategoryAction(category)
+  const { t } = useTranslation();
+  const handleDelete = useDeleteProductCategoryAction(category);
+  const { hasPermission } = usePermission();
 
   return (
     <ActionMenu
@@ -116,6 +120,9 @@ const CategoryRowActions = ({
               label: t("actions.edit"),
               icon: <PencilSquare />,
               to: `${category.id}/edit`,
+              disabled:
+                !hasPermission("/admin/product-categories", "PUT") ||
+                !hasPermission("/admin/product-categories", "POST"),
             },
           ],
         },
@@ -125,19 +132,19 @@ const CategoryRowActions = ({
               label: t("actions.delete"),
               icon: <Trash />,
               onClick: handleDelete,
+              disabled: !hasPermission("/admin/product-categories", "DELETE"),
             },
           ],
         },
       ]}
     />
-  )
-}
+  );
+};
 
-const columnHelper =
-  createColumnHelper<AdminProductCategoryResponse["product_category"]>()
+const columnHelper = createColumnHelper<AdminProductCategoryResponse["product_category"]>();
 
 const useColumns = () => {
-  const base = useCategoryTableColumns()
+  const base = useCategoryTableColumns();
 
   return useMemo(
     () => [
@@ -145,10 +152,10 @@ const useColumns = () => {
       columnHelper.display({
         id: "actions",
         cell: ({ row }) => {
-          return <CategoryRowActions category={row.original} />
+          return <CategoryRowActions category={row.original} />;
         },
       }),
     ],
     [base]
-  )
-}
+  );
+};

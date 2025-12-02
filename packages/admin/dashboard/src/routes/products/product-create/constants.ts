@@ -1,14 +1,18 @@
-import { z } from "zod"
-import { i18n } from "../../../components/utilities/i18n/i18n"
-import { optionalFloat, optionalInt } from "../../../lib/validation"
-import { decorateVariantsWithDefaultValues } from "./utils"
+import { z } from "zod";
+import { i18n } from "../../../components/utilities/i18n/i18n";
+import { optionalFloat, optionalInt } from "../../../lib/validation";
+import { decorateVariantsWithDefaultValues } from "./utils";
 
 export const MediaSchema = z.object({
   id: z.string().optional(),
   url: z.string(),
   isThumbnail: z.boolean(),
   file: z.any().nullable(), // File
-})
+  embedCode: z.string().optional(), // For embedded videos
+  mediaType: z.enum(["file", "embed"]).default("file"), // To distinguish between file uploads and embeds
+  thumbnailUrl: z.string().optional(), // For embed video thumbnails
+  videoTitle: z.string().optional(), // For embed video titles
+});
 
 const ProductCreateVariantSchema = z.object({
   should_create: z.boolean(),
@@ -40,27 +44,24 @@ const ProductCreateVariantSchema = z.object({
       })
     )
     .optional(),
-})
+});
 
-export type ProductCreateVariantSchema = z.infer<
-  typeof ProductCreateVariantSchema
->
+export type ProductCreateVariantSchema = z.infer<typeof ProductCreateVariantSchema>;
 
 const ProductCreateOptionSchema = z.object({
   title: z.string(),
   values: z.array(z.string()).min(1),
-})
+});
 
-export type ProductCreateOptionSchema = z.infer<
-  typeof ProductCreateOptionSchema
->
+export type ProductCreateOptionSchema = z.infer<typeof ProductCreateOptionSchema>;
 
 export const ProductCreateSchema = z
   .object({
-    title: z.string().min(1),
-    subtitle: z.string().optional(),
-    handle: z.string().optional(),
-    description: z.string().optional(),
+    title: z.string().min(1, "Title is required").max(50, "Title must be 50 characters or less"),
+    subtitle: z.string().max(50, "Subtitle must be 50 characters or less").optional(),
+    handle: z.string().max(50, "Handle must be 50 characters or less").optional(),
+    brand: z.string().min(1, "Brand is required").max(50, "Brand must be 50 characters or less"),
+    description: z.string().max(160, "Description must be 160 characters or less").optional(),
     discountable: z.boolean(),
     type_id: z.string().optional(),
     collection_id: z.string().optional(),
@@ -89,15 +90,15 @@ export const ProductCreateSchema = z
     media: z.array(MediaSchema).optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.variants.every((v) => !v.should_create)) {
+    if (data.variants.every(v => !v.should_create)) {
       return ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["variants"],
         message: "invalid_length",
-      })
+      });
     }
 
-    const skus = new Set<string>()
+    const skus = new Set<string>();
 
     data.variants.forEach((v, index) => {
       if (v.sku) {
@@ -106,21 +107,19 @@ export const ProductCreateSchema = z
             code: z.ZodIssueCode.custom,
             path: [`variants.${index}.sku`],
             message: i18n.t("products.create.errors.uniqueSku"),
-          })
+          });
         }
 
-        skus.add(v.sku)
+        skus.add(v.sku);
       }
-    })
-  })
+    });
+  });
 
 export const EditProductMediaSchema = z.object({
   media: z.array(MediaSchema),
-})
+});
 
-export const PRODUCT_CREATE_FORM_DEFAULTS: Partial<
-  z.infer<typeof ProductCreateSchema>
-> = {
+export const PRODUCT_CREATE_FORM_DEFAULTS: Partial<z.infer<typeof ProductCreateSchema>> = {
   discountable: true,
   tags: [],
   sales_channels: [],
@@ -149,6 +148,7 @@ export const PRODUCT_CREATE_FORM_DEFAULTS: Partial<
   shipping_profile_id: "",
   description: "",
   handle: "",
+  brand: "",
   height: "",
   hs_code: "",
   length: "",
@@ -160,4 +160,4 @@ export const PRODUCT_CREATE_FORM_DEFAULTS: Partial<
   type_id: "",
   weight: "",
   width: "",
-}
+};

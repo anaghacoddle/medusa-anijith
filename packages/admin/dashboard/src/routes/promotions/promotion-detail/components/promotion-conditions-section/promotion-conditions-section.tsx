@@ -1,15 +1,15 @@
-import { PencilSquare } from "@medusajs/icons"
-import { ApplicationMethodTargetTypeValues, HttpTypes, PromotionRuleTypes, } from "@medusajs/types"
-import { Badge, Container, Heading } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
+import { PencilSquare } from "@medusajs/icons";
+import { ApplicationMethodTargetTypeValues, HttpTypes, PromotionRuleTypes } from "@medusajs/types";
+import { Badge, Container, Heading } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
 
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { BadgeListSummary } from "../../../../../components/common/badge-list-summary"
-import { NoRecords } from "../../../../../components/common/empty-table-content"
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { BadgeListSummary } from "../../../../../components/common/badge-list-summary";
+import { NoRecords } from "../../../../../components/common/empty-table-content";
 
 type RuleProps = {
-  rule: HttpTypes.AdminPromotionRule
-}
+  rule: HttpTypes.AdminPromotionRule;
+};
 
 function RuleBlock({ rule }: RuleProps) {
   return (
@@ -23,36 +23,30 @@ function RuleBlock({ rule }: RuleProps) {
           {rule.attribute_label}
         </Badge>
 
-        <span className="txt-compact-2xsmall mx-1 inline-block">
-          {rule.operator_label}
-        </span>
+        <span className="txt-compact-2xsmall mx-1 inline-block">{rule.operator_label}</span>
 
         <BadgeListSummary
           inline
           className="!txt-compact-small-plus"
-          list={
-            rule.field_type === "number"
-              ? [rule.values]
-              : rule.values?.map((v) => v.label)
-          }
+          list={rule.field_type === "number" ? [rule.values] : rule.values?.map(v => v.label)}
         />
       </div>
     </div>
-  )
+  );
 }
 
 type PromotionConditionsSectionProps = {
-  rules: HttpTypes.AdminPromotionRule[]
-  ruleType: PromotionRuleTypes
-  applicationMethodTargetType: ApplicationMethodTargetTypeValues
-}
+  rules: HttpTypes.AdminPromotionRule[];
+  ruleType: PromotionRuleTypes;
+  applicationMethodTargetType: ApplicationMethodTargetTypeValues;
+};
 
 export const PromotionConditionsSection = ({
   rules,
   ruleType,
   applicationMethodTargetType,
 }: PromotionConditionsSectionProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <Container className="p-0">
@@ -96,10 +90,10 @@ export const PromotionConditionsSection = ({
           />
         )}
 
-        {rules.map((rule) => (
+        {rules.map(rule => (
           <RuleBlock key={`${rule.id}-${rule.attribute}`} rule={rule} />
         ))}
       </div>
     </Container>
-  )
-}
+  );
+};

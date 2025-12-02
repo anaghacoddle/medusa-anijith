@@ -1,25 +1,22 @@
-import { Button, Heading, IconButton, Input, Label } from "@medusajs/ui"
-import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form"
-import { XMarkMini } from "@medusajs/icons"
-import { useTranslation } from "react-i18next"
+import { Button, Heading, IconButton, Input, Label } from "@medusajs/ui";
+import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form";
+import { XMarkMini } from "@medusajs/icons";
+import { useTranslation } from "react-i18next";
 
-import { ProductCreateSchemaType } from "../../../../types"
-import { Form } from "../../../../../../../components/common/form"
-import { Combobox } from "../../../../../../../components/inputs/combobox"
-import { useComboboxData } from "../../../../../../../hooks/use-combobox-data"
-import { sdk } from "../../../../../../../lib/client"
+import { ProductCreateSchemaType } from "../../../../types";
+import { Form } from "../../../../../../../components/common/form";
+import { Combobox } from "../../../../../../../components/inputs/combobox";
+import { useComboboxData } from "../../../../../../../hooks/use-combobox-data";
+import { sdk } from "../../../../../../../lib/client";
 
 type InventoryItemRowProps = {
-  form: UseFormReturn<ProductCreateSchemaType>
-  variantIndex: number
-  inventoryIndex: number
-  inventoryItem: any
-  isItemOptionDisabled: (
-    option: { value: string },
-    inventoryIndex: number
-  ) => boolean
-  onRemove: () => void
-}
+  form: UseFormReturn<ProductCreateSchemaType>;
+  variantIndex: number;
+  inventoryIndex: number;
+  inventoryItem: any;
+  isItemOptionDisabled: (option: { value: string }, inventoryIndex: number) => boolean;
+  onRemove: () => void;
+};
 
 function InventoryItemRow({
   form,
@@ -29,24 +26,24 @@ function InventoryItemRow({
   isItemOptionDisabled,
   onRemove,
 }: InventoryItemRowProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const selectedInventoryItemId = useWatch({
     control: form.control,
     name: `variants.${variantIndex}.inventory.${inventoryIndex}.inventory_item_id`,
-  })
+  });
 
   const items = useComboboxData({
     queryKey: ["inventory_items"],
     defaultValueKey: "id",
     selectedValue: selectedInventoryItemId,
-    queryFn: (params) => sdk.admin.inventoryItem.list(params),
-    getOptions: (data) =>
-      data.inventory_items.map((item) => ({
+    queryFn: params => sdk.admin.inventoryItem.list(params),
+    getOptions: data =>
+      data.inventory_items.map(item => ({
         label: `${item.title} ${item.sku ? `(${item.sku})` : ""}`,
         value: item.id,
       })),
-  })
+  });
 
   return (
     <li
@@ -74,7 +71,7 @@ function InventoryItemRow({
                 <Form.Control>
                   <Combobox
                     {...field}
-                    options={items.options.map((o) => ({
+                    options={items.options.map(o => ({
                       ...o,
                       disabled: isItemOptionDisabled(o, inventoryIndex),
                     }))}
@@ -87,7 +84,7 @@ function InventoryItemRow({
                   />
                 </Form.Control>
               </Form.Item>
-            )
+            );
           }}
         />
 
@@ -113,24 +110,22 @@ function InventoryItemRow({
                     className="bg-ui-bg-field-component"
                     min={0}
                     value={value}
-                    onChange={(e) => {
-                      const value = e.target.value
+                    onChange={e => {
+                      const value = e.target.value;
 
                       if (value === "") {
-                        onChange(null)
+                        onChange(null);
                       } else {
-                        onChange(Number(value))
+                        onChange(Number(value));
                       }
                     }}
                     {...field}
-                    placeholder={t(
-                      "products.create.inventory.quantityPlaceholder"
-                    )}
+                    placeholder={t("products.create.inventory.quantityPlaceholder")}
                   />
                 </Form.Control>
                 <Form.ErrorMessage />
               </Form.Item>
-            )
+            );
           }}
         />
       </div>
@@ -144,40 +139,36 @@ function InventoryItemRow({
         <XMarkMini />
       </IconButton>
     </li>
-  )
+  );
 }
 
 type VariantSectionProps = {
-  form: UseFormReturn<ProductCreateSchemaType>
-  variant: ProductCreateSchemaType["variants"][0]
-  index: number
-}
+  form: UseFormReturn<ProductCreateSchemaType>;
+  variant: ProductCreateSchemaType["variants"][0];
+  index: number;
+};
 
 function VariantSection({ form, variant, index }: VariantSectionProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const inventory = useFieldArray({
     control: form.control,
     name: `variants.${index}.inventory`,
-  })
+  });
 
   const inventoryFormData = useWatch({
     control: form.control,
     name: `variants.${index}.inventory`,
-  })
+  });
 
   /**
    * Will mark an option as disabled if another input already selected that option
    */
-  const isItemOptionDisabled = (
-    option: { value: string },
-    inventoryIndex: number
-  ) => {
+  const isItemOptionDisabled = (option: { value: string }, inventoryIndex: number) => {
     return !!inventoryFormData?.some(
-      (i, index) =>
-        index != inventoryIndex && i.inventory_item_id === option.value
-    )
-  }
+      (i, index) => index != inventoryIndex && i.inventory_item_id === option.value
+    );
+  };
 
   return (
     <div className="grid gap-y-4">
@@ -194,7 +185,7 @@ function VariantSection({ form, variant, index }: VariantSectionProps) {
             inventory.append({
               inventory_item_id: "",
               required_quantity: "",
-            })
+            });
           }}
         >
           {t("actions.add")}
@@ -212,37 +203,32 @@ function VariantSection({ form, variant, index }: VariantSectionProps) {
         />
       ))}
     </div>
-  )
+  );
 }
 
 type ProductCreateInventoryKitSectionProps = {
-  form: UseFormReturn<ProductCreateSchemaType>
-}
+  form: UseFormReturn<ProductCreateSchemaType>;
+};
 
 export const ProductCreateInventoryKitSection = ({
   form,
 }: ProductCreateInventoryKitSectionProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const variants = useFieldArray({
     control: form.control,
     name: "variants",
-  })
+  });
 
   return (
     <div id="organize" className="flex flex-col gap-y-8">
       <Heading>{t("products.create.inventory.heading")}</Heading>
 
       {variants.fields
-        .filter((v) => v.inventory_kit)
+        .filter(v => v.inventory_kit)
         .map((variant, variantIndex) => (
-          <VariantSection
-            key={variant.id}
-            form={form}
-            variant={variant}
-            index={variantIndex}
-          />
+          <VariantSection key={variant.id} form={form} variant={variant} index={variantIndex} />
         ))}
     </div>
-  )
-}
+  );
+};

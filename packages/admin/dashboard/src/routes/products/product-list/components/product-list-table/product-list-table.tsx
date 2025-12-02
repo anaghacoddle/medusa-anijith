@@ -1,43 +1,35 @@
-import { PencilSquare, Trash } from "@medusajs/icons"
-import { Button, Container, Heading, toast, usePrompt } from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Link, Outlet, useLoaderData, useLocation } from "react-router-dom"
+import { PencilSquare, Trash } from "@medusajs/icons";
+import { Button, Container, Heading, toast, usePrompt } from "@medusajs/ui";
+import { keepPreviousData } from "@tanstack/react-query";
+import { createColumnHelper } from "@tanstack/react-table";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, Outlet, useLoaderData, useLocation } from "react-router-dom";
 
-import { HttpTypes } from "@medusajs/types"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { _DataTable } from "../../../../../components/table/data-table"
-import {
-  useDeleteProduct,
-  useProducts,
-} from "../../../../../hooks/api/products"
-import { useProductTableColumns } from "../../../../../hooks/table/columns/use-product-table-columns"
-import { useProductTableFilters } from "../../../../../hooks/table/filters/use-product-table-filters"
-import { useProductTableQuery } from "../../../../../hooks/table/query/use-product-table-query"
-import { useDataTable } from "../../../../../hooks/use-data-table"
-import { productsLoader } from "../../loader"
-import { useFeatureFlag } from "../../../../../providers/feature-flag-provider"
-import { ConfigurableProductListTable } from "./configurable-product-list-table"
+import { HttpTypes } from "@medusajs/types";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { _DataTable } from "../../../../../components/table/data-table";
+import { useDeleteProduct, useProducts } from "../../../../../hooks/api/products";
+import { useProductTableColumns } from "../../../../../hooks/table/columns/use-product-table-columns";
+import { useProductTableFilters } from "../../../../../hooks/table/filters/use-product-table-filters";
+import { useProductTableQuery } from "../../../../../hooks/table/query/use-product-table-query";
+import { useDataTable } from "../../../../../hooks/use-data-table";
+import { productsLoader } from "../../loader";
+import { useFeatureFlag } from "../../../../../providers/feature-flag-provider";
+import { ConfigurableProductListTable } from "./configurable-product-list-table";
+import { usePermission } from "../../../../../hooks/use-permission";
+import { useFormattedProducts } from "../../../../../hooks/api/sync-products";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export const ProductListTable = () => {
-  const { t } = useTranslation()
-  const location = useLocation()
-  const isViewConfigEnabled = useFeatureFlag("view_configurations")
+  const { t } = useTranslation();
+  const location = useLocation();
+  const isViewConfigEnabled = useFeatureFlag("view_configurations");
 
-  // If feature flag is enabled, use the new configurable table
-  if (isViewConfigEnabled) {
-    return <ConfigurableProductListTable />
-  }
+  const initialData = useLoaderData() as Awaited<ReturnType<ReturnType<typeof productsLoader>>>;
 
-  const initialData = useLoaderData() as Awaited<
-    ReturnType<ReturnType<typeof productsLoader>>
-  >
-
-  const { searchParams, raw } = useProductTableQuery({ pageSize: PAGE_SIZE })
+  const { searchParams, raw } = useProductTableQuery({ pageSize: PAGE_SIZE });
   const { products, count, isLoading, isError, error } = useProducts(
     {
       ...searchParams,
@@ -47,10 +39,10 @@ export const ProductListTable = () => {
       initialData,
       placeholderData: keepPreviousData,
     }
-  )
+  );
 
-  const filters = useProductTableFilters()
-  const columns = useColumns()
+  const filters = useProductTableFilters();
+  const columns = useColumns();
 
   const { table } = useDataTable({
     data: (products ?? []) as HttpTypes.AdminProduct[],
@@ -58,27 +50,63 @@ export const ProductListTable = () => {
     count,
     enablePagination: true,
     pageSize: PAGE_SIZE,
-    getRowId: (row) => row.id,
-  })
+    getRowId: row => row.id,
+  });
+
+  const { hasPermission } = usePermission();
+
+  const { mutate, isPending } = useFormattedProducts();
+
+  // If feature flag is enabled, use the new configurable table
+  if (isViewConfigEnabled) {
+    return <ConfigurableProductListTable />;
+  }
 
   if (isError) {
-    throw error
+    throw error;
   }
+  const sync_access = hasPermission("/admin/products", "sync");
+  const handleSyncToCMS = () => {
+    mutate(undefined, {
+      onSuccess: () => {
+        toast.success("Sync complete", {
+          description: "Products successfully synced to CMS",
+        });
+      },
+      onError: error => {
+        toast.error("Sync failed", {
+          description: "There was an error syncing to the CMS.",
+        });
+        console.error("Sync to CMS failed:", error);
+      },
+    });
+  };
 
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
         <Heading level="h1">{t("products.domain")}</Heading>
         <div className="flex items-center justify-center gap-x-2">
-          <Button size="small" variant="secondary" asChild>
-            <Link to={`export${location.search}`}>{t("actions.export")}</Link>
-          </Button>
-          <Button size="small" variant="secondary" asChild>
-            <Link to={`import${location.search}`}>{t("actions.import")}</Link>
-          </Button>
-          <Button size="small" variant="secondary" asChild>
-            <Link to="create">{t("actions.create")}</Link>
-          </Button>
+          {sync_access && (
+            <Button size="small" variant="secondary" onClick={handleSyncToCMS} disabled={isPending}>
+              {isPending ? "Syncing..." : "Sync"}
+            </Button>
+          )}
+          {hasPermission("/admin/products", "POST") && (
+            <Button size="small" variant="secondary" asChild>
+              <Link to={`export${location.search}`}>{t("actions.export")}</Link>
+            </Button>
+          )}
+          {hasPermission("/admin/products", "POST") && (
+            <Button size="small" variant="secondary" asChild>
+              <Link to={`import${location.search}`}>{t("actions.import")}</Link>
+            </Button>
+          )}
+          {hasPermission("/admin/products", "POST") && (
+            <Button size="small" variant="secondary" asChild>
+              <Link to="create">{t("actions.create")}</Link>
+            </Button>
+          )}
         </div>
       </div>
       <_DataTable
@@ -91,7 +119,7 @@ export const ProductListTable = () => {
         pagination
         isLoading={isLoading}
         queryObject={raw}
-        navigateTo={(row) => `${row.original.id}`}
+        navigateTo={row => `${row.original.id}`}
         orderBy={[
           { key: "title", label: t("fields.title") },
           { key: "created_at", label: t("fields.createdAt") },
@@ -103,13 +131,14 @@ export const ProductListTable = () => {
       />
       <Outlet />
     </Container>
-  )
-}
+  );
+};
 
-const ProductActions = ({ product }: { product: HttpTypes.AdminProduct }) => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
-  const { mutateAsync } = useDeleteProduct(product.id)
+export const ProductActions = ({ product }: { product: HttpTypes.AdminProduct }) => {
+  const { t } = useTranslation();
+  const prompt = usePrompt();
+  const { mutateAsync } = useDeleteProduct(product.id);
+  const { hasPermission } = usePermission();
 
   const handleDelete = async () => {
     const res = await prompt({
@@ -119,27 +148,25 @@ const ProductActions = ({ product }: { product: HttpTypes.AdminProduct }) => {
       }),
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
-    })
-
+    });
     if (!res) {
-      return
+      return;
     }
-
     await mutateAsync(undefined, {
       onSuccess: () => {
         toast.success(t("products.toasts.delete.success.header"), {
           description: t("products.toasts.delete.success.description", {
             title: product.title,
           }),
-        })
+        });
       },
-      onError: (e) => {
+      onError: e => {
         toast.error(t("products.toasts.delete.error.header"), {
           description: e.message,
-        })
+        });
       },
-    })
-  }
+    });
+  };
 
   return (
     <ActionMenu
@@ -150,6 +177,10 @@ const ProductActions = ({ product }: { product: HttpTypes.AdminProduct }) => {
               icon: <PencilSquare />,
               label: t("actions.edit"),
               to: `/products/${product.id}/edit`,
+              disabled:
+                !product.id ||
+                !hasPermission("/admin/products", "PUT") ||
+                !hasPermission("/admin/products", "POST"),
             },
           ],
         },
@@ -158,19 +189,20 @@ const ProductActions = ({ product }: { product: HttpTypes.AdminProduct }) => {
             {
               icon: <Trash />,
               label: t("actions.delete"),
+              disabled: !product.id || !hasPermission("/admin/products", "DELETE"),
               onClick: handleDelete,
             },
           ],
         },
       ]}
     />
-  )
-}
+  );
+};
 
-const columnHelper = createColumnHelper<HttpTypes.AdminProduct>()
+const columnHelper = createColumnHelper<HttpTypes.AdminProduct>();
 
 const useColumns = () => {
-  const base = useProductTableColumns()
+  const base = useProductTableColumns();
 
   const columns = useMemo(
     () => [
@@ -178,12 +210,11 @@ const useColumns = () => {
       columnHelper.display({
         id: "actions",
         cell: ({ row }) => {
-          return <ProductActions product={row.original} />
+          return <ProductActions product={row.original} />;
         },
       }),
     ],
     [base]
-  )
-
-  return columns
-}
+  );
+  return columns;
+};

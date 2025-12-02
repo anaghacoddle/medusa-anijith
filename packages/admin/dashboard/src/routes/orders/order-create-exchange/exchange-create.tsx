@@ -67,7 +67,7 @@ export const ExchangeCreate = () => {
     }
 
     run()
-  }, [preview])
+  }, [preview, createExchange, navigate, t])
 
   return (
     <RouteFocusModal>

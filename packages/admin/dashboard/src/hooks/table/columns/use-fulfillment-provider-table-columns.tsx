@@ -20,6 +20,6 @@ export const useFulfillmentProviderTableColumns = () => {
         cell: ({ getValue }) => <TextCell text={formatProvider(getValue())} />,
       }),
     ],
-    [t]
+    []
   )
 }

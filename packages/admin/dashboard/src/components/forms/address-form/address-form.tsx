@@ -1,33 +1,29 @@
-import { Heading, Input, Select, clx } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { z } from "zod"
+import { Heading, Input, Select, clx } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
-import { HttpTypes } from "@medusajs/types"
-import { Control } from "react-hook-form"
-import { AddressSchema } from "../../../lib/schemas"
-import { Form } from "../../common/form"
-import { CountrySelect } from "../../inputs/country-select"
-import { useDocumentDirection } from "../../../hooks/use-document-direction"
+import { HttpTypes } from "@medusajs/types";
+import { Control } from "react-hook-form";
+import { AddressSchema } from "../../../lib/schemas";
+import { Form } from "../../common/form";
+import { CountrySelect } from "../../inputs/country-select";
+import { useDocumentDirection } from "../../../hooks/use-document-direction";
 
-type AddressFieldValues = z.infer<typeof AddressSchema>
+type AddressFieldValues = z.infer<typeof AddressSchema>;
 
 type AddressFormProps = {
-  control: Control<AddressFieldValues>
-  countries?: HttpTypes.AdminRegionCountry[]
-  layout: "grid" | "stack"
-}
+  control: Control<AddressFieldValues>;
+  countries?: HttpTypes.AdminRegionCountry[];
+  layout: "grid" | "stack";
+};
 
-export const AddressForm = ({
-  control,
-  countries,
-  layout,
-}: AddressFormProps) => {
-  const { t } = useTranslation()
-  const direction = useDocumentDirection()
+export const AddressForm = ({ control, countries, layout }: AddressFormProps) => {
+  const { t } = useTranslation();
+  const direction = useDocumentDirection();
   const style = clx("gap-4", {
     "flex flex-col": layout === "stack",
     "grid grid-cols-2": layout === "grid",
-  })
+  });
 
   return (
     <div className="flex flex-col gap-y-8">
@@ -46,7 +42,7 @@ export const AddressForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
           <Form.Field
@@ -61,7 +57,7 @@ export const AddressForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
           <Form.Field
@@ -76,7 +72,7 @@ export const AddressForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
           <Form.Field
@@ -91,7 +87,7 @@ export const AddressForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
         </fieldset>
@@ -111,7 +107,7 @@ export const AddressForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
           <Form.Field
@@ -126,7 +122,7 @@ export const AddressForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
           <Form.Field
@@ -141,7 +137,7 @@ export const AddressForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
           <Form.Field
@@ -156,7 +152,7 @@ export const AddressForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
           <Form.Field
@@ -171,7 +167,7 @@ export const AddressForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
           <Form.Field
@@ -183,32 +179,25 @@ export const AddressForm = ({
                   <Form.Label>{t("fields.country")}</Form.Label>
                   <Form.Control>
                     {countries ? (
-                      <Select
-                        dir={direction}
-                        {...field}
-                        onValueChange={onChange}
-                      >
+                      <Select dir={direction} {...field} onValueChange={onChange}>
                         <Select.Trigger ref={ref}>
                           <Select.Value />
                         </Select.Trigger>
                         <Select.Content>
-                          {countries.map((country) => {
+                          {countries.map(country => {
                             /**
                              * If a country does not have an ISO 2 code, it is not
                              * a valid country and should not be selectable.
                              */
                             if (!country.iso_2) {
-                              return null
+                              return null;
                             }
 
                             return (
-                              <Select.Item
-                                key={country.iso_2}
-                                value={country.iso_2}
-                              >
+                              <Select.Item key={country.iso_2} value={country.iso_2}>
                                 {country.display_name}
                               </Select.Item>
-                            )
+                            );
                           })}
                         </Select.Content>
                       </Select>
@@ -218,11 +207,11 @@ export const AddressForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
         </fieldset>
       </div>
     </div>
-  )
-}
+  );
+};

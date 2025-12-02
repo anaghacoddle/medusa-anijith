@@ -1,27 +1,35 @@
-import { HttpTypes } from "@medusajs/types"
-import { clx, Container, Heading, toast, usePrompt } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
+import { HttpTypes } from "@medusajs/types";
+import { clx, Container, Heading, toast, usePrompt } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 
-import { Trash } from "@medusajs/icons"
-import { Link, useNavigate } from "react-router-dom"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { NoRecords } from "../../../../../components/common/empty-table-content"
-import { Listicle } from "../../../../../components/common/listicle"
-import { useDeleteCustomerAddress } from "../../../../../hooks/api/customers"
+import { Trash } from "@medusajs/icons";
+import { useNavigate } from "react-router-dom";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { NoRecords } from "../../../../../components/common/empty-table-content";
+import { Listicle } from "../../../../../components/common/listicle";
+import { useDeleteCustomerAddress } from "../../../../../hooks/api/customers";
+import { decryptObject } from "../../../../../utils/encryption";
 
 type CustomerAddressSectionProps = {
-  customer: HttpTypes.AdminCustomer
-}
+  customer: HttpTypes.AdminCustomer;
+};
 
-export const CustomerAddressSection = ({
-  customer,
-}: CustomerAddressSectionProps) => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
-  const navigate = useNavigate()
-  const { mutateAsync: deleteAddress } = useDeleteCustomerAddress(customer.id)
+export const CustomerAddressSection = ({ customer }: CustomerAddressSectionProps) => {
+  const { t } = useTranslation();
+  const prompt = usePrompt();
+  const navigate = useNavigate();
+  const { mutateAsync: deleteAddress } = useDeleteCustomerAddress(customer.id);
 
-  const addresses = customer.addresses ?? []
+  const [addresses, setAddresses] = useState<HttpTypes.AdminCustomerAddress[]>([]);
+
+  useEffect(() => {
+    if (customer.addresses && customer.addresses.length > 0) {
+      decryptObject(customer.addresses).then(result => {
+        setAddresses(result as HttpTypes.AdminCustomerAddress[]);
+      });
+    }
+  }, [customer.addresses]);
 
   const handleDelete = async (address: HttpTypes.AdminCustomerAddress) => {
     const confirm = await prompt({
@@ -34,33 +42,32 @@ export const CustomerAddressSection = ({
       verificationText: address.address_name ?? "address",
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
-    })
+    });
 
     if (!confirm) {
-      return
+      return;
     }
 
     await deleteAddress(address.id, {
       onSuccess: () => {
-        toast.success(
-          t("general.success", { name: address.address_name ?? "address" })
-        )
+        toast.success(t("general.success", { name: address.address_name ?? "address" }));
 
-        navigate(`/customers/${customer.id}`, { replace: true })
+        navigate(`/customers/${customer.id}`, { replace: true });
       },
-      onError: (e) => {
-        toast.error(e.message)
+      onError: e => {
+        toast.error(e.message);
       },
-    })
-  }
+    });
+  };
 
   return (
     <Container className="p-0">
       <div className="flex items-center justify-between px-6 py-4">
         <Heading level="h2">{t("addresses.title")}</Heading>
-        <Link to={`create-address`} className="text-ui-fg-muted text-xs">
+        {/* Admins are not permitted to edit customer details */}
+        {/* <Link to={`create-address`} className="text-ui-fg-muted text-xs">
           Add
-        </Link>
+        </Link> */}
       </div>
 
       {addresses.length === 0 && (
@@ -74,12 +81,23 @@ export const CustomerAddressSection = ({
         />
       )}
 
-      {addresses.map((address) => {
+      {addresses.map(address => {
         return (
           <Listicle
             key={address.id}
-            labelKey={address.address_name ?? "n/a"}
-            descriptionKey={[address.address_1, address.address_2].join(" ")}
+            labelKey={""}
+            descriptionKey={
+              <>
+                <div>{address.address_name}</div>
+                <div>{address.address_1}</div>
+                <div>{address.address_2}</div>
+                <div>
+                  {address.city}, {address.province} {address.postal_code}
+                </div>
+                <div>Ph: {address.phone}</div>
+                <div>Country: {address.country_code}</div>
+              </>
+            }
           >
             <ActionMenu
               groups={[
@@ -89,7 +107,7 @@ export const CustomerAddressSection = ({
                       icon: <Trash />,
                       label: t("actions.delete"),
                       onClick: async () => {
-                        await handleDelete(address)
+                        await handleDelete(address);
                       },
                     },
                   ],
@@ -97,8 +115,8 @@ export const CustomerAddressSection = ({
               ]}
             />
           </Listicle>
-        )
+        );
       })}
     </Container>
-  )
-}
+  );
+};

@@ -99,6 +99,8 @@
   },
   "actions": {
     "save": "Save",
+    "subscribe": "Subscribe",
+    "unsubscribe": "Unsubscribe",
     "saveAsDraft": "Save as draft",
     "copy": "Copy",
     "copied": "Copied",
@@ -109,6 +111,9 @@
     "remove": "Remove",
     "revoke": "Revoke",
     "cancel": "Cancel",
+    "resetqr": "Reset QR",
+    "activate": "Activate",
+    "suspend": "Suspend",
     "forceConfirm": "Force confirm",
     "continueEdit": "Continue edit",
     "enable": "Enable",
@@ -121,6 +126,7 @@
     "showMore": "Show more",
     "continue": "Continue",
     "continueWithEmail": "Continue with Email",
+    "Login": "Log In",
     "idCopiedToClipboard": "ID copied to clipboard",
     "editVariantImages": "Edit variant images",
     "editImages": "Edit images",
@@ -141,7 +147,8 @@
     "hide": "Hide",
     "export": "Export",
     "import": "Import",
-    "cannotUndo": "This action cannot be undone"
+    "cannotUndo": "This action cannot be undone",
+    "viewProduct": "View Product"
   },
   "operators": {
     "in": "In"
@@ -166,6 +173,7 @@
         "customer": "Customers",
         "customerGroup": "Customer Groups",
         "product": "Products",
+        "AdditionalInfo": "Additional Information",
         "productVariant": "Product Variants",
         "inventory": "Inventory",
         "reservation": "Reservations",
@@ -175,6 +183,7 @@
         "promotion": "Promotions",
         "campaign": "Campaigns",
         "priceList": "Price Lists",
+        "newsletter": "Newsletters",
         "user": "Users",
         "region": "Regions",
         "taxRegion": "Tax Regions",
@@ -205,6 +214,7 @@
         "goToInventory": "Inventory",
         "goToReservations": "Reservations",
         "goToPriceLists": "Price Lists",
+        "goTonewsletters": "Newsletters",
         "goToPromotions": "Promotions",
         "goToCampaigns": "Campaigns"
       },
@@ -350,7 +360,9 @@
     "defaultTitle": "An error occurred",
     "defaultMessage": "An unexpected error occurred while rendering this page.",
     "noMatchMessage": "The page you are looking for does not exist.",
-    "backToDashboard": "Back to dashboard"
+    "backToDashboard": "Back to Dashboard",
+    "accessDeniedTitle": "Access Denied",
+    "accessDeniedMessage": "You do not have permission to access this page"
   },
   "addresses": {
     "title": "Addresses",
@@ -397,6 +409,14 @@
   },
   "sales_channels": {
     "availableIn": "Available in <0>{{x}}</0> of <1>{{y}}</1> sales channels"
+  },
+  "AdditionalInfo": {
+    "domain": "Additional Information",
+    "edit": {
+      "header": "Edit Additional Information",
+      "description": "Edit the additional information for this product.",
+      "successToast": "Additional information was successfully updated."
+    }
   },
   "products": {
     "domain": "Products",
@@ -510,18 +530,28 @@
       "editHint": "Add media to the product to showcase it in your storefront.",
       "manageImageVariants": "Manage associated variants",
       "makeThumbnail": "Make thumbnail",
-      "uploadImagesLabel": "Upload images",
-      "uploadImagesHint": "Drag and drop images here or click to upload.",
+      "uploadImagesLabel": "Upload images and videos",
+      "uploadImagesHint": "Drag and drop images and videos here or click to upload.",
       "invalidFileType": "'{{name}}' is not a supported file type. Supported file types are: {{types}}.",
+      "fileSizeLimit": "File size limit: {{limit}}",
+      "fileSizeExceeded": "{{name}} exceeds the maximum file size of {{limit}}",
       "failedToUpload": "Failed to upload the added media. Please try again.",
-      "deleteWarning_one": "You are about to delete {{count}} image. This action cannot be undone.",
-      "deleteWarning_other": "You are about to delete {{count}} images. This action cannot be undone.",
-      "deleteWarningWithThumbnail_one": "You are about to delete {{count}} image including the thumbnail. This action cannot be undone.",
-      "deleteWarningWithThumbnail_other": "You are about to delete {{count}} images including the thumbnail. This action cannot be undone.",
+      "deleteWarning_one": "You are about to delete {{count}} media file. This action cannot be undone.",
+      "deleteWarning_other": "You are about to delete {{count}} media files. This action cannot be undone.",
+      "deleteWarningWithThumbnail_one": "You are about to delete {{count}} media file including the thumbnail. This action cannot be undone.",
+      "deleteWarningWithThumbnail_other": "You are about to delete {{count}} media files including the thumbnail. This action cannot be undone.",
       "thumbnailTooltip": "Thumbnail",
       "galleryLabel": "Gallery",
-      "downloadImageLabel": "Download current image",
-      "deleteImageLabel": "Delete current image",
+      "downloadImageLabel": "Download current media",
+      "deleteImageLabel": "Delete current media",
+      "embedVideoLabel": "Embed Video",
+      "embedVideoHint": "Paste embed code from YouTube, Vimeo, or other video platforms",
+      "embedVideoTitle": "Embed Video",
+      "embedCodePlaceholder": "Paste your embed code here...",
+      "addEmbedVideo": "Add Embed Video",
+      "addEmbed": "Add Embed",
+      "embedSupported": "Supports YouTube, Vimeo, and other video platforms",
+      "or": "or",
       "emptyState": {
         "header": "No media yet",
         "description": "Add media to showcase it in your storefront.",
@@ -597,6 +627,10 @@
         "label": "Shipping profile",
         "hint": "Connect the product to a shipping profile"
       },
+      "warnings": {
+        "label": "Warnings",
+        "hint": "Add warnings to the product, e.g. 'Contains nuts', 'May contain traces of gluten', etc."
+      },
       "type": {
         "label": "Type"
       },
@@ -609,12 +643,28 @@
       "tags": {
         "label": "Tags"
       },
+      "brand": {
+        "label": "Brand"
+      },
       "sales_channels": {
         "label": "Sales channels",
         "hint": "This product will only be available in the default sales channel if left untouched."
       },
       "countryOrigin": {
         "label": "Country of origin"
+      },
+
+      "Ingredients": {
+        "label": "Ingredients",
+        "hint": "Add ingredients to the product, e.g. 'Water, Sugar, Flavoring', etc."
+      },
+      "Sustainability": {
+        "label": "Sustainability",
+        "hint": "Add sustainability information to the product, e.g. 'Recyclable packaging', 'Made from organic materials', etc."
+      },
+      "Allergens": {
+        "label": "Allergens",
+        "hint": "Add allergens to the product, e.g. 'Contains milk', 'Contains nuts', etc."
       },
       "material": {
         "label": "Material"
@@ -667,7 +717,397 @@
       "inventory": {
         "notManaged": "Not managed",
         "manageItems": "Manage inventory items",
-        "notManagedDesc": "Inventory is not managed for this variant. Turn on ‘Manage Inventory’ to track the variant's inventory.",
+        "notManagedDesc": "Inventory is not managed for this variant. Turn on 'Manage Inventory' to track the variant's inventory.",
+        "manageKit": "Manage inventory kit",
+        "navigateToItem": "Go to inventory item",
+        "actions": {
+          "inventoryItems": "Go to inventory item",
+          "inventoryKit": "Show inventory items"
+        },
+        "inventoryKit": "Inventory Kit",
+        "inventoryKitHint": "Does this variant consist of several inventory items?",
+        "validation": {
+          "itemId": "Please select inventory item.",
+          "quantity": "Quantity is required. Please input a positive number."
+        },
+        "header": "Stock & Inventory",
+        "editItemDetails": "Edit item details",
+        "manageInventoryLabel": "Manage inventory",
+        "manageInventoryHint": "When enabled, we'll change the inventory quantity for you when orders and returns are created.",
+        "allowBackordersLabel": "Allow backorders",
+        "allowBackordersHint": "When enabled, customers can purchase the variant even if there's no available quantity.",
+        "toast": {
+          "levelsBatch": "Inventory levels updated.",
+          "update": "Inventory item updated successfully.",
+          "updateLevel": "Inventory level updated successfully.",
+          "itemsManageSuccess": "Inventory items successfully updated."
+        }
+      },
+      "preorder": {
+        "header": "Preorder Settings",
+        "status": "Preorder Status",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "availableDateTime": "Available Date & Time",
+        "updateDateTime": "Update Date & Time",
+        "disablePreorder": "Disable Preorder",
+        "enablePreorder": "Enable Preorder",
+        "description": "Allow customers to preorder this product variant before it's available.",
+        "dateTimeLabel": "Available Date & Time",
+        "dateTimeHint": "Select the date and time when this product will be available for delivery",
+        "updateDateTimeButton": "Update Date & Time",
+        "enablePreorderButton": "Enable Preorder",
+        "toast": {
+          "enabled": "Preorder enabled successfully",
+          "disabled": "Preorder disabled successfully",
+          "updated": "Preorder date updated successfully",
+          "errorRequired": "Please select an available date and time",
+          "errorFutureDate": "Available date and time must be in the future",
+          "errorValidYear": "Please enter a valid year (4 digits)"
+        },
+        "prompt": {
+          "disableTitle": "Disable Preorder",
+          "disableDescription": "This will disable preorder functionality for this variant."
+        }
+      }
+    },
+    "options": {
+      "header": "Options",
+      "edit": {
+        "header": "Edit Option",
+        "successToast": "Option {{title}} was successfully updated."
+      },
+      "create": {
+        "header": "Create Option",
+        "successToast": "Option {{title}} was successfully created."
+      },
+      "deleteWarning": "You are about to delete the product option: {{title}}. This action cannot be undone."
+    },
+    "organization": {
+      "header": "Organize",
+      "edit": {
+        "header": "Edit Organization",
+        "toasts": {
+          "success": "Successfully updated the organization of {{title}}."
+        }
+      }
+    },
+    "brand": {
+      "header": "Brand",
+      "noBrand": "No brand assigned",
+      "edit": {
+        "header": "Edit Brand",
+        "toasts": {
+          "success": "Brand updated successfully"
+        }
+      }
+    },
+    "stock": {
+      "heading": "Manage product stock levels and locations",
+      "description": "Update the stocked inventory levels for all of the product's variants.",
+      "loading": "Hang on this may take a moment...",
+      "tooltips": {
+        "alreadyManaged": "This inventory item is already editable under {{title}}.",
+        "alreadyManagedWithSku": "This inventory item is already editable under {{title}} ({{sku}})."
+      }
+    },
+    "shippingProfile": {
+      "header": "Shipping configuration",
+      "edit": {
+        "header": "Shipping Configuration",
+        "toasts": {
+          "success": "Successfully updated the shipping profile for {{title}}."
+        }
+      },
+      "create": {
+        "errors": {
+          "required": "Shipping profile is required"
+        }
+      }
+    },
+    "toasts": {
+      "delete": {
+        "success": {
+          "header": "Product deleted",
+          "description": "{{title}} was successfully deleted."
+        },
+        "error": {
+          "header": "Failed to delete product"
+        }
+      }
+    }
+  },
+  "deleteProducts": {
+    "domain": "Delete Products",
+    "list": {
+      "noRecordsMessage": "Create your first product to start selling."
+    },
+    "edit": {
+      "header": "Edit Product",
+      "description": "Edit the product details.",
+      "successToast": "Product {{title}} was successfully updated."
+    },
+    "create": {
+      "title": "Create Product",
+      "description": "Create a new product.",
+      "header": "General",
+      "tabs": {
+        "details": "Details",
+        "organize": "Organize",
+        "variants": "Variants",
+        "inventory": "Inventory kits"
+      },
+      "errors": {
+        "variants": "Please select at least one variant.",
+        "options": "Please create at least one option.",
+        "uniqueSku": "SKU must be unique."
+      },
+      "inventory": {
+        "heading": "Inventory kits",
+        "label": "Add inventory items to the variant's inventory kit.",
+        "itemPlaceholder": "Select inventory item",
+        "quantityPlaceholder": "How many of these are needed for the kit?"
+      },
+      "variants": {
+        "header": "Variants",
+        "subHeadingTitle": "Yes, this is a product with variants",
+        "subHeadingDescription": "When unchecked, we will create a default variant for you",
+        "optionTitle": {
+          "placeholder": "Size"
+        },
+        "optionValues": {
+          "placeholder": "Small, Medium, Large"
+        },
+        "productVariants": {
+          "label": "Product variants",
+          "hint": "This ranking will affect the variants' order in your storefront.",
+          "alert": "Add options to create variants.",
+          "tip": "Variants left unchecked won't be created. You can always create and edit variants afterwards but this list fits the variations in your product options."
+        },
+        "productOptions": {
+          "label": "Product options",
+          "hint": "Define the options for the product, e.g. color, size, etc."
+        }
+      },
+      "successToast": "Product {{title}} was successfully created."
+    },
+    "export": {
+      "header": "Export Product List",
+      "description": "Export the product list to a CSV file.",
+      "success": {
+        "title": "We are processing your export",
+        "description": "Exporting data may take a few minutes. We will notify you when we are done."
+      },
+      "filters": {
+        "title": "Filters",
+        "description": "Apply filters in the table overview to adjust this view"
+      },
+      "columns": {
+        "title": "Columns",
+        "description": "Customize the exported data to meet specific needs"
+      }
+    },
+    "import": {
+      "header": "Import Product List",
+      "uploadLabel": "Import Products",
+      "uploadHint": "Drag and drop a CSV file or click to upload",
+      "description": "Import products by providing a CSV file in a pre-defined format",
+      "template": {
+        "title": "Unsure about how to arrange your list?",
+        "description": "Download the template below to ensure you are following the correct format."
+      },
+      "upload": {
+        "title": "Upload a CSV file",
+        "description": "Through imports you can add or update products. To update existing products you must use the existing handle and ID, to update existing variants you must use the existing ID. You will be asked for confirmation before we import products.",
+        "preprocessing": "Preprocessing...",
+        "productsToCreate": "Products will be created",
+        "productsToUpdate": "Products will be updated"
+      },
+      "success": {
+        "title": "We are processing your import",
+        "description": "Importing data may take a while. We will notify you when we are done."
+      }
+    },
+    "deleteWarning": "You are about to delete the product {{title}}. This action cannot be undone.",
+    "variants": {
+      "header": "Variants",
+      "empty": {
+        "heading": "No variants",
+        "description": "There are no variants to display."
+      },
+      "filtered": {
+        "heading": "No results",
+        "description": "No variants match the current filter criteria."
+      }
+    },
+    "attributes": "Attributes",
+    "editAttributes": "Edit Attributes",
+    "editOptions": "Edit Options",
+    "editPrices": "Edit prices",
+    "media": {
+      "label": "Media",
+      "editHint": "Add media to the product to showcase it in your storefront.",
+      "makeThumbnail": "Make thumbnail",
+      "uploadImagesLabel": "Upload images and videos",
+      "uploadImagesHint": "Drag and drop images and videos here or click to upload.",
+      "invalidFileType": "'{{name}}' is not a supported file type. Supported file types are: {{types}}.",
+      "fileSizeLimit": "File size limit: {{limit}}",
+      "fileSizeExceeded": "{{name}} exceeds the maximum file size of {{limit}}",
+      "failedToUpload": "Failed to upload the added media. Please try again.",
+      "deleteWarning_one": "You are about to delete {{count}} media file. This action cannot be undone.",
+      "deleteWarning_other": "You are about to delete {{count}} media files. This action cannot be undone.",
+      "deleteWarningWithThumbnail_one": "You are about to delete {{count}} media file including the thumbnail. This action cannot be undone.",
+      "deleteWarningWithThumbnail_other": "You are about to delete {{count}} media files including the thumbnail. This action cannot be undone.",
+      "thumbnailTooltip": "Thumbnail",
+      "galleryLabel": "Gallery",
+      "downloadImageLabel": "Download current media",
+      "deleteImageLabel": "Delete current media",
+      "embedVideoLabel": "Embed Video",
+      "embedVideoHint": "Paste embed code from YouTube, Vimeo, or other video platforms",
+      "embedVideoTitle": "Embed Video",
+      "embedCodePlaceholder": "Paste your embed code here...",
+      "addEmbedVideo": "Add Embed Video",
+      "addEmbed": "Add Embed",
+      "embedSupported": "Supports YouTube, Vimeo, and other video platforms",
+      "or": "or",
+      "emptyState": {
+        "header": "No media yet",
+        "description": "Add media to the product to showcase it in your storefront.",
+        "action": "Add media"
+      },
+      "successToast": "Media was successfully updated."
+    },
+    "discountableHint": "When unchecked, discounts will not be applied to this product.",
+    "noSalesChannels": "Not available in any sales channels",
+    "variantCount_one": "{{count}} variant",
+    "variantCount_other": "{{count}} variants",
+    "deleteVariantWarning": "You are about to delete the variant {{title}}. This action cannot be undone.",
+    "productStatus": {
+      "draft": "Draft",
+      "published": "Published",
+      "proposed": "Proposed",
+      "rejected": "Rejected"
+    },
+
+    "fields": {
+      "title": {
+        "label": "Title",
+        "hint": "Give your product a short and clear title.<0/>50-60 characters is the recommended length for search engines.",
+        "placeholder": "Winter jacket"
+      },
+      "subtitle": {
+        "label": "Subtitle",
+        "placeholder": "Warm and cosy"
+      },
+      "handle": {
+        "label": "Handle",
+        "tooltip": "The handle is used to reference the product in your storefront. If not specified, the handle will be generated from the product title.",
+        "placeholder": "winter-jacket"
+      },
+      "description": {
+        "label": "Description",
+        "hint": "Give your product a short and clear description.<0/>120-160 characters is the recommended length for search engines.",
+        "placeholder": "A warm and cozy jacket"
+      },
+      "discountable": {
+        "label": "Discountable",
+        "hint": "When unchecked, discounts will not be applied to this product"
+      },
+      "shipping_profile": {
+        "label": "Shipping profile",
+        "hint": "Connect the product to a shipping profile"
+      },
+      "warnings": {
+        "label": "Warnings",
+        "hint": "Add warnings to the product, e.g. 'Contains nuts', 'May contain traces of gluten', etc."
+      },
+      "type": {
+        "label": "Type"
+      },
+      "collection": {
+        "label": "Collection"
+      },
+      "categories": {
+        "label": "Categories"
+      },
+      "tags": {
+        "label": "Tags"
+      },
+      "brand": {
+        "label": "Brand"
+      },
+      "sales_channels": {
+        "label": "Sales channels",
+        "hint": "This product will only be available in the default sales channel if left untouched."
+      },
+      "countryOrigin": {
+        "label": "Country of origin"
+      },
+
+      "Ingredients": {
+        "label": "Ingredients",
+        "hint": "Add ingredients to the product, e.g. 'Water, Sugar, Flavoring', etc."
+      },
+      "Sustainability": {
+        "label": "Sustainability",
+        "hint": "Add sustainability information to the product, e.g. 'Recyclable packaging', 'Made from organic materials', etc."
+      },
+      "Allergens": {
+        "label": "Allergens",
+        "hint": "Add allergens to the product, e.g. 'Contains milk', 'Contains nuts', etc."
+      },
+      "material": {
+        "label": "Material"
+      },
+      "width": {
+        "label": "Width"
+      },
+      "length": {
+        "label": "Length"
+      },
+      "height": {
+        "label": "Height"
+      },
+      "weight": {
+        "label": "Weight"
+      },
+      "options": {
+        "label": "Product options",
+        "hint": "Options are used to define the color, size, etc. of the product",
+        "add": "Add option",
+        "optionTitle": "Option title",
+        "optionTitlePlaceholder": "Color",
+        "variations": "Variations (comma-separated)",
+        "variantionsPlaceholder": "Red, Blue, Green"
+      },
+      "variants": {
+        "label": "Product variants",
+        "hint": "Variants left unchecked won't be created, This ranking will affect how the variants are ranked in your frontend."
+      },
+      "mid_code": {
+        "label": "Mid code"
+      },
+      "hs_code": {
+        "label": "HS code"
+      }
+    },
+    "variant": {
+      "edit": {
+        "header": "Edit Variant",
+        "success": "Product variant edited successfully"
+      },
+      "create": {
+        "header": "Variant details"
+      },
+      "deleteWarning": "Are you sure you want to delete this variant?",
+      "pricesPagination": "1 - {{current}} of {{total}} prices",
+      "tableItemAvailable": "{{availableCount}} available",
+      "tableItem_one": "{{availableCount}} available at {{locationCount}} location",
+      "tableItem_other": "{{availableCount}} available at {{locationCount}} locations",
+      "inventory": {
+        "notManaged": "Not managed",
+        "manageItems": "Manage inventory items",
+        "notManagedDesc": "Inventory is not managed for this variant. Turn on 'Manage Inventory' to track the variant's inventory.",
         "manageKit": "Manage inventory kit",
         "navigateToItem": "Go to inventory item",
         "actions": {
@@ -715,6 +1155,16 @@
         }
       }
     },
+    "brand": {
+      "header": "Brand",
+      "noBrand": "No brand assigned",
+      "edit": {
+        "header": "Edit Brand",
+        "toasts": {
+          "success": "Brand updated successfully"
+        }
+      }
+    },
     "stock": {
       "heading": "Manage product stock levels and locations",
       "description": "Update the stocked inventory levels for all of the product's variants.",
@@ -759,6 +1209,7 @@
     "editCollection": "Edit Collection",
     "handleTooltip": "The handle is used to reference the collection in your storefront. If not specified, the handle will be generated from the collection title.",
     "deleteWarning": "You are about to delete the collection {{title}}. This action cannot be undone.",
+    "deleteSuccess": "Collection {{title}} was successfully deleted.",
     "removeSingleProductWarning": "You are about to remove the product {{title}} from the collection. This action cannot be undone.",
     "removeProductsWarning_one": "You are about to remove {{count}} product from the collection. This action cannot be undone.",
     "removeProductsWarning_other": "You are about to remove {{count}} products from the collection. This action cannot be undone.",
@@ -815,7 +1266,7 @@
     },
     "organize": {
       "header": "Organize",
-      "action": "Edit ranking"
+      "action": "Edit Ranking"
     },
     "fields": {
       "visibility": {
@@ -969,7 +1420,10 @@
     "fields": {
       "guest": "Guest",
       "registered": "Registered",
-      "groups": "Groups"
+      "groups": "Groups",
+      "first_name": "First name",
+      "middle_name": "Middle name",
+      "last_name": "Last name"
     },
     "registered": "Registered",
     "guest": "Guest",
@@ -978,8 +1432,8 @@
       "title": "Addresses",
       "fields": {
         "addressName": "Address name",
-        "address1": "Address 1",
-        "address2": "Address 2",
+        "address1": "House No",
+        "address2": "Street Name",
         "city": "City",
         "province": "Province",
         "postalCode": "Postal code",
@@ -1041,6 +1495,19 @@
       "list": {
         "noRecordsMessage": "This group doesn't have customers."
       }
+    }
+  },
+  "carts": {
+    "domain": "Carts",
+    "general": "General Information",
+    "items": "Cart Items",
+    "edit": "Edit Cart",
+    "metadata": "Cart Metadata",
+    "noItems": "This cart has no items",
+    "editNotImplemented": "Cart editing functionality will be implemented here.",
+    "metadataNotImplemented": "Cart metadata editing functionality will be implemented here.",
+    "list": {
+      "noRecordsMessage": "No carts found"
     }
   },
   "orders": {
@@ -1510,6 +1977,21 @@
       "displayId": "Display ID",
       "refundableAmount": "Refundable amount",
       "returnableQuantity": "Returnable quantity"
+    },
+    "preorder": {
+      "header": "Pre-orders",
+      "description": "The following items will be automatically fulfilled on their available date.",
+      "items": "items",
+      "itemLabel": "Product Variant",
+      "variantId": "Variant ID",
+      "availableDate": "Available on",
+      "viewVariant": "View Product Variant",
+      "pendingNote": "This item will be fulfilled when it becomes available",
+      "status": {
+        "pending": "Pending",
+        "fulfilled": "Fulfilled",
+        "cancelled": "Cancelled"
+      }
     }
   },
   "draftOrders": {
@@ -2330,6 +2812,9 @@
     "deleteCampaignWarning": "You are about to delete the campaign {{name}}. This action cannot be undone.",
     "totalSpend": "<0>{{amount}}</0> <1>{{currency}}</1>"
   },
+  "newsletter": {
+    "domain": "Newsletter"
+  },
   "priceLists": {
     "domain": "Price Lists",
     "subtitle": "Create sales or override prices for specific conditions.",
@@ -2428,6 +2913,235 @@
       }
     }
   },
+  "dashboard": {
+    "domain": "Dashboard",
+    "subtitle": "Create sales or override prices for specific conditions.",
+    "delete": {
+      "confirmation": "You are about to delete the price list \"{{title}}\". This action cannot be undone.",
+      "successToast": "Price list \"{{title}}\" was successfully deleted."
+    },
+    "create": {
+      "header": "Create Price List",
+      "subheader": "Create a new price list to manage the prices of your products.",
+      "tabs": {
+        "details": "Details",
+        "products": "Products",
+        "prices": "Prices"
+      },
+      "successToast": "Price list {{title}} was successfully created.",
+      "products": {
+        "list": {
+          "noRecordsMessage": "Create a product first."
+        }
+      }
+    },
+    "edit": {
+      "header": "Edit Price List",
+      "successToast": "Price list {{title}} was successfully updated."
+    },
+    "configuration": {
+      "header": "Configuration",
+      "edit": {
+        "header": "Edit Price List Configuration",
+        "description": "Edit the configuration of the price list.",
+        "successToast": "Price list configuration was successfully updated."
+      }
+    },
+    "products": {
+      "header": "Products",
+      "actions": {
+        "addProducts": "Add products",
+        "editPrices": "Edit prices"
+      },
+      "delete": {
+        "confirmation_one": "You are about to delete the prices for {{count}} product in the price list. This action cannot be undone.",
+        "confirmation_other": "You are about to delete the prices for {{count}} products in the price list. This action cannot be undone.",
+        "successToast_one": "Successfully deleted prices for {{count}} product.",
+        "successToast_other": "Successfully deleted prices for {{count}} products."
+      },
+      "add": {
+        "successToast": "Prices were successfully added to the price list."
+      },
+      "edit": {
+        "successToast": "Prices were successfully updated."
+      }
+    },
+    "fields": {
+      "priceOverrides": {
+        "label": "Price overrides",
+        "header": "Price Overrides"
+      },
+      "status": {
+        "label": "Status",
+        "options": {
+          "active": "Active",
+          "draft": "Draft",
+          "expired": "Expired",
+          "scheduled": "Scheduled"
+        }
+      },
+      "type": {
+        "label": "Type",
+        "hint": "Choose the type of price list you want to create.",
+        "options": {
+          "sale": {
+            "label": "Sale",
+            "description": "Sale prices are temporary price changes for products."
+          },
+          "override": {
+            "label": "Override",
+            "description": "Overrides are usually used to create customer-specific prices."
+          }
+        }
+      },
+      "startsAt": {
+        "label": "Price list has a start date?",
+        "hint": "Schedule the price list to activate in the future."
+      },
+      "endsAt": {
+        "label": "Price list has an expiry date?",
+        "hint": "Schedule the price list to deactivate in the future."
+      },
+      "customerAvailability": {
+        "header": "Choose customer groups",
+        "label": "Customer availability",
+        "hint": "Choose which customer groups the price list should be applied to.",
+        "placeholder": "Search for customer groups",
+        "attribute": "Customer groups"
+      }
+    }
+  },
+  "review": {
+    "domain": "Reviews",
+    "subtitle": "Create sales or override prices for specific conditions.",
+    "delete": {
+      "confirmation": "You are about to delete the price list \"{{title}}\". This action cannot be undone.",
+      "successToast": "Price list \"{{title}}\" was successfully deleted."
+    },
+    "create": {
+      "header": "Create Price List",
+      "subheader": "Create a new price list to manage the prices of your products.",
+      "tabs": {
+        "details": "Details",
+        "products": "Products",
+        "prices": "Prices"
+      },
+      "successToast": "Price list {{title}} was successfully created.",
+      "products": {
+        "list": {
+          "noRecordsMessage": "Create a product first."
+        }
+      }
+    },
+    "edit": {
+      "header": "Edit Price List",
+      "successToast": "Price list {{title}} was successfully updated."
+    },
+    "configuration": {
+      "header": "Configuration",
+      "edit": {
+        "header": "Edit Price List Configuration",
+        "description": "Edit the configuration of the price list.",
+        "successToast": "Price list configuration was successfully updated."
+      }
+    },
+    "products": {
+      "header": "Products",
+      "actions": {
+        "addProducts": "Add products",
+        "editPrices": "Edit prices"
+      },
+      "delete": {
+        "confirmation_one": "You are about to delete the prices for {{count}} product in the price list. This action cannot be undone.",
+        "confirmation_other": "You are about to delete the prices for {{count}} products in the price list. This action cannot be undone.",
+        "successToast_one": "Successfully deleted prices for {{count}} product.",
+        "successToast_other": "Successfully deleted prices for {{count}} products."
+      },
+      "add": {
+        "successToast": "Prices were successfully added to the price list."
+      },
+      "edit": {
+        "successToast": "Prices were successfully updated."
+      }
+    },
+    "fields": {
+      "priceOverrides": {
+        "label": "Price overrides",
+        "header": "Price Overrides"
+      },
+      "status": {
+        "label": "Status",
+        "options": {
+          "active": "Active",
+          "draft": "Draft",
+          "expired": "Expired",
+          "scheduled": "Scheduled"
+        }
+      },
+      "type": {
+        "label": "Type",
+        "hint": "Choose the type of price list you want to create.",
+        "options": {
+          "sale": {
+            "label": "Sale",
+            "description": "Sale prices are temporary price changes for products."
+          },
+          "override": {
+            "label": "Override",
+            "description": "Overrides are usually used to create customer-specific prices."
+          }
+        }
+      },
+      "startsAt": {
+        "label": "Price list has a start date?",
+        "hint": "Schedule the price list to activate in the future."
+      },
+      "endsAt": {
+        "label": "Price list has an expiry date?",
+        "hint": "Schedule the price list to deactivate in the future."
+      },
+      "customerAvailability": {
+        "header": "Choose customer groups",
+        "label": "Customer availability",
+        "hint": "Choose which customer groups the price list should be applied to.",
+        "placeholder": "Search for customer groups",
+        "attribute": "Customer groups"
+      }
+    }
+  },
+  "digitalProducts": {
+    "domain": "Digital Products",
+    "create": {
+      "header": "Create Digital Product",
+      "hint": "Create a new diigital product manage their details.",
+      "successToast": "Customer {{email}} was successfully created."
+    },
+    "fields": {
+      "previewFiles": "Preview files",
+      "mainFiles": " Main files"
+    },
+    "media": {
+      "label": "Media (Images & Videos)",
+      "editHint": "Add product images or videos to showcase it in your storefront."
+    },
+    "files": {
+      "label": "Product Files",
+      "addMedia": "Add File",
+      "file": "File",
+      "editHint": "Add product images or videos to showcase it in your storefront.",
+      "emptyState": {
+        "header": "No downloadable files added yet",
+        "description": "Click \"Add File\" to get started",
+        "action": "Add File"
+      },
+      "fileTypes": {
+        "preview": "Preview File",
+        "main": "Main File"
+      },
+      "selectFile": "Select File",
+      "type": "Type"
+    }
+  },
   "profile": {
     "domain": "Profile",
     "manageYourProfileDetails": "Manage your profile details.",
@@ -2458,6 +3172,7 @@
     "expiredOnDate": "Expired on {{date}}",
     "validFromUntil": "Valid from <0>{{from}}</0> - <1>{{until}}</1>",
     "acceptedOnDate": "Accepted on {{date}}",
+    "resetQrSuccess": "QR code reset successfully",
     "inviteStatus": {
       "accepted": "Accepted",
       "pending": "Pending",
@@ -2478,9 +3193,16 @@
         "description": "No users match the current filter criteria."
       }
     },
+    "resetQrWarning": "You are about to reset the QR code for the user {{email}}. This action cannot be undone.",
     "deleteUserWarning": "You are about to delete the user {{name}}. This action cannot be undone.",
     "deleteUserSuccess": "User {{name}} deleted successfully",
-    "invite": "Invite"
+    "invite": "Invite",
+    "inviteSuccess": "Invite sent successfully",
+    "inviteError": "Error sending invite",
+    "suspendUserWarning": "You are about to suspend the user:- {{email}}",
+    "activateUserWarning": "You are about to activate the user:- {{email}}",
+    "suspendUserSuccess": "User Suspended successfully",
+    "activateUserSuccess": "User Activated successfully"
   },
   "store": {
     "domain": "Store",
@@ -2694,7 +3416,7 @@
       "createPublishableHeader": "Create Publishable API Key",
       "createPublishableHint": "Create a new publishable API key to limit the scope of requests to specific sales channels.",
       "createSecretHeader": "Create Secret API Key",
-      "createSecretHint": "Create a new secret API key to access the Medusa API as an authenticated admin user.",
+      "createSecretHint": "Create a new secret API key to access the Botanical Chemist API as an authenticated admin user.",
       "secretKeyCreatedHeader": "Secret Key Created",
       "secretKeyCreatedHint": "Your new secret key has been generated. Copy and securely store it now. This is the only time it will be displayed.",
       "copySecretTokenSuccess": "Secret key was copied to clipboard.",
@@ -2826,32 +3548,35 @@
   },
   "login": {
     "forgotPassword": "Forgot password? - <0>Reset</0>",
-    "title": "Welcome to Medusa",
+    "title": "Welcome to Botanical Chemist",
     "hint": "Sign in to access the account area"
   },
   "invite": {
-    "title": "Welcome to Medusa",
+    "title": "Welcome to Botanical Chemist",
     "hint": "Create your account below",
-    "backToLogin": "Back to login",
+    "backToLogin": "Back to Login",
     "createAccount": "Create account",
     "alreadyHaveAccount": "Already have an account? - <0>Log in</0>",
     "emailTooltip": "Your email cannot be changed. If you would like to use another email, a new invite must be sent.",
     "invalidInvite": "The invite is invalid or has expired.",
     "successTitle": "Your account has been registered",
-    "successHint": "Get started with Medusa Admin right away.",
-    "successAction": "Start Medusa Admin",
+    "successHint": "Get started with Botanical Chemist Admin right away.",
+    "successAction": "Start Botanical Chemist Admin",
     "invalidTokenTitle": "Your invite token is invalid",
     "invalidTokenHint": "Try requesting a new invite link.",
     "passwordMismatch": "Passwords do not match",
     "toast": {
       "accepted": "Invite successfully accepted"
-    }
+    },
+    "passwordFormat": "Password must contain at least one capital letter, one number, and one special character",
+    "passwordMinimum": "Password must be minimum 10 characters",
+    "noSpaces": "Password must not contain spaces"
   },
   "resetPassword": {
     "title": "Reset password",
-    "hint": "Enter your email below, and we will send you instructions on how to reset your password.",
+    "hint": "Enter your email below, and we will send you a link to reset your password.",
     "email": "Email",
-    "sendResetInstructions": "Send reset instructions",
+    "sendResetInstructions": "Send Reset Link",
     "backToLogin": "<0>Back to login</0>",
     "newPasswordHint": "Choose a new password below.",
     "invalidTokenTitle": "Your reset token is invalid",
@@ -2865,14 +3590,17 @@
     "successfulRequestTitle": "Successfully sent you an email",
     "successfulRequest": "We've sent you an email which you can use to reset your password. Check your spam folder if you haven't received it after a few minutes.",
     "successfulResetTitle": "Password reset successful",
-    "successfulReset": "Please login in on the login page.",
+    "successfulReset": "Please log in on the Login page.",
     "passwordMismatch": "Passwords do no match",
     "invalidLinkTitle": "Your reset link is invalid",
-    "invalidLinkHint": "Try resetting your password again."
+    "invalidLinkHint": "Try resetting your password again.",
+    "passwordFormat": "Password must contain at least one capital letter, one number, and one special character",
+    "passwordMinimum": "Password must be minimum 10 characters",
+    "noSpaces": "Password must not contain spaces"
   },
   "workflowExecutions": {
     "domain": "Workflows",
-    "subtitle": "View and keep track of workflow executions in your Medusa application.",
+    "subtitle": "View and keep track of workflow executions in your Botanical Chemist application.",
     "transactionIdLabel": "Transaction ID",
     "workflowIdLabel": "Workflow ID",
     "progressLabel": "Progress",
@@ -2958,6 +3686,24 @@
       "value": "Value"
     }
   },
+  "loyaltypoint": {
+    "name": "Conversion Rate",
+    "domain": "Loyalty Points"
+  },
+  "invoiceConfig": {
+    "domain": "Invoice Configuration",
+    "header": "Invoice Configuration",
+    "subtitle": "Configure your company information for invoices",
+    "form": {
+      "companyName": "Company Name",
+      "companyAddress": "Company Address",
+      "companyPhone": "Phone Number",
+      "companyEmail": "Email Address",
+      "companyLogo": "Company Logo",
+      "notes": "Invoice Notes",
+      "save": "Save Configuration"
+    }
+  },
   "productTags": {
     "domain": "Product Tags",
     "create": {
@@ -2985,7 +3731,7 @@
       "description": "You don't have any notifications at the moment, but once you do they will live here."
     },
     "accessibility": {
-      "description": "Notifications about Medusa activities will be listed here."
+      "description": "Notifications about Botanical Chemist activities will be listed here."
     }
   },
   "errors": {
@@ -3178,7 +3924,8 @@
     "startDate": "Start date",
     "endDate": "End date",
     "draft": "Draft",
-    "values": "Values"
+    "values": "Values",
+    "action": "Action"
   },
   "dateTime": {
     "years_one": "Year",
@@ -3215,5 +3962,12 @@
         "cancelText": "Cancel"
       }
     }
+  },
+  "rbac": {
+    "domain": "RBAC",
+    "can_read": "View",
+    "can_create": "Create",
+    "can_update": "Update",
+    "can_delete": "Delete"
   }
 }

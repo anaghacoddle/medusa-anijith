@@ -1,62 +1,78 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Alert, Button, Heading, Input, Text, toast } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Alert, Button, Heading, Input, Text, toast } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import * as z from "zod";
 
-import { useState } from "react"
-import { decodeToken } from "react-jwt"
-import { Form } from "../../components/common/form"
-import { LogoBox } from "../../components/common/logo-box"
-import { i18n } from "../../components/utilities/i18n"
-import {
-  useResetPasswordForEmailPass,
-  useUpdateProviderForEmailPass,
-} from "../../hooks/api/auth"
+import { useEffect, useState } from "react";
+import { decodeToken } from "react-jwt";
+import { Form } from "../../components/common/form";
+import { LogoBox } from "../../components/common/logo-box";
+import { i18n } from "../../components/utilities/i18n";
+import { useResetPasswordForEmailPass, useUpdateProviderForEmailPass } from "../../hooks/api/auth";
+import { decryptObject, encryptObject } from "../../utils/encryption";
 
 const ResetPasswordInstructionsSchema = z.object({
   email: z.string().email(),
-})
+});
 
 const ResetPasswordSchema = z
   .object({
-    password: z.string().min(1),
-    repeat_password: z.string().min(1),
+    password: z.string().min(10, i18n.t("resetPassword.passwordMinimum")),
+    repeat_password: z.string(),
   })
   .superRefine(({ password, repeat_password }, ctx) => {
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^a-zA-Z0-9]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNoSpaces = /^\S+$/.test(password); // disallow spaces
+
+    if (!hasNoSpaces) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: i18n.t("resetPassword.noSpaces"), // e.g., "Password must include uppercase, number, special character, and no spaces"
+        path: ["password"],
+      });
+    }
+    if (!hasNumber || !hasSpecial || !hasUppercase || !hasNoSpaces) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: i18n.t("resetPassword.passwordFormat"), // e.g., "Password must include uppercase, number, special character, and no spaces"
+        path: ["password"],
+      });
+    }
+
     if (password !== repeat_password) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: i18n.t("resetPassword.passwordMismatch"),
         path: ["repeat_password"],
-      })
+      });
     }
-  })
+  });
 
 const ResetPasswordTokenSchema = z.object({
   entity_id: z.string(),
   provider: z.string(),
   exp: z.number(),
   iat: z.number(),
-})
+});
 
 type DecodedResetPasswordToken = {
-  entity_id: string // -> email in here
-  provider: string
-  exp: string
-  iat: string
-}
+  entity_id: string; // -> email in here
+  provider: string;
+  exp: string;
+  iat: string;
+};
 
-const validateDecodedResetPasswordToken = (
-  decoded: any
-): decoded is DecodedResetPasswordToken => {
-  return ResetPasswordTokenSchema.safeParse(decoded).success
-}
+const validateDecodedResetPasswordToken = (decoded: any): decoded is DecodedResetPasswordToken => {
+  return ResetPasswordTokenSchema.safeParse(decoded).success;
+};
 
 const InvalidResetToken = () => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
+  const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <div className="bg-ui-bg-base flex min-h-dvh w-dvw items-center justify-center">
@@ -91,20 +107,27 @@ const InvalidResetToken = () => {
         </span>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const ChooseNewPassword = ({ token }: { token: string }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  const [showAlert, setShowAlert] = useState(false)
+  const [showAlert, setShowAlert] = useState(false);
+  const [decryptedEmail, setDecryptedEmail] = useState<string>("");
 
-  const invite: DecodedResetPasswordToken | null = token
-    ? decodeToken(token)
-    : null
+  const invite: DecodedResetPasswordToken | null = token ? decodeToken(token) : null;
+  useEffect(() => {
+    if (invite?.entity_id) {
+      (async () => {
+        const result = await decryptObject({ email: invite.entity_id });
+        console.log("decrypted email", result);
 
-  const isValidResetPasswordToken =
-    invite && validateDecodedResetPasswordToken(invite)
+        setDecryptedEmail(result?.email);
+      })();
+    }
+  }, [invite]);
+  const isValidResetPasswordToken = invite && validateDecodedResetPasswordToken(invite);
 
   const form = useForm<z.infer<typeof ResetPasswordSchema>>({
     resolver: zodResolver(ResetPasswordSchema),
@@ -112,34 +135,34 @@ const ChooseNewPassword = ({ token }: { token: string }) => {
       password: "",
       repeat_password: "",
     },
-  })
+  });
 
-  const { mutateAsync, isPending } = useUpdateProviderForEmailPass(token)
+  const { mutateAsync, isPending } = useUpdateProviderForEmailPass(token);
 
   const handleSubmit = form.handleSubmit(async ({ password }) => {
     if (!invite) {
-      return
+      return;
     }
-
+    const encryptedPassword = await encryptObject({ password });
     await mutateAsync(
       {
-        password,
+        password: encryptedPassword.password,
       },
       {
         onSuccess: () => {
-          form.setValue("password", "")
-          form.setValue("repeat_password", "")
-          setShowAlert(true)
+          form.setValue("password", "");
+          form.setValue("repeat_password", "");
+          setShowAlert(true);
         },
-        onError: (error) => {
-          toast.error(error.message)
+        onError: error => {
+          toast.error(error.message);
         },
       }
-    )
-  })
+    );
+  });
 
   if (!isValidResetPasswordToken) {
-    return <InvalidResetToken />
+    return <InvalidResetToken />;
   }
 
   return (
@@ -154,12 +177,9 @@ const ChooseNewPassword = ({ token }: { token: string }) => {
         </div>
         <div className="flex w-full flex-col gap-y-3">
           <Form {...form}>
-            <form
-              onSubmit={handleSubmit}
-              className="flex w-full flex-col gap-y-6"
-            >
+            <form onSubmit={handleSubmit} className="flex w-full flex-col gap-y-6">
               <div className="flex flex-col gap-y-4">
-                <Input type="email" disabled value={invite?.entity_id} />
+                <Input type="email" disabled value={decryptedEmail} />
                 <Form.Field
                   control={form.control}
                   name="password"
@@ -176,7 +196,7 @@ const ChooseNewPassword = ({ token }: { token: string }) => {
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
                 <Form.Field
@@ -195,7 +215,7 @@ const ChooseNewPassword = ({ token }: { token: string }) => {
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
               </div>
@@ -231,44 +251,45 @@ const ChooseNewPassword = ({ token }: { token: string }) => {
         </span>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export const ResetPassword = () => {
-  const { t } = useTranslation()
-  const [searchParams] = useSearchParams()
-  const [showAlert, setShowAlert] = useState(false)
+  const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const [showAlert, setShowAlert] = useState(false);
 
-  const token = searchParams.get("token")
+  const token = searchParams.get("token");
 
   const form = useForm<z.infer<typeof ResetPasswordInstructionsSchema>>({
     resolver: zodResolver(ResetPasswordInstructionsSchema),
     defaultValues: {
       email: "",
     },
-  })
+  });
 
-  const { mutateAsync, isPending } = useResetPasswordForEmailPass()
+  const { mutateAsync, isPending } = useResetPasswordForEmailPass();
 
   const handleSubmit = form.handleSubmit(async ({ email }) => {
+    const encryptedEmail = await encryptObject({ email });
     await mutateAsync(
       {
-        email,
+        email: encryptedEmail.email,
       },
       {
         onSuccess: () => {
-          form.setValue("email", "")
-          setShowAlert(true)
+          form.setValue("email", "");
+          setShowAlert(true);
         },
-        onError: (error) => {
-          toast.error(error.message)
+        onError: error => {
+          toast.error(error.message);
         },
       }
-    )
-  })
+    );
+  });
 
   if (token) {
-    return <ChooseNewPassword token={token} />
+    return <ChooseNewPassword token={token} />;
   }
 
   return (
@@ -283,10 +304,7 @@ export const ResetPassword = () => {
         </div>
         <div className="flex w-full flex-col gap-y-3">
           <Form {...form}>
-            <form
-              onSubmit={handleSubmit}
-              className="flex w-full flex-col gap-y-6"
-            >
+            <form onSubmit={handleSubmit} className="flex w-full flex-col gap-y-6">
               <div className="mt-4 flex flex-col gap-y-3">
                 <Form.Field
                   control={form.control}
@@ -295,15 +313,11 @@ export const ResetPassword = () => {
                     return (
                       <Form.Item>
                         <Form.Control>
-                          <Input
-                            autoComplete="email"
-                            {...field}
-                            placeholder={t("fields.email")}
-                          />
+                          <Input autoComplete="email" {...field} placeholder={t("fields.email")} />
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
               </div>
@@ -337,5 +351,5 @@ export const ResetPassword = () => {
         </span>
       </div>
     </div>
-  )
-}
+  );
+};

@@ -1,34 +1,37 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button, Heading, Input, Text, toast } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import * as zod from "zod"
-import { Form } from "../../../../../components/common/form"
-import { CountrySelect } from "../../../../../components/inputs/country-select"
-import {
-  RouteFocusModal,
-  useRouteModal,
-} from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useCreateStockLocation } from "../../../../../hooks/api/stock-locations"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Heading, Input, Text, toast } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import * as zod from "zod";
+import { Form } from "../../../../../components/common/form";
+import { CountrySelect } from "../../../../../components/inputs/country-select";
+import { RouteFocusModal, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useCreateStockLocation } from "../../../../../hooks/api/stock-locations";
 
 const CreateLocationSchema = zod.object({
-  name: zod.string().min(1),
+  name: zod
+    .string()
+    .min(1, { message: "Name is required" })
+    .max(50, { message: "Name must be at most 50 characters" }),
   address: zod.object({
-    address_1: zod.string().min(1),
+    address_1: zod
+      .string()
+      .min(1, { message: "Address is required" })
+      .max(50, { message: "Address must be at most 150 characters" }),
     address_2: zod.string().optional(),
-    country_code: zod.string().min(2).max(2),
+    country_code: zod.string().min(1, { message: "Country is required" }),
     city: zod.string().optional(),
     postal_code: zod.string().optional(),
     province: zod.string().optional(),
     company: zod.string().optional(),
     phone: zod.string().optional(),
   }),
-})
+});
 
 export const CreateLocationForm = () => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
 
   const form = useForm<zod.infer<typeof CreateLocationSchema>>({
     defaultValues: {
@@ -45,11 +48,11 @@ export const CreateLocationForm = () => {
       },
     },
     resolver: zodResolver(CreateLocationSchema),
-  })
+  });
 
-  const { mutateAsync, isPending } = useCreateStockLocation()
+  const { mutateAsync, isPending } = useCreateStockLocation();
 
-  const handleSubmit = form.handleSubmit(async (values) => {
+  const handleSubmit = form.handleSubmit(async values => {
     await mutateAsync(
       {
         name: values.name,
@@ -57,31 +60,26 @@ export const CreateLocationForm = () => {
       },
       {
         onSuccess: ({ stock_location }) => {
-          toast.success(t("locations.toast.create"))
+          toast.success(t("locations.toast.create"));
 
-          handleSuccess(`/settings/locations/${stock_location.id}`)
+          handleSuccess(`/settings/locations/${stock_location.id}`);
         },
-        onError: (e) => {
-          toast.error(e.message)
+        onError: e => {
+          toast.error(e.message);
         },
       }
-    )
-  })
+    );
+  });
 
   return (
     <RouteFocusModal.Form form={form}>
-      <KeyboundForm
-        onSubmit={handleSubmit}
-        className="flex h-full flex-col overflow-hidden"
-      >
+      <KeyboundForm onSubmit={handleSubmit} className="flex h-full flex-col overflow-hidden">
         <RouteFocusModal.Header />
         <RouteFocusModal.Body className="flex flex-1 flex-col overflow-hidden">
           <div className="flex flex-1 flex-col items-center overflow-y-auto">
             <div className="flex w-full max-w-[720px] flex-col gap-y-8 px-2 py-16">
               <div>
-                <Heading className="capitalize">
-                  {t("stockLocations.create.header")}
-                </Heading>
+                <Heading className="capitalize">{t("stockLocations.create.header")}</Heading>
                 <Text size="small" className="text-ui-fg-subtle">
                   {t("stockLocations.create.hint")}
                 </Text>
@@ -93,13 +91,13 @@ export const CreateLocationForm = () => {
                   render={({ field }) => {
                     return (
                       <Form.Item>
-                        <Form.Label>{t("fields.name")}</Form.Label>
+                        <Form.Label>{t("fields.name")}*</Form.Label>
                         <Form.Control>
                           <Input size="small" {...field} />
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
               </div>
@@ -110,13 +108,13 @@ export const CreateLocationForm = () => {
                   render={({ field }) => {
                     return (
                       <Form.Item>
-                        <Form.Label>{t("fields.address")}</Form.Label>
+                        <Form.Label>{t("fields.address")}*</Form.Label>
                         <Form.Control>
                           <Input size="small" {...field} />
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
                 <Form.Field
@@ -131,7 +129,7 @@ export const CreateLocationForm = () => {
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
                 <Form.Field
@@ -140,15 +138,13 @@ export const CreateLocationForm = () => {
                   render={({ field }) => {
                     return (
                       <Form.Item>
-                        <Form.Label optional>
-                          {t("fields.postalCode")}
-                        </Form.Label>
+                        <Form.Label optional>{t("fields.postalCode")}</Form.Label>
                         <Form.Control>
                           <Input size="small" {...field} />
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
                 <Form.Field
@@ -163,7 +159,7 @@ export const CreateLocationForm = () => {
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
                 <Form.Field
@@ -172,13 +168,13 @@ export const CreateLocationForm = () => {
                   render={({ field }) => {
                     return (
                       <Form.Item>
-                        <Form.Label>{t("fields.country")}</Form.Label>
+                        <Form.Label>{t("fields.country")}*</Form.Label>
                         <Form.Control>
                           <CountrySelect {...field} />
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
                 <Form.Field
@@ -193,7 +189,7 @@ export const CreateLocationForm = () => {
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
                 <Form.Field
@@ -208,7 +204,7 @@ export const CreateLocationForm = () => {
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
                 <Form.Field
@@ -223,7 +219,7 @@ export const CreateLocationForm = () => {
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
               </div>
@@ -244,5 +240,5 @@ export const CreateLocationForm = () => {
         </RouteFocusModal.Footer>
       </KeyboundForm>
     </RouteFocusModal.Form>
-  )
-}
+  );
+};

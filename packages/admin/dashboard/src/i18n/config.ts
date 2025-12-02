@@ -1,4 +1,4 @@
-import { InitOptions } from "i18next"
+import { InitOptions } from "i18next";
 
 export const defaultI18nOptions: InitOptions = {
   debug: process.env.NODE_ENV === "development",
@@ -12,5 +12,5 @@ export const defaultI18nOptions: InitOptions = {
   fallbackNS: "translation",
   interpolation: {
     escapeValue: false,
-  }
-}
+  },
+};

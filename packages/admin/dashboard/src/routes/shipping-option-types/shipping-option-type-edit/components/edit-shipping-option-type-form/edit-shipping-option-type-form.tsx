@@ -1,29 +1,29 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { HttpTypes } from "@medusajs/types"
-import { Button, Input, Text, toast } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { z } from "zod"
-import { Form } from "../../../../../components/common/form"
-import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useUpdateShippingOptionType } from "../../../../../hooks/api/shipping-option-types"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { HttpTypes } from "@medusajs/types";
+import { Button, Input, Text, toast } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
+import { Form } from "../../../../../components/common/form";
+import { RouteDrawer, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useUpdateShippingOptionType } from "../../../../../hooks/api/shipping-option-types";
 
 const EditShippingOptionTypeSchema = z.object({
   label: z.string().min(1),
   code: z.string().min(1),
   description: z.string().optional(),
-})
+});
 
 type EditShippingOptionTypeFormProps = {
-  shippingOptionType: HttpTypes.AdminShippingOptionType
-}
+  shippingOptionType: HttpTypes.AdminShippingOptionType;
+};
 
 export const EditShippingOptionTypeForm = ({
   shippingOptionType,
 }: EditShippingOptionTypeFormProps) => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
 
   const form = useForm<z.infer<typeof EditShippingOptionTypeSchema>>({
     defaultValues: {
@@ -32,13 +32,11 @@ export const EditShippingOptionTypeForm = ({
       description: shippingOptionType.description,
     },
     resolver: zodResolver(EditShippingOptionTypeSchema),
-  })
+  });
 
-  const { mutateAsync, isPending } = useUpdateShippingOptionType(
-    shippingOptionType.id
-  )
+  const { mutateAsync, isPending } = useUpdateShippingOptionType(shippingOptionType.id);
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async data => {
     await mutateAsync(
       {
         label: data.label,
@@ -51,22 +49,19 @@ export const EditShippingOptionTypeForm = ({
             t("shippingOptionTypes.edit.successToast", {
               label: shipping_option_type.label,
             })
-          )
-          handleSuccess()
+          );
+          handleSuccess();
         },
-        onError: (error) => {
-          toast.error(error.message)
+        onError: error => {
+          toast.error(error.message);
         },
       }
-    )
-  })
+    );
+  });
 
   return (
     <RouteDrawer.Form form={form}>
-      <KeyboundForm
-        onSubmit={handleSubmit}
-        className="flex flex-1 flex-col overflow-hidden"
-      >
+      <KeyboundForm onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
         <RouteDrawer.Body className="flex flex-1 flex-col gap-y-8 overflow-y-auto">
           <Form.Field
             control={form.control}
@@ -74,15 +69,13 @@ export const EditShippingOptionTypeForm = ({
             render={({ field }) => {
               return (
                 <Form.Item>
-                  <Form.Label>
-                    {t("shippingOptionTypes.fields.label")}
-                  </Form.Label>
+                  <Form.Label>{t("shippingOptionTypes.fields.label")}</Form.Label>
                   <Form.Control>
                     <Input {...field} />
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
           <Form.Field
@@ -91,15 +84,13 @@ export const EditShippingOptionTypeForm = ({
             render={({ field }) => {
               return (
                 <Form.Item>
-                  <Form.Label>
-                    {t("shippingOptionTypes.fields.code")}
-                  </Form.Label>
+                  <Form.Label>{t("shippingOptionTypes.fields.code")}</Form.Label>
                   <Form.Control>
                     <Input {...field} />
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
           <Form.Field
@@ -110,11 +101,7 @@ export const EditShippingOptionTypeForm = ({
                 <Form.Item>
                   <Form.Label>
                     {t("shippingOptionTypes.fields.description")}
-                    <Text
-                      size="small"
-                      leading="compact"
-                      className="text-ui-fg-muted ml-1 inline"
-                    >
+                    <Text size="small" leading="compact" className="text-ui-fg-muted ml-1 inline">
                       ({t("fields.optional")})
                     </Text>
                   </Form.Label>
@@ -123,7 +110,7 @@ export const EditShippingOptionTypeForm = ({
                   </Form.Control>
                   <Form.ErrorMessage />
                 </Form.Item>
-              )
+              );
             }}
           />
         </RouteDrawer.Body>
@@ -141,5 +128,5 @@ export const EditShippingOptionTypeForm = ({
         </RouteDrawer.Footer>
       </KeyboundForm>
     </RouteDrawer.Form>
-  )
-}
+  );
+};

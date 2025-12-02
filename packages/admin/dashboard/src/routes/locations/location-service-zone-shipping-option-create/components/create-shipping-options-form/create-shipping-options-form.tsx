@@ -1,30 +1,21 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { HttpTypes } from "@medusajs/types"
-import { Button, ProgressStatus, ProgressTabs, toast } from "@medusajs/ui"
-import { useForm, useWatch } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { HttpTypes } from "@medusajs/types";
+import { Button, ProgressStatus, ProgressTabs, toast } from "@medusajs/ui";
+import { useForm, useWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
-import { useState } from "react"
-import {
-  RouteFocusModal,
-  useRouteModal,
-} from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useCreateShippingOptions } from "../../../../../hooks/api/shipping-options"
-import { castNumber } from "../../../../../lib/cast-number"
-import {
-  FulfillmentSetType,
-  ShippingOptionPriceType,
-} from "../../../common/constants"
-import { buildShippingOptionPriceRules } from "../../../common/utils/price-rule-helpers"
-import { CreateShippingOptionDetailsForm } from "./create-shipping-option-details-form"
-import { CreateShippingOptionsPricesForm } from "./create-shipping-options-prices-form"
-import {
-  CreateShippingOptionDetailsSchema,
-  CreateShippingOptionSchema,
-} from "./schema"
-import { useFulfillmentProviderOptions } from "../../../../../hooks/api"
-import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
+import { useState } from "react";
+import { RouteFocusModal, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useCreateShippingOptions } from "../../../../../hooks/api/shipping-options";
+import { castNumber } from "../../../../../lib/cast-number";
+import { FulfillmentSetType, ShippingOptionPriceType } from "../../../common/constants";
+import { buildShippingOptionPriceRules } from "../../../common/utils/price-rule-helpers";
+import { CreateShippingOptionDetailsForm } from "./create-shipping-option-details-form";
+import { CreateShippingOptionsPricesForm } from "./create-shipping-options-prices-form";
+import { CreateShippingOptionDetailsSchema, CreateShippingOptionSchema } from "./schema";
+import { useFulfillmentProviderOptions } from "../../../../../hooks/api";
+import { useDocumentDirection } from "../../../../../hooks/use-document-direction";
 
 enum Tab {
   DETAILS = "details",
@@ -32,11 +23,11 @@ enum Tab {
 }
 
 type CreateShippingOptionFormProps = {
-  zone: HttpTypes.AdminServiceZone
-  locationId: string
-  isReturn?: boolean
-  type: FulfillmentSetType
-}
+  zone: HttpTypes.AdminServiceZone;
+  locationId: string;
+  isReturn?: boolean;
+  type: FulfillmentSetType;
+};
 
 export function CreateShippingOptionsForm({
   zone,
@@ -44,12 +35,12 @@ export function CreateShippingOptionsForm({
   locationId,
   type,
 }: CreateShippingOptionFormProps) {
-  const [activeTab, setActiveTab] = useState<Tab>(Tab.DETAILS)
-  const [validDetails, setValidDetails] = useState(false)
+  const [activeTab, setActiveTab] = useState<Tab>(Tab.DETAILS);
+  const [validDetails, setValidDetails] = useState(false);
 
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
-  const direction = useDocumentDirection()
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
+  const direction = useDocumentDirection();
   const form = useForm<CreateShippingOptionSchema>({
     defaultValues: {
       name: "",
@@ -64,86 +55,87 @@ export function CreateShippingOptionsForm({
       conditional_currency_prices: {},
     },
     resolver: zodResolver(CreateShippingOptionSchema),
-  })
+  });
 
   const selectedProviderId = useWatch({
     control: form.control,
     name: "provider_id",
-  })
+  });
 
-  const { fulfillment_options: fulfillmentProviderOptions } =
-    useFulfillmentProviderOptions(selectedProviderId, {
+  const { fulfillment_options: fulfillmentProviderOptions } = useFulfillmentProviderOptions(
+    selectedProviderId,
+    {
       enabled: !!selectedProviderId,
-    })
+    }
+  );
 
-  const isCalculatedPriceType =
-    form.watch("price_type") === ShippingOptionPriceType.Calculated
+  const isCalculatedPriceType = form.watch("price_type") === ShippingOptionPriceType.Calculated;
 
-  const { mutateAsync, isPending: isLoading } = useCreateShippingOptions()
+  const { mutateAsync, isPending: isLoading } = useCreateShippingOptions();
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async data => {
     const currencyPrices = Object.entries(data.currency_prices)
       .map(([code, value]) => {
         if (!value) {
-          return undefined
+          return undefined;
         }
 
         return {
           currency_code: code,
           amount: castNumber(value),
-        }
+        };
       })
-      .filter((p): p is { currency_code: string; amount: number } => !!p)
+      .filter((p): p is { currency_code: string; amount: number } => !!p);
 
     const regionPrices = Object.entries(data.region_prices)
       .map(([region_id, value]) => {
         if (!value) {
-          return undefined
+          return undefined;
         }
 
         return {
           region_id,
           amount: castNumber(value),
-        }
+        };
       })
-      .filter((p): p is { region_id: string; amount: number } => !!p)
+      .filter((p): p is { region_id: string; amount: number } => !!p);
 
-    const conditionalRegionPrices = Object.entries(
-      data.conditional_region_prices
-    ).flatMap(([region_id, value]) => {
-      const prices: HttpTypes.AdminCreateShippingOptionPriceWithRegion[] =
-        value?.map((rule) => ({
-          region_id: region_id,
-          amount: castNumber(rule.amount),
-          rules: buildShippingOptionPriceRules(rule),
-        })) || []
+    const conditionalRegionPrices = Object.entries(data.conditional_region_prices).flatMap(
+      ([region_id, value]) => {
+        const prices: HttpTypes.AdminCreateShippingOptionPriceWithRegion[] =
+          value?.map(rule => ({
+            region_id: region_id,
+            amount: castNumber(rule.amount),
+            rules: buildShippingOptionPriceRules(rule),
+          })) || [];
 
-      return prices?.filter(Boolean)
-    })
+        return prices?.filter(Boolean);
+      }
+    );
 
-    const conditionalCurrencyPrices = Object.entries(
-      data.conditional_currency_prices
-    ).flatMap(([currency_code, value]) => {
-      const prices: HttpTypes.AdminCreateShippingOptionPriceWithCurrency[] =
-        value?.map((rule) => ({
-          currency_code,
-          amount: castNumber(rule.amount),
-          rules: buildShippingOptionPriceRules(rule),
-        })) || []
+    const conditionalCurrencyPrices = Object.entries(data.conditional_currency_prices).flatMap(
+      ([currency_code, value]) => {
+        const prices: HttpTypes.AdminCreateShippingOptionPriceWithCurrency[] =
+          value?.map(rule => ({
+            currency_code,
+            amount: castNumber(rule.amount),
+            rules: buildShippingOptionPriceRules(rule),
+          })) || [];
 
-      return prices?.filter(Boolean)
-    })
+        return prices?.filter(Boolean);
+      }
+    );
 
     const allPrices = [
       ...currencyPrices,
       ...conditionalCurrencyPrices,
       ...regionPrices,
       ...conditionalRegionPrices,
-    ]
+    ];
 
     const fulfillmentOptionData = fulfillmentProviderOptions?.find(
-      (fo) => fo.id === data.fulfillment_option_id
-    )!
+      fo => fo.id === data.fulfillment_option_id
+    )!;
 
     await mutateAsync(
       {
@@ -156,13 +148,11 @@ export function CreateShippingOptionsForm({
         data: fulfillmentOptionData as unknown as Record<string, unknown>,
         rules: [
           {
-            // eslint-disable-next-line
             value: isReturn ? "true" : "false",
             attribute: "is_return",
             operator: "eq",
           },
           {
-            // eslint-disable-next-line
             value: data.enabled_in_store ? "true" : "false",
             attribute: "enabled_in_store",
             operator: "eq",
@@ -179,34 +169,34 @@ export function CreateShippingOptionsForm({
               }.successToast`,
               { name: shipping_option.name }
             )
-          )
-          handleSuccess(`/settings/locations/${locationId}`)
+          );
+          handleSuccess(`/settings/locations/${locationId}`);
         },
-        onError: (e) => {
-          toast.error(e.message)
+        onError: e => {
+          toast.error(e.message);
         },
       }
-    )
-  })
+    );
+  });
 
   const onTabChange = (tab: Tab) => {
     if (tab === Tab.PRICING) {
-      form.clearErrors()
+      form.clearErrors();
 
       const result = CreateShippingOptionDetailsSchema.safeParse({
         ...form.getValues(),
-      })
+      });
 
       if (!result.success) {
-        const [firstError, ...rest] = result.error.errors
+        const [firstError, ...rest] = result.error.errors;
 
         for (const error of rest) {
-          const _path = error.path.join(".") as keyof CreateShippingOptionSchema
+          const _path = error.path.join(".") as keyof CreateShippingOptionSchema;
 
           form.setError(_path, {
             message: error.message,
             type: error.code,
-          })
+          });
         }
 
         // Focus the first error
@@ -219,63 +209,60 @@ export function CreateShippingOptionsForm({
           {
             shouldFocus: true,
           }
-        )
+        );
 
-        setValidDetails(false)
-        return
+        setValidDetails(false);
+        return;
       }
 
-      setValidDetails(true)
+      setValidDetails(true);
     }
 
-    setActiveTab(tab)
-  }
+    setActiveTab(tab);
+  };
 
   const pricesStatus: ProgressStatus =
     form.getFieldState("currency_prices")?.isDirty ||
     form.getFieldState("region_prices")?.isDirty ||
     activeTab === Tab.PRICING
       ? "in-progress"
-      : "not-started"
+      : "not-started";
 
-  const detailsStatus: ProgressStatus = validDetails
-    ? "completed"
-    : "in-progress"
+  const detailsStatus: ProgressStatus = validDetails ? "completed" : "in-progress";
 
   return (
     <RouteFocusModal.Form form={form}>
       <KeyboundForm
         className="flex h-full flex-col"
         onSubmit={handleSubmit}
-        onKeyDown={(e) => {
-          const isEnterKey = e.key === "Enter"
-          const isModifierPressed = e.metaKey || e.ctrlKey
-          const shouldContinueToPricing =
-            activeTab !== Tab.PRICING && !isCalculatedPriceType
+        onKeyDown={e => {
+          const isEnterKey = e.key === "Enter";
+          const isModifierPressed = e.metaKey || e.ctrlKey;
+          const shouldContinueToPricing = activeTab !== Tab.PRICING && !isCalculatedPriceType;
 
           if (!isEnterKey) {
-            return
+            return;
           }
-          e.preventDefault()
+          e.preventDefault();
 
           if (!isModifierPressed) {
-            return
+            return;
           }
 
           if (shouldContinueToPricing) {
-            e.stopPropagation()
-            onTabChange(Tab.PRICING)
-            return
+            e.stopPropagation();
+            onTabChange(Tab.PRICING);
+            return;
           }
 
-          handleSubmit()
+          handleSubmit();
         }}
       >
         <ProgressTabs
           dir={direction}
           value={activeTab}
           className="flex h-full flex-col overflow-hidden"
-          onValueChange={(tab) => onTabChange(tab as Tab)}
+          onValueChange={tab => onTabChange(tab as Tab)}
         >
           <RouteFocusModal.Header>
             <ProgressTabs.List className="border-ui-border-base -my-2 ml-2 min-w-0 flex-1 border-l">
@@ -303,10 +290,7 @@ export function CreateShippingOptionsForm({
           </RouteFocusModal.Header>
 
           <RouteFocusModal.Body className="size-full overflow-hidden">
-            <ProgressTabs.Content
-              value={Tab.DETAILS}
-              className="size-full overflow-y-auto"
-            >
+            <ProgressTabs.Content value={Tab.DETAILS} className="size-full overflow-y-auto">
               <CreateShippingOptionDetailsForm
                 form={form}
                 zone={zone}
@@ -355,5 +339,5 @@ export function CreateShippingOptionsForm({
         </ProgressTabs>
       </KeyboundForm>
     </RouteFocusModal.Form>
-  )
+  );
 }

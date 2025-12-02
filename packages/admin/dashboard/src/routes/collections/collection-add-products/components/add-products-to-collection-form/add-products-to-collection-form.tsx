@@ -1,94 +1,80 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { HttpTypes } from "@medusajs/types"
-import { Button, Checkbox, Hint, Tooltip, toast } from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import {
-  OnChangeFn,
-  RowSelectionState,
-  createColumnHelper,
-} from "@tanstack/react-table"
-import { useEffect, useMemo, useState } from "react"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import * as zod from "zod"
-import {
-  RouteFocusModal,
-  useRouteModal,
-} from "../../../../../components/modals/index.ts"
-import { _DataTable } from "../../../../../components/table/data-table/data-table.tsx"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form/keybound-form.tsx"
-import { useUpdateCollectionProducts } from "../../../../../hooks/api/collections.tsx"
-import { useProducts } from "../../../../../hooks/api/products.tsx"
-import { useProductTableColumns } from "../../../../../hooks/table/columns/use-product-table-columns.tsx"
-import { useProductTableFilters } from "../../../../../hooks/table/filters/use-product-table-filters.tsx"
-import { useProductTableQuery } from "../../../../../hooks/table/query/use-product-table-query.tsx"
-import { useDataTable } from "../../../../../hooks/use-data-table.tsx"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { HttpTypes } from "@medusajs/types";
+import { Button, Checkbox, Hint, Tooltip, toast } from "@medusajs/ui";
+import { keepPreviousData } from "@tanstack/react-query";
+import { OnChangeFn, RowSelectionState, createColumnHelper } from "@tanstack/react-table";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import * as zod from "zod";
+import { RouteFocusModal, useRouteModal } from "../../../../../components/modals/index.ts";
+import { _DataTable } from "../../../../../components/table/data-table/data-table.tsx";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form/keybound-form.tsx";
+import { useUpdateCollectionProducts } from "../../../../../hooks/api/collections.tsx";
+import { useProducts } from "../../../../../hooks/api/products.tsx";
+import { useProductTableColumns } from "../../../../../hooks/table/columns/use-product-table-columns.tsx";
+import { useProductTableFilters } from "../../../../../hooks/table/filters/use-product-table-filters.tsx";
+import { useProductTableQuery } from "../../../../../hooks/table/query/use-product-table-query.tsx";
+import { useDataTable } from "../../../../../hooks/use-data-table.tsx";
 
 type AddProductsToCollectionFormProps = {
-  collection: HttpTypes.AdminCollection
-}
+  collection: HttpTypes.AdminCollection;
+};
 
 const AddProductsToCollectionSchema = zod.object({
   add: zod.array(zod.string()).min(1),
-})
+});
 
-const PAGE_SIZE = 50
-const PREFIX = "p"
+const PAGE_SIZE = 50;
+const PREFIX = "p";
 
-export const AddProductsToCollectionForm = ({
-  collection,
-}: AddProductsToCollectionFormProps) => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
+export const AddProductsToCollectionForm = ({ collection }: AddProductsToCollectionFormProps) => {
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
 
   const form = useForm<zod.infer<typeof AddProductsToCollectionSchema>>({
     defaultValues: {
       add: [],
     },
     resolver: zodResolver(AddProductsToCollectionSchema),
-  })
+  });
 
-  const { setValue } = form
+  const { setValue } = form;
 
-  const { mutateAsync, isPending: isMutating } = useUpdateCollectionProducts(
-    collection.id!
-  )
+  const { mutateAsync, isPending: isMutating } = useUpdateCollectionProducts(collection.id!);
 
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-  const updater: OnChangeFn<RowSelectionState> = (newSelection) => {
-    const update =
-      typeof newSelection === "function"
-        ? newSelection(rowSelection)
-        : newSelection
+  const updater: OnChangeFn<RowSelectionState> = newSelection => {
+    const update = typeof newSelection === "function" ? newSelection(rowSelection) : newSelection;
 
     setValue(
       "add",
-      Object.keys(update).filter((k) => update[k]),
+      Object.keys(update).filter(k => update[k]),
       {
         shouldDirty: true,
         shouldTouch: true,
       }
-    )
+    );
 
-    setRowSelection(update)
-  }
+    setRowSelection(update);
+  };
 
   useEffect(() => {
     setValue(
       "add",
-      Object.keys(rowSelection).filter((k) => rowSelection[k]),
+      Object.keys(rowSelection).filter(k => rowSelection[k]),
       {
         shouldDirty: true,
         shouldTouch: true,
       }
-    )
-  }, [rowSelection, setValue])
+    );
+  }, [rowSelection, setValue]);
 
   const { searchParams, raw } = useProductTableQuery({
     prefix: PREFIX,
     pageSize: PAGE_SIZE,
-  })
+  });
 
   const { products, count, isLoading, isError, error } = useProducts(
     {
@@ -98,10 +84,10 @@ export const AddProductsToCollectionForm = ({
     {
       placeholderData: keepPreviousData,
     }
-  )
+  );
 
-  const columns = useColumns()
-  const filters = useProductTableFilters(["collections"])
+  const columns = useColumns();
+  const filters = useProductTableFilters(["collections"]);
 
   const { table } = useDataTable({
     data: products ?? [],
@@ -109,7 +95,7 @@ export const AddProductsToCollectionForm = ({
     count,
     pageSize: PAGE_SIZE,
     prefix: PREFIX,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
     enableRowSelection: true,
     rowSelection: {
       state: rowSelection,
@@ -119,9 +105,9 @@ export const AddProductsToCollectionForm = ({
     meta: {
       collectionId: collection.id,
     },
-  })
+  });
 
-  const handleSubmit = form.handleSubmit(async (values) => {
+  const handleSubmit = form.handleSubmit(async values => {
     await mutateAsync(
       {
         add: values.add,
@@ -132,26 +118,23 @@ export const AddProductsToCollectionForm = ({
             t("collections.products.add.successToast", {
               count: values.add.length,
             })
-          )
-          handleSuccess()
+          );
+          handleSuccess();
         },
-        onError: (e) => {
-          toast.error(e.message)
+        onError: e => {
+          toast.error(e.message);
         },
       }
-    )
-  })
+    );
+  });
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
     <RouteFocusModal.Form form={form}>
-      <KeyboundForm
-        onSubmit={handleSubmit}
-        className="flex h-full flex-col overflow-hidden"
-      >
+      <KeyboundForm onSubmit={handleSubmit} className="flex h-full flex-col overflow-hidden">
         <RouteFocusModal.Header>
           <div className="flex items-center justify-end gap-x-2">
             {form.formState.errors.add && (
@@ -191,14 +174,14 @@ export const AddProductsToCollectionForm = ({
         </RouteFocusModal.Footer>
       </KeyboundForm>
     </RouteFocusModal.Form>
-  )
-}
+  );
+};
 
-const columnHelper = createColumnHelper<HttpTypes.AdminProduct>()
+const columnHelper = createColumnHelper<HttpTypes.AdminProduct>();
 
 const useColumns = () => {
-  const { t } = useTranslation()
-  const base = useProductTableColumns()
+  const { t } = useTranslation();
+  const base = useProductTableColumns();
 
   return useMemo(
     () => [
@@ -212,48 +195,43 @@ const useColumns = () => {
                   ? "indeterminate"
                   : table.getIsAllPageRowsSelected()
               }
-              onCheckedChange={(value) =>
-                table.toggleAllPageRowsSelected(!!value)
-              }
+              onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
             />
-          )
+          );
         },
         cell: ({ row, table }) => {
           const { collectionId } = table.options.meta as {
-            collectionId: string
-          }
+            collectionId: string;
+          };
 
-          const isAdded = row.original.collection_id === collectionId
+          const isAdded = row.original.collection_id === collectionId;
 
-          const isSelected = row.getIsSelected() || isAdded
+          const isSelected = row.getIsSelected() || isAdded;
 
           const Component = (
             <Checkbox
               checked={isSelected}
               disabled={isAdded}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-              onClick={(e) => {
-                e.stopPropagation()
+              onCheckedChange={value => row.toggleSelected(!!value)}
+              onClick={e => {
+                e.stopPropagation();
               }}
             />
-          )
+          );
 
           if (isAdded) {
             return (
-              <Tooltip
-                content={t("salesChannels.productAlreadyAdded")}
-                side="right"
-              >
+              <Tooltip content={t("salesChannels.productAlreadyAdded")} side="right">
                 {Component}
               </Tooltip>
-            )
+            );
           }
 
-          return Component
+          return Component;
         },
       }),
       ...base,
     ],
     [t, base]
-  )
-}
+  );
+};

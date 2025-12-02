@@ -1,14 +1,14 @@
-import { CurrencyDollar } from "@medusajs/icons"
-import { AdminCampaign } from "@medusajs/types"
-import { Container, Heading, Text } from "@medusajs/ui"
-import { Trans, useTranslation } from "react-i18next"
+import { CurrencyDollar } from "@medusajs/icons";
+import { AdminCampaign } from "@medusajs/types";
+import { Container, Heading, Text } from "@medusajs/ui";
+import { Trans, useTranslation } from "react-i18next";
 
 type CampaignSpendProps = {
-  campaign: AdminCampaign
-}
+  campaign: AdminCampaign;
+};
 
 export const CampaignSpend = ({ campaign }: CampaignSpendProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <Container className="flex flex-col gap-y-4 px-6 py-4">
@@ -38,24 +38,15 @@ export const CampaignSpend = ({ campaign }: CampaignSpendProps) => {
             i18nKey="campaigns.totalSpend"
             values={{
               amount: campaign?.budget?.used || 0,
-              currency:
-                campaign?.budget?.type === "spend"
-                  ? campaign?.budget?.currency_code
-                  : "",
+              currency: campaign?.budget?.type === "spend" ? campaign?.budget?.currency_code : "",
             }}
             components={[
-              <span
-                key="amount"
-                className="text-ui-fg-base txt-compact-medium-plus text-lg"
-              />,
-              <span
-                key="currency"
-                className="text-ui-fg-base txt-compact-medium-plus text-lg"
-              />,
+              <span key="amount" className="text-ui-fg-base txt-compact-medium-plus text-lg" />,
+              <span key="currency" className="text-ui-fg-base txt-compact-medium-plus text-lg" />,
             ]}
           />
         </Text>
       </div>
     </Container>
-  )
-}
+  );
+};

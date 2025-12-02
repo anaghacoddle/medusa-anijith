@@ -1,33 +1,32 @@
-import { HttpTypes } from "@medusajs/types"
-import { Heading } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
+import { HttpTypes } from "@medusajs/types";
+import { Heading } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { useParams } from "react-router-dom";
 
-import { RouteDrawer } from "../../../components/modals"
-import { useProductTypes } from "../../../hooks/api/product-types"
-import { useProducts } from "../../../hooks/api/products"
-import { TaxRateRuleReferenceType } from "../common/constants"
+import { RouteDrawer } from "../../../components/modals";
+import { useProductTypes } from "../../../hooks/api/product-types";
+import { useProducts } from "../../../hooks/api/products";
+import { TaxRateRuleReferenceType } from "../common/constants";
 import {
   DISPLAY_OVERRIDE_ITEMS_LIMIT,
   TaxRegionTaxOverrideEditForm,
-} from "./components/tax-region-tax-override-edit-form"
-import { InitialRuleValues } from "./types"
-import { useShippingOptions, useTaxRate } from "../../../hooks/api"
-import { TaxRateRuleReference } from "../common/schemas"
+} from "./components/tax-region-tax-override-edit-form";
+import { InitialRuleValues } from "./types";
+import { useShippingOptions, useTaxRate } from "../../../hooks/api";
+import { TaxRateRuleReference } from "../common/schemas";
 
 export const TaxRegionTaxOverrideEdit = () => {
-  const { t } = useTranslation()
-  const { tax_rate_id } = useParams()
+  const { t } = useTranslation();
+  const { tax_rate_id } = useParams();
 
-  const { tax_rate, isPending, isError, error } = useTaxRate(tax_rate_id!)
+  const { tax_rate, isPending, isError, error } = useTaxRate(tax_rate_id!);
 
-  const { initialValues, isPending: isInitializing } =
-    useDefaultRulesValues(tax_rate)
+  const { initialValues, isPending: isInitializing } = useDefaultRulesValues(tax_rate);
 
-  const ready = !isPending && !!tax_rate && !isInitializing && !!initialValues
+  const ready = !isPending && !!tax_rate && !isInitializing && !!initialValues;
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
@@ -48,16 +47,16 @@ export const TaxRegionTaxOverrideEdit = () => {
         />
       )}
     </RouteDrawer>
-  )
-}
+  );
+};
 
 const useDefaultRulesValues = (
   taxRate?: HttpTypes.AdminTaxRate
 ): { initialValues: InitialRuleValues; isPending: boolean } => {
-  const rules = taxRate?.rules || []
+  const rules = taxRate?.rules || [];
 
   const idsByReferenceType: {
-    [key in TaxRateRuleReferenceType]: string[]
+    [key in TaxRateRuleReferenceType]: string[];
   } = {
     [TaxRateRuleReferenceType.PRODUCT]: [],
     // [TaxRateRuleReferenceType.PRODUCT_COLLECTION]: [],
@@ -65,14 +64,14 @@ const useDefaultRulesValues = (
     [TaxRateRuleReferenceType.PRODUCT_TYPE]: [],
     [TaxRateRuleReferenceType.SHIPPING_OPTION]: [],
     // [TaxRateRuleReferenceType.CUSTOMER_GROUP]: [],
-  }
+  };
 
   rules
     .sort((a, b) => a.created_at.localeCompare(b.created_at)) // preffer newer rules for display
-    .forEach((rule) => {
-      const reference = rule.reference as TaxRateRuleReferenceType
-      idsByReferenceType[reference]?.push(rule.reference_id)
-    })
+    .forEach(rule => {
+      const reference = rule.reference as TaxRateRuleReferenceType;
+      idsByReferenceType[reference]?.push(rule.reference_id);
+    });
 
   const queries = [
     {
@@ -80,7 +79,7 @@ const useDefaultRulesValues = (
       hook: useProducts,
       key: TaxRateRuleReferenceType.PRODUCT,
       getResult: (result: HttpTypes.AdminProductListResponse) =>
-        result.products.map((product) => ({
+        result.products.map(product => ({
           label: product.title,
           value: product.id,
         })),
@@ -110,7 +109,7 @@ const useDefaultRulesValues = (
       hook: useProductTypes,
       key: TaxRateRuleReferenceType.PRODUCT_TYPE,
       getResult: (result: HttpTypes.AdminProductTypeListResponse) =>
-        result.product_types.map((productType) => ({
+        result.product_types.map(productType => ({
           label: productType.value,
           value: productType.id,
         })),
@@ -120,7 +119,7 @@ const useDefaultRulesValues = (
       hook: useShippingOptions,
       key: TaxRateRuleReferenceType.SHIPPING_OPTION,
       getResult: (result: HttpTypes.AdminShippingOptionListResponse) =>
-        result.shipping_options.map((shippingOption) => ({
+        result.shipping_options.map(shippingOption => ({
           label: shippingOption.name,
           value: shippingOption.id,
         })),
@@ -139,10 +138,10 @@ const useDefaultRulesValues = (
     //       value: customerGroup.id,
     //     })),
     // },
-  ]
+  ];
 
   const queryResults = queries.map(({ ids, hook }) => {
-    const enabled = ids.length > 0
+    const enabled = ids.length > 0;
 
     return {
       result: hook(
@@ -159,53 +158,46 @@ const useDefaultRulesValues = (
         { enabled }
       ),
       enabled,
-    }
-  })
+    };
+  });
 
   if (!taxRate) {
-    return { isPending: true }
+    return { isPending: true };
   }
 
-  const isPending = queryResults.some(
-    ({ result, enabled }) => enabled && result.isPending
-  )
+  const isPending = queryResults.some(({ result, enabled }) => enabled && result.isPending);
 
   if (isPending) {
-    return { isPending }
+    return { isPending };
   }
 
   queryResults.forEach(({ result, enabled }) => {
     if (enabled && result.isError) {
-      throw result.error
+      throw result.error;
     }
-  })
+  });
 
-  const initialRulesValues: InitialRuleValues = queries.reduce(
-    (acc, { key, getResult }, index) => {
-      let initialValues: TaxRateRuleReference[] = []
+  const initialRulesValues: InitialRuleValues = queries.reduce((acc, { key, getResult }, index) => {
+    let initialValues: TaxRateRuleReference[] = [];
 
-      if (queryResults[index].enabled) {
-        const fetchedEntityList = getResult(queryResults[index].result)
+    if (queryResults[index].enabled) {
+      const fetchedEntityList = getResult(queryResults[index].result);
 
-        const entityIdMap = new Map(
-          fetchedEntityList.map((entity) => [entity.value, entity])
-        )
+      const entityIdMap = new Map(fetchedEntityList.map(entity => [entity.value, entity]));
 
-        const initialIds = idsByReferenceType[key]
+      const initialIds = idsByReferenceType[key];
 
-        initialValues = initialIds.map((id) => ({
-          value: id,
-          label: entityIdMap.get(id)?.label || "",
-        }))
-      }
+      initialValues = initialIds.map(id => ({
+        value: id,
+        label: entityIdMap.get(id)?.label || "",
+      }));
+    }
 
-      return {
-        ...acc,
-        [key]: initialValues,
-      }
-    },
-    {} as InitialRuleValues
-  )
+    return {
+      ...acc,
+      [key]: initialValues,
+    };
+  }, {} as InitialRuleValues);
 
-  return { initialValues: initialRulesValues, isPending: false }
-}
+  return { initialValues: initialRulesValues, isPending: false };
+};

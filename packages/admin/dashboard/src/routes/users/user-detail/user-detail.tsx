@@ -1,17 +1,20 @@
-import { useLoaderData, useParams } from "react-router-dom"
+import { useLoaderData, useParams } from "react-router-dom";
 
-import { useUser } from "../../../hooks/api/users"
-import { UserGeneralSection } from "./components/user-general-section"
-import { userLoader } from "./loader"
+import { useUser } from "../../../hooks/api/users";
+import { UserGeneralSection } from "./components/user-general-section";
+import { userLoader } from "./loader";
 
-import { SingleColumnPageSkeleton } from "../../../components/common/skeleton"
-import { SingleColumnPage } from "../../../components/layout/pages"
-import { useExtension } from "../../../providers/extension-provider"
+import { SingleColumnPageSkeleton } from "../../../components/common/skeleton";
+import { SingleColumnPage } from "../../../components/layout/pages";
+import { useExtension } from "../../../providers/extension-provider";
+import { decryptObject } from "../../../utils/encryption";
+import { useState, useEffect } from "react";
+import { HttpTypes } from "@medusajs/types";
 
 export const UserDetail = () => {
-  const initialData = useLoaderData() as Awaited<ReturnType<typeof userLoader>>
+  const initialData = useLoaderData() as Awaited<ReturnType<typeof userLoader>>;
 
-  const { id } = useParams()
+  const { id } = useParams();
   const {
     user,
     isPending: isLoading,
@@ -19,21 +22,31 @@ export const UserDetail = () => {
     error,
   } = useUser(id!, undefined, {
     initialData,
-  })
+  });
 
-  const { getWidgets } = useExtension()
+  const [decryptedUser, setDecryptedUser] = useState<HttpTypes.AdminUser | null>(null);
 
-  if (isLoading || !user) {
-    return <SingleColumnPageSkeleton sections={1} showJSON showMetadata />
+  useEffect(() => {
+    if (user) {
+      decryptObject(user).then(result => {
+        setDecryptedUser(result as HttpTypes.AdminUser);
+      });
+    }
+  }, [user]);
+
+  const { getWidgets } = useExtension();
+
+  if (isLoading || !decryptedUser) {
+    return <SingleColumnPageSkeleton sections={1} showJSON showMetadata />;
   }
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
     <SingleColumnPage
-      data={user}
+      data={decryptedUser}
       showJSON
       showMetadata
       widgets={{
@@ -41,7 +54,7 @@ export const UserDetail = () => {
         before: getWidgets("user.details.before"),
       }}
     >
-      <UserGeneralSection user={user} />
+      <UserGeneralSection user={decryptedUser} />
     </SingleColumnPage>
-  )
-}
+  );
+};

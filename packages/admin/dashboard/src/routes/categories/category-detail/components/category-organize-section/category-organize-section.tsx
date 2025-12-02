@@ -1,27 +1,21 @@
-import {
-  FolderIllustration,
-  PencilSquare,
-  TriangleRightMini,
-} from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import { Badge, Container, Heading, Text, Tooltip } from "@medusajs/ui"
-import { useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { LinkButton } from "../../../../../components/common/link-button"
-import { Skeleton } from "../../../../../components/common/skeleton"
-import { useProductCategory } from "../../../../../hooks/api/categories"
-import { getCategoryChildren, getCategoryPath } from "../../../common/utils"
+import { FolderIllustration, PencilSquare, TriangleRightMini } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Badge, Container, Heading, Text, Tooltip } from "@medusajs/ui";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { LinkButton } from "../../../../../components/common/link-button";
+import { Skeleton } from "../../../../../components/common/skeleton";
+import { useProductCategory } from "../../../../../hooks/api/categories";
+import { getCategoryChildren, getCategoryPath } from "../../../common/utils";
 
 type CategoryOrganizeSectionProps = {
-  category: HttpTypes.AdminProductCategory
-}
+  category: HttpTypes.AdminProductCategory;
+};
 
-export const CategoryOrganizeSection = ({
-  category,
-}: CategoryOrganizeSectionProps) => {
-  const { t } = useTranslation()
+export const CategoryOrganizeSection = ({ category }: CategoryOrganizeSectionProps) => {
+  const { t } = useTranslation();
 
   return (
     <Container className="divide-y p-0">
@@ -54,17 +48,13 @@ export const CategoryOrganizeSection = ({
         <ChildrenDisplay category={category} />
       </div>
     </Container>
-  )
-}
+  );
+};
 
-const PathDisplay = ({
-  category,
-}: {
-  category: HttpTypes.AdminProductCategory
-}) => {
-  const [expanded, setExpanded] = useState(false)
+const PathDisplay = ({ category }: { category: HttpTypes.AdminProductCategory }) => {
+  const [expanded, setExpanded] = useState(false);
 
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const {
     product_category: withParents,
@@ -74,16 +64,16 @@ const PathDisplay = ({
   } = useProductCategory(category.id, {
     include_ancestors_tree: true,
     fields: "id,name,*parent_category",
-  })
+  });
 
-  const chips = useMemo(() => getCategoryPath(withParents), [withParents])
+  const chips = useMemo(() => getCategoryPath(withParents), [withParents]);
 
   if (isLoading || !withParents) {
-    return <Skeleton className="h-5 w-16" />
+    return <Skeleton className="h-5 w-16" />;
   }
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   if (!chips.length) {
@@ -91,7 +81,7 @@ const PathDisplay = ({
       <Text size="small" leading="compact">
         -
       </Text>
-    )
+    );
   }
 
   if (chips.length > 1 && !expanded) {
@@ -100,11 +90,7 @@ const PathDisplay = ({
         <FolderIllustration />
         <div className="flex w-full items-center gap-x-0.5 overflow-hidden">
           <Tooltip content={t("categories.fields.path.tooltip")}>
-            <button
-              className="outline-none"
-              type="button"
-              onClick={() => setExpanded(true)}
-            >
+            <button className="outline-none" type="button" onClick={() => setExpanded(true)}>
               <Text size="xsmall" leading="compact" weight="plus">
                 ...
               </Text>
@@ -113,17 +99,12 @@ const PathDisplay = ({
           <div className="flex size-[15px] shrink-0 items-center justify-center">
             <TriangleRightMini className="rtl:rotate-180" />
           </div>
-          <Text
-            size="xsmall"
-            leading="compact"
-            weight="plus"
-            className="truncate"
-          >
+          <Text size="xsmall" leading="compact" weight="plus" className="truncate">
             {chips[chips.length - 1].name}
           </Text>
         </div>
       </div>
-    )
+    );
   }
 
   if (chips.length > 1 && expanded) {
@@ -148,11 +129,11 @@ const PathDisplay = ({
                 )}
                 {index < chips.length - 1 && <TriangleRightMini />}
               </div>
-            )
+            );
           })}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -166,14 +147,10 @@ const PathDisplay = ({
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
-const ChildrenDisplay = ({
-  category,
-}: {
-  category: HttpTypes.AdminProductCategory
-}) => {
+const ChildrenDisplay = ({ category }: { category: HttpTypes.AdminProductCategory }) => {
   const {
     product_category: withChildren,
     isLoading,
@@ -182,16 +159,16 @@ const ChildrenDisplay = ({
   } = useProductCategory(category.id, {
     include_descendants_tree: true,
     fields: "id,name,category_children",
-  })
+  });
 
-  const chips = useMemo(() => getCategoryChildren(withChildren), [withChildren])
+  const chips = useMemo(() => getCategoryChildren(withChildren), [withChildren]);
 
   if (isLoading || !withChildren) {
-    return <Skeleton className="h-5 w-16" />
+    return <Skeleton className="h-5 w-16" />;
   }
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   if (!chips.length) {
@@ -199,12 +176,12 @@ const ChildrenDisplay = ({
       <Text size="small" leading="compact">
         -
       </Text>
-    )
+    );
   }
 
   return (
     <div className="flex w-full flex-wrap gap-1">
-      {chips.map((chip) => (
+      {chips.map(chip => (
         <Badge key={chip.id} size="2xsmall" className="max-w-full" asChild>
           <Link to={`/categories/${chip.id}`}>
             <span className="truncate">{chip.name}</span>
@@ -212,5 +189,5 @@ const ChildrenDisplay = ({
         </Badge>
       ))}
     </div>
-  )
-}
+  );
+};

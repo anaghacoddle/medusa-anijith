@@ -1,28 +1,22 @@
-import { SidebarLeft, TriangleRightMini, XMark } from "@medusajs/icons"
-import { IconButton, clx } from "@medusajs/ui"
-import { AnimatePresence } from "motion/react"
-import { Dialog as RadixDialog } from "radix-ui"
-import { PropsWithChildren, ReactNode, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-import {
-  Link,
-  Outlet,
-  UIMatch,
-  useMatches,
-  useNavigation,
-} from "react-router-dom"
+import { SidebarLeft, TriangleRightMini, XMark } from "@medusajs/icons";
+import { IconButton, clx } from "@medusajs/ui";
+import { AnimatePresence } from "motion/react";
+import { Dialog as RadixDialog } from "radix-ui";
+import { PropsWithChildren, ReactNode, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, Outlet, UIMatch, useMatches, useNavigation } from "react-router-dom";
 
-import { KeybindProvider } from "../../../providers/keybind-provider"
-import { useGlobalShortcuts } from "../../../providers/keybind-provider/hooks"
-import { useSidebar } from "../../../providers/sidebar-provider"
-import { ProgressBar } from "../../common/progress-bar"
-import { Notifications } from "../notifications"
+import { KeybindProvider } from "../../../providers/keybind-provider";
+import { useGlobalShortcuts } from "../../../providers/keybind-provider/hooks";
+import { useSidebar } from "../../../providers/sidebar-provider";
+import { ProgressBar } from "../../common/progress-bar";
+import { Notifications } from "../notifications";
 
 export const Shell = ({ children }: PropsWithChildren) => {
-  const globalShortcuts = useGlobalShortcuts()
-  const navigation = useNavigation()
+  const globalShortcuts = useGlobalShortcuts();
+  const navigation = useNavigation();
 
-  const loading = navigation.state === "loading"
+  const loading = navigation.state === "loading";
 
   return (
     <KeybindProvider shortcuts={globalShortcuts}>
@@ -49,96 +43,85 @@ export const Shell = ({ children }: PropsWithChildren) => {
         </div>
       </div>
     </KeybindProvider>
-  )
-}
+  );
+};
 
 const NavigationBar = ({ loading }: { loading: boolean }) => {
-  const [showBar, setShowBar] = useState(false)
+  const [showBar, setShowBar] = useState(false);
 
   /**
    * If the loading state is true, we want to show the bar after a short delay.
    * The delay is used to prevent the bar from flashing on quick navigations.
    */
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>
+    let timeout: ReturnType<typeof setTimeout>;
 
     if (loading) {
       timeout = setTimeout(() => {
-        setShowBar(true)
-      }, 200)
+        setShowBar(true);
+      }, 200);
     } else {
-      setShowBar(false)
+      setShowBar(false);
     }
 
     return () => {
-      clearTimeout(timeout)
-    }
-  }, [loading])
+      clearTimeout(timeout);
+    };
+  }, [loading]);
 
   return (
     <div className="fixed inset-x-0 top-0 z-50 h-1">
       <AnimatePresence>{showBar ? <ProgressBar /> : null}</AnimatePresence>
     </div>
-  )
-}
+  );
+};
 
 const Gutter = ({ children }: PropsWithChildren) => {
-  return (
-    <div className="flex w-full max-w-[1600px] flex-col gap-y-2 p-3">
-      {children}
-    </div>
-  )
-}
+  return <div className="flex w-full max-w-[1600px] flex-col gap-y-2 p-3">{children}</div>;
+};
 
 const Breadcrumbs = () => {
   const matches = useMatches() as unknown as UIMatch<
     unknown,
     {
-      breadcrumb?: (match?: UIMatch) => string | ReactNode
+      breadcrumb?: (match?: UIMatch) => string | ReactNode;
     }
-  >[]
+  >[];
 
   const crumbs = matches
-    .filter((match) => match.handle?.breadcrumb)
-    .map((match) => {
-      const handle = match.handle
+    .filter(match => match.handle?.breadcrumb)
+    .map(match => {
+      const handle = match.handle;
 
-      let label: string | ReactNode | undefined = undefined
+      let label: string | ReactNode | undefined = undefined;
 
       try {
-        label = handle.breadcrumb?.(match)
+        label = handle.breadcrumb?.(match);
       } catch (error) {
         // noop
       }
 
       if (!label) {
-        return null
+        return null;
       }
 
       return {
         label: label,
         path: match.pathname,
-      }
+      };
     })
-    .filter(Boolean) as { label: string | ReactNode; path: string }[]
+    .filter(Boolean) as { label: string | ReactNode; path: string }[];
 
   return (
-    <ol
-      className={clx(
-        "text-ui-fg-muted txt-compact-small-plus flex select-none items-center"
-      )}
-    >
+    <ol className={clx("text-ui-fg-muted txt-compact-small-plus flex select-none items-center")}>
       {crumbs.map((crumb, index) => {
-        const isLast = index === crumbs.length - 1
-        const isSingle = crumbs.length === 1
+        const isLast = index === crumbs.length - 1;
+        const isSingle = crumbs.length === 1;
 
         return (
           <li key={index} className={clx("flex items-center")}>
             {!isLast ? (
-              <Link
-                className="transition-fg hover:text-ui-fg-subtle"
-                to={crumb.path}
-              >
+              <Link className="transition-fg hover:text-ui-fg-subtle" to={crumb.path}>
                 {crumb.label}
               </Link>
             ) : (
@@ -146,9 +129,12 @@ const Breadcrumbs = () => {
                 {!isSingle && <span className="block lg:hidden">...</span>}
                 <span
                   key={index}
-                  className={clx({
-                    "hidden lg:block": !isSingle,
-                  })}
+                  className={clx(
+                    "truncate max-w-[200px]", // 👈 apply truncation
+                    {
+                      "hidden lg:block": !isSingle, // keep your conditional rule
+                    }
+                  )}
                 >
                   {crumb.label}
                 </span>
@@ -160,14 +146,14 @@ const Breadcrumbs = () => {
               </span>
             )}
           </li>
-        )
+        );
       })}
     </ol>
-  )
-}
+  );
+};
 
 const ToggleSidebar = () => {
-  const { toggle } = useSidebar()
+  const { toggle } = useSidebar();
 
   return (
     <div>
@@ -188,8 +174,8 @@ const ToggleSidebar = () => {
         <SidebarLeft className="text-ui-fg-muted rtl:rotate-180" />
       </IconButton>
     </div>
-  )
-}
+  );
+};
 
 const Topbar = () => {
   return (
@@ -202,11 +188,11 @@ const Topbar = () => {
         <Notifications />
       </div>
     </div>
-  )
-}
+  );
+};
 
 const DesktopSidebarContainer = ({ children }: PropsWithChildren) => {
-  const { desktop } = useSidebar()
+  const { desktop } = useSidebar();
 
   return (
     <div
@@ -216,12 +202,12 @@ const DesktopSidebarContainer = ({ children }: PropsWithChildren) => {
     >
       {children}
     </div>
-  )
-}
+  );
+};
 
 const MobileSidebarContainer = ({ children }: PropsWithChildren) => {
-  const { t } = useTranslation()
-  const { mobile, toggle } = useSidebar()
+  const { t } = useTranslation();
+  const { mobile, toggle } = useSidebar();
 
   return (
     <RadixDialog.Root open={mobile} onOpenChange={() => toggle("mobile")}>
@@ -240,11 +226,7 @@ const MobileSidebarContainer = ({ children }: PropsWithChildren) => {
         >
           <div className="p-3">
             <RadixDialog.Close asChild>
-              <IconButton
-                size="small"
-                variant="transparent"
-                className="text-ui-fg-subtle"
-              >
+              <IconButton size="small" variant="transparent" className="text-ui-fg-subtle">
                 <XMark />
               </IconButton>
             </RadixDialog.Close>
@@ -259,5 +241,5 @@ const MobileSidebarContainer = ({ children }: PropsWithChildren) => {
         </RadixDialog.Content>
       </RadixDialog.Portal>
     </RadixDialog.Root>
-  )
-}
+  );
+};

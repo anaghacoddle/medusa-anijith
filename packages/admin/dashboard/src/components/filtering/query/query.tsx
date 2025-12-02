@@ -15,23 +15,26 @@ export const Query = ({ placeholder }: QueryProps) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [inputValue, setInputValue] = useState(searchParams.get("q") || "")
 
-  const updateSearchParams = (newValue: string) => {
-    if (!newValue) {
-      setSearchParams((prev) => {
-        prev.delete("q")
-        return prev
-      })
+  const updateSearchParams = useCallback(
+    (newValue: string) => {
+      if (!newValue) {
+        setSearchParams((prev) => {
+          prev.delete("q");
+          return prev;
+        });
+        return;
+      }
 
-      return
-    }
+      setSearchParams((prev) => ({ ...prev, q: newValue || "" }));
+    },
+    [setSearchParams]
+  );
 
-    setSearchParams((prev) => ({ ...prev, q: newValue || "" }))
-  }
-
-  const debouncedUpdate = useCallback(
-    debounce((newValue: string) => updateSearchParams(newValue), 500),
-    []
-  )
+  const debouncedUpdate = useMemo(() => {
+    return debounce((newValue: string) => {
+      updateSearchParams(newValue);
+    }, 500);
+  }, [updateSearchParams]);
 
   useEffect(() => {
     debouncedUpdate(inputValue)

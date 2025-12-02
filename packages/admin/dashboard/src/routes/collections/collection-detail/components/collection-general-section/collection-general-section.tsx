@@ -1,23 +1,24 @@
-import { PencilSquare, Trash } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import { Container, Heading, Text, usePrompt } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { useDeleteCollection } from "../../../../../hooks/api/collections"
-import { useNavigate } from "react-router-dom"
+import { PencilSquare, Trash } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Container, Heading, Text, usePrompt } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { useDeleteCollection } from "../../../../../hooks/api/collections";
+import { useNavigate } from "react-router-dom";
+import { usePermission } from "../../../../../hooks/use-permission";
+import { toast } from "@medusajs/ui";
 
 type CollectionGeneralSectionProps = {
-  collection: HttpTypes.AdminCollection
-}
+  collection: HttpTypes.AdminCollection;
+};
 
-export const CollectionGeneralSection = ({
-  collection,
-}: CollectionGeneralSectionProps) => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
-  const navigate = useNavigate()
+export const CollectionGeneralSection = ({ collection }: CollectionGeneralSectionProps) => {
+  const { t } = useTranslation();
+  const prompt = usePrompt();
+  const navigate = useNavigate();
+  const { hasPermission } = usePermission();
 
-  const { mutateAsync } = useDeleteCollection(collection.id!)
+  const { mutateAsync } = useDeleteCollection(collection.id!);
 
   const handleDelete = async () => {
     const res = await prompt({
@@ -26,15 +27,26 @@ export const CollectionGeneralSection = ({
         count: 1,
         title: collection.title,
       }),
-    })
+    });
 
     if (!res) {
-      return
+      return;
     }
 
-    await mutateAsync()
-    navigate("../", { replace: true })
-  }
+    await mutateAsync(undefined, {
+      onSuccess: () => {
+        toast.success(
+          t("collections.deleteSuccess", {
+            title: collection.title,
+          })
+        );
+      },
+      onError: e => {
+        toast.error(e.message);
+      },
+    });
+    navigate("../", { replace: true });
+  };
 
   return (
     <Container className="divide-y p-0">
@@ -48,7 +60,10 @@ export const CollectionGeneralSection = ({
                   icon: <PencilSquare />,
                   label: t("actions.edit"),
                   to: `/collections/${collection.id}/edit`,
-                  disabled: !collection.id,
+                  disabled:
+                    !collection.id ||
+                    !hasPermission("/admin/collections", "PUT") ||
+                    !hasPermission("/admin/collections", "POST"),
                 },
               ],
             },
@@ -58,7 +73,7 @@ export const CollectionGeneralSection = ({
                   icon: <Trash />,
                   label: t("actions.delete"),
                   onClick: handleDelete,
-                  disabled: !collection.id,
+                  disabled: !collection.id || !hasPermission("/admin/collections", "DELETE"),
                 },
               ],
             },
@@ -72,5 +87,5 @@ export const CollectionGeneralSection = ({
         <Text size="small">/{collection.handle}</Text>
       </div>
     </Container>
-  )
-}
+  );
+};

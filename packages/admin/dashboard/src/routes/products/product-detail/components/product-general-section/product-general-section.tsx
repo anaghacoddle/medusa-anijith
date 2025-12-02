@@ -1,44 +1,44 @@
-import { PencilSquare, Trash } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import { Container, Heading, StatusBadge, toast, usePrompt } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
+import { PencilSquare, Trash } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Container, Heading, StatusBadge, toast, usePrompt } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { SectionRow } from "../../../../../components/common/section"
-import { useDeleteProduct } from "../../../../../hooks/api/products"
-import { useExtension } from "../../../../../providers/extension-provider"
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { SectionRow } from "../../../../../components/common/section";
+import { useDeleteProduct } from "../../../../../hooks/api/products";
+import { useExtension } from "../../../../../providers/extension-provider";
+import { usePermission } from "../../../../../hooks/use-permission";
 
 const productStatusColor = (status: string) => {
   switch (status) {
     case "draft":
-      return "grey"
+      return "grey";
     case "proposed":
-      return "orange"
+      return "orange";
     case "published":
-      return "green"
+      return "green";
     case "rejected":
-      return "red"
+      return "red";
     default:
-      return "grey"
+      return "grey";
   }
-}
+};
 
 type ProductGeneralSectionProps = {
-  product: HttpTypes.AdminProduct
-}
+  product: HttpTypes.AdminProduct;
+};
 
-export const ProductGeneralSection = ({
-  product,
-}: ProductGeneralSectionProps) => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
-  const navigate = useNavigate()
-  const { getDisplays } = useExtension()
+export const ProductGeneralSection = ({ product }: ProductGeneralSectionProps) => {
+  const { t } = useTranslation();
+  const prompt = usePrompt();
+  const navigate = useNavigate();
+  const { getDisplays } = useExtension();
+  const { hasPermission } = usePermission();
 
-  const displays = getDisplays("product", "general")
+  const displays = getDisplays("product", "general");
 
-  const { mutateAsync } = useDeleteProduct(product.id)
+  const { mutateAsync } = useDeleteProduct(product.id);
 
   const handleDelete = async () => {
     const res = await prompt({
@@ -48,23 +48,23 @@ export const ProductGeneralSection = ({
       }),
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
-    })
+    });
 
     if (!res) {
-      return
+      return;
     }
 
     await mutateAsync(undefined, {
       onSuccess: () => {
-        navigate("..")
+        navigate("..");
       },
-      onError: (e) => {
+      onError: e => {
         toast.error(t("products.toasts.delete.error.header"), {
           description: e.message,
-        })
+        });
       },
-    })
-  }
+    });
+  };
 
   return (
     <Container className="divide-y p-0">
@@ -82,6 +82,10 @@ export const ProductGeneralSection = ({
                     label: t("actions.edit"),
                     to: "edit",
                     icon: <PencilSquare />,
+                    disabled:
+                      !product.id ||
+                      !hasPermission("/admin/products", "PUT") ||
+                      !hasPermission("/admin/products", "POST"),
                   },
                 ],
               },
@@ -91,6 +95,7 @@ export const ProductGeneralSection = ({
                     label: t("actions.delete"),
                     onClick: handleDelete,
                     icon: <Trash />,
+                    disabled: !product.id || !hasPermission("/admin/products", "DELETE"),
                   },
                 ],
               },
@@ -107,8 +112,8 @@ export const ProductGeneralSection = ({
         value={product.discountable ? t("fields.true") : t("fields.false")}
       />
       {displays.map((Component, index) => {
-        return <Component key={index} data={product} />
+        return <Component key={index} data={product} />;
       })}
     </Container>
-  )
-}
+  );
+};

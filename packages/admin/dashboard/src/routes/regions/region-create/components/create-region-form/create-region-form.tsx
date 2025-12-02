@@ -1,49 +1,39 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { XMarkMini } from "@medusajs/icons"
-import {
-  Button,
-  Checkbox,
-  Heading,
-  Input,
-  Select,
-  Switch,
-  Text,
-  clx,
-  toast,
-} from "@medusajs/ui"
-import { RowSelectionState, createColumnHelper } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
-import { useForm, useWatch } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import * as zod from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { XMarkMini } from "@medusajs/icons";
+import { Button, Checkbox, Heading, Input, Select, Switch, Text, clx, toast } from "@medusajs/ui";
+import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import * as zod from "zod";
 
-import { RegionCountryDTO } from "@medusajs/types"
+import { RegionCountryDTO } from "@medusajs/types";
 
-import { Form } from "../../../../../components/common/form"
-import { Combobox } from "../../../../../components/inputs/combobox"
+import { Form } from "../../../../../components/common/form";
+import { Combobox } from "../../../../../components/inputs/combobox";
 import {
   RouteFocusModal,
   StackedFocusModal,
   useRouteModal,
   useStackedModal,
-} from "../../../../../components/modals"
-import { _DataTable } from "../../../../../components/table/data-table"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useCreateRegion } from "../../../../../hooks/api/regions"
-import { useDataTable } from "../../../../../hooks/use-data-table"
-import { countries as staticCountries } from "../../../../../lib/data/countries"
-import { CurrencyInfo } from "../../../../../lib/data/currencies"
-import { formatProvider } from "../../../../../lib/format-provider"
-import { useCountries } from "../../../common/hooks/use-countries"
-import { useCountryTableColumns } from "../../../common/hooks/use-country-table-columns"
-import { useCountryTableQuery } from "../../../common/hooks/use-country-table-query"
-import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
-import { useComboboxData } from "../../../../../hooks/use-combobox-data"
-import { sdk } from "../../../../../lib/client"
+} from "../../../../../components/modals";
+import { _DataTable } from "../../../../../components/table/data-table";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useCreateRegion } from "../../../../../hooks/api/regions";
+import { useDataTable } from "../../../../../hooks/use-data-table";
+import { countries as staticCountries } from "../../../../../lib/data/countries";
+import { CurrencyInfo } from "../../../../../lib/data/currencies";
+import { formatProvider } from "../../../../../lib/format-provider";
+import { useCountries } from "../../../common/hooks/use-countries";
+import { useCountryTableColumns } from "../../../common/hooks/use-country-table-columns";
+import { useCountryTableQuery } from "../../../common/hooks/use-country-table-query";
+import { useDocumentDirection } from "../../../../../hooks/use-document-direction";
+import { useComboboxData } from "../../../../../hooks/use-combobox-data";
+import { sdk } from "../../../../../lib/client";
 
 type CreateRegionFormProps = {
-  currencies: CurrencyInfo[]
-}
+  currencies: CurrencyInfo[];
+};
 
 const CreateRegionSchema = zod.object({
   name: zod.string().min(1),
@@ -52,18 +42,18 @@ const CreateRegionSchema = zod.object({
   is_tax_inclusive: zod.boolean(),
   countries: zod.array(zod.object({ code: zod.string(), name: zod.string() })),
   payment_providers: zod.array(zod.string()).min(1),
-})
+});
 
-const PREFIX = "cr"
-const PAGE_SIZE = 50
+const PREFIX = "cr";
+const PAGE_SIZE = 50;
 
-const STACKED_MODAL_ID = "countries-modal"
+const STACKED_MODAL_ID = "countries-modal";
 
 export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
-  const { setIsOpen } = useStackedModal()
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const { handleSuccess } = useRouteModal()
-  const direction = useDocumentDirection()
+  const { setIsOpen } = useStackedModal();
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const { handleSuccess } = useRouteModal();
+  const direction = useDocumentDirection();
   const form = useForm<zod.infer<typeof CreateRegionSchema>>({
     defaultValues: {
       name: "",
@@ -74,24 +64,23 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
       payment_providers: [],
     },
     resolver: zodResolver(CreateRegionSchema),
-  })
+  });
 
   const selectedCountries = useWatch({
     control: form.control,
     name: "countries",
     defaultValue: [],
-  })
+  });
 
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  const { mutateAsync: createRegion, isPending: isPendingRegion } =
-    useCreateRegion()
+  const { mutateAsync: createRegion, isPending: isPendingRegion } = useCreateRegion();
 
-  const handleSubmit = form.handleSubmit(async (values) => {
+  const handleSubmit = form.handleSubmit(async values => {
     await createRegion(
       {
         name: values.name,
-        countries: values.countries.map((c) => c.code),
+        countries: values.countries.map(c => c.code),
         currency_code: values.currency_code,
         payment_providers: values.payment_providers,
         automatic_taxes: values.automatic_taxes,
@@ -99,20 +88,20 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
       },
       {
         onSuccess: ({ region }) => {
-          toast.success(t("regions.toast.create"))
-          handleSuccess(`../${region.id}`)
+          toast.success(t("regions.toast.create"));
+          handleSuccess(`../${region.id}`);
         },
-        onError: (e) => {
-          toast.error(e.message)
+        onError: e => {
+          toast.error(e.message);
         },
       }
-    )
-  })
+    );
+  });
 
   const { searchParams, raw } = useCountryTableQuery({
     pageSize: PAGE_SIZE,
     prefix: PREFIX,
-  })
+  });
   const { countries, count } = useCountries({
     countries: staticCountries.map((c, i) => ({
       display_name: c.display_name,
@@ -125,9 +114,9 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
       region: {} as any,
     })),
     ...searchParams,
-  })
+  });
 
-  const columns = useColumns()
+  const columns = useColumns();
 
   const { table } = useDataTable({
     data: countries || [],
@@ -139,69 +128,61 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
       state: rowSelection,
       updater: setRowSelection,
     },
-    getRowId: (row) => row.iso_2,
+    getRowId: row => row.iso_2,
     pageSize: PAGE_SIZE,
     prefix: PREFIX,
-  })
+  });
 
   const saveCountries = () => {
-    const selected = Object.keys(rowSelection).filter(
-      (key) => rowSelection[key]
-    )
+    const selected = Object.keys(rowSelection).filter(key => rowSelection[key]);
 
     form.setValue(
       "countries",
-      selected.map((key) => ({
+      selected.map(key => ({
         code: key,
-        name: staticCountries.find((c) => c.iso_2 === key)!.display_name,
+        name: staticCountries.find(c => c.iso_2 === key)!.display_name,
       })),
       { shouldDirty: true, shouldTouch: true }
-    )
+    );
 
-    setIsOpen(STACKED_MODAL_ID, false)
-  }
+    setIsOpen(STACKED_MODAL_ID, false);
+  };
 
   const removeCountry = (code: string) => {
-    const update = selectedCountries.filter((c) => c.code !== code)
+    const update = selectedCountries.filter(c => c.code !== code);
     const ids = update
-      .map((c) => c.code)
+      .map(c => c.code)
       .reduce((acc, c) => {
-        acc[c] = true
-        return acc
-      }, {} as RowSelectionState)
+        acc[c] = true;
+        return acc;
+      }, {} as RowSelectionState);
 
-    form.setValue("countries", update, { shouldDirty: true, shouldTouch: true })
-    setRowSelection(ids)
-  }
+    form.setValue("countries", update, { shouldDirty: true, shouldTouch: true });
+    setRowSelection(ids);
+  };
 
   const clearCountries = () => {
-    form.setValue("countries", [], { shouldDirty: true, shouldTouch: true })
-    setRowSelection({})
-  }
+    form.setValue("countries", [], { shouldDirty: true, shouldTouch: true });
+    setRowSelection({});
+  };
 
   const comboboxProviders = useComboboxData({
-    queryFn: (params) =>
-      sdk.admin.payment.listPaymentProviders({ ...params, is_enabled: true }),
+    queryFn: params => sdk.admin.payment.listPaymentProviders({ ...params, is_enabled: true }),
     queryKey: ["payment_providers"],
-    getOptions: (data) =>
-      data.payment_providers.map((pp) => ({
+    getOptions: data =>
+      data.payment_providers.map(pp => ({
         label: formatProvider(pp.id),
         value: pp.id,
       })),
-  })
+  });
 
   return (
     <RouteFocusModal.Form form={form}>
-      <KeyboundForm
-        className="flex h-full flex-col overflow-hidden"
-        onSubmit={handleSubmit}
-      >
+      <KeyboundForm className="flex h-full flex-col overflow-hidden" onSubmit={handleSubmit}>
         <RouteFocusModal.Header />
         <RouteFocusModal.Body className="flex overflow-hidden">
           <div
-            className={clx(
-              "flex h-full w-full flex-col items-center overflow-y-auto p-16"
-            )}
+            className={clx("flex h-full w-full flex-col items-center overflow-y-auto p-16")}
             id="form-section"
           >
             <div className="flex w-full max-w-[720px] flex-col gap-y-8">
@@ -219,13 +200,13 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                     render={({ field }) => {
                       return (
                         <Form.Item>
-                          <Form.Label>{t("fields.name")}</Form.Label>
+                          <Form.Label>{t("fields.name")}*</Form.Label>
                           <Form.Control>
                             <Input {...field} />
                           </Form.Control>
                           <Form.ErrorMessage />
                         </Form.Item>
-                      )
+                      );
                     }}
                   />
                   <Form.Field
@@ -234,22 +215,15 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                     render={({ field: { onChange, ref, ...field } }) => {
                       return (
                         <Form.Item>
-                          <Form.Label>{t("fields.currency")}</Form.Label>
+                          <Form.Label>{t("fields.currency")}*</Form.Label>
                           <Form.Control>
-                            <Select
-                              dir={direction}
-                              {...field}
-                              onValueChange={onChange}
-                            >
+                            <Select dir={direction} {...field} onValueChange={onChange}>
                               <Select.Trigger ref={ref}>
                                 <Select.Value />
                               </Select.Trigger>
                               <Select.Content>
-                                {currencies.map((currency) => (
-                                  <Select.Item
-                                    value={currency.code}
-                                    key={currency.code}
-                                  >
+                                {currencies.map(currency => (
+                                  <Select.Item value={currency.code} key={currency.code}>
                                     {currency.name}
                                   </Select.Item>
                                 ))}
@@ -258,7 +232,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                           </Form.Control>
                           <Form.ErrorMessage />
                         </Form.Item>
-                      )
+                      );
                     }}
                   />
                 </div>
@@ -286,7 +260,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                         <Form.ErrorMessage />
                       </div>
                     </Form.Item>
-                  )
+                  );
                 }}
               />
 
@@ -298,9 +272,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                     <Form.Item>
                       <div>
                         <div className="flex items-start justify-between">
-                          <Form.Label>
-                            {t("fields.taxInclusivePricing")}
-                          </Form.Label>
+                          <Form.Label>{t("fields.taxInclusivePricing")}</Form.Label>
                           <Form.Control>
                             <Switch
                               className="rtl:rotate-180"
@@ -315,7 +287,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                         <Form.ErrorMessage />
                       </div>
                     </Form.Item>
-                  )
+                  );
                 }}
               />
 
@@ -331,12 +303,8 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                 </div>
                 {selectedCountries.length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {selectedCountries.map((country) => (
-                      <CountryTag
-                        key={country.code}
-                        country={country}
-                        onRemove={removeCountry}
-                      />
+                    {selectedCountries.map(country => (
+                      <CountryTag key={country.code} country={country} onRemove={removeCountry} />
                     ))}
                     <Button
                       variant="transparent"
@@ -360,9 +328,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                     <div className="flex size-full flex-col overflow-hidden">
                       <StackedFocusModal.Header>
                         <StackedFocusModal.Title asChild>
-                          <span className="sr-only">
-                            {t("regions.addCountries")}
-                          </span>
+                          <span className="sr-only">{t("regions.addCountries")}</span>
                         </StackedFocusModal.Title>
                       </StackedFocusModal.Header>
                       <StackedFocusModal.Body className="overflow-hidden">
@@ -389,11 +355,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                               {t("actions.cancel")}
                             </Button>
                           </StackedFocusModal.Close>
-                          <Button
-                            size="small"
-                            type="button"
-                            onClick={saveCountries}
-                          >
+                          <Button size="small" type="button" onClick={saveCountries}>
                             {t("actions.save")}
                           </Button>
                         </div>
@@ -419,9 +381,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                     render={({ field }) => {
                       return (
                         <Form.Item>
-                          <Form.Label>
-                            {t("fields.paymentProviders")}
-                          </Form.Label>
+                          <Form.Label>{t("fields.paymentProviders")}*</Form.Label>
                           <Form.Control>
                             <Combobox
                               forceHideInput
@@ -432,7 +392,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                           </Form.Control>
                           <Form.ErrorMessage />
                         </Form.Item>
-                      )
+                      );
                     }}
                   />
                 </div>
@@ -452,13 +412,13 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
         </RouteFocusModal.Footer>
       </KeyboundForm>
     </RouteFocusModal.Form>
-  )
-}
+  );
+};
 
-const columnHelper = createColumnHelper<RegionCountryDTO>()
+const columnHelper = createColumnHelper<RegionCountryDTO>();
 
 const useColumns = () => {
-  const base = useCountryTableColumns()
+  const base = useCountryTableColumns();
 
   return useMemo(
     () => [
@@ -472,39 +432,37 @@ const useColumns = () => {
                   ? "indeterminate"
                   : table.getIsAllPageRowsSelected()
               }
-              onCheckedChange={(value) =>
-                table.toggleAllPageRowsSelected(!!value)
-              }
+              onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
             />
-          )
+          );
         },
         cell: ({ row }) => {
-          const isPreselected = !row.getCanSelect()
+          const isPreselected = !row.getCanSelect();
 
           return (
             <Checkbox
               checked={row.getIsSelected() || isPreselected}
               disabled={isPreselected}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-              onClick={(e) => {
-                e.stopPropagation()
+              onCheckedChange={value => row.toggleSelected(!!value)}
+              onClick={e => {
+                e.stopPropagation();
               }}
             />
-          )
+          );
         },
       }),
       ...base,
     ],
     [base]
-  )
-}
+  );
+};
 
 const CountryTag = ({
   country,
   onRemove,
 }: {
-  country: { code: string; name: string }
-  onRemove: (code: string) => void
+  country: { code: string; name: string };
+  onRemove: (code: string) => void;
 }) => {
   return (
     <div className="bg-ui-bg-field shadow-borders-base transition-fg hover:bg-ui-bg-field-hover flex h-7 items-center overflow-hidden rounded-md">
@@ -519,5 +477,5 @@ const CountryTag = ({
         <XMarkMini className="text-ui-fg-muted" />
       </button>
     </div>
-  )
-}
+  );
+};

@@ -1,12 +1,12 @@
-import { HttpTypes } from "@medusajs/types"
-import { useQueryParams } from "../../use-query-params"
+import { HttpTypes } from "@medusajs/types";
+import { useQueryParams } from "../../use-query-params";
 
 type UseShippingOptionTableQueryProps = {
-  regionId: string
-  isReturn?: boolean
-  pageSize?: number
-  prefix?: string
-}
+  regionId: string;
+  isReturn?: boolean;
+  pageSize?: number;
+  prefix?: string;
+};
 
 export const useShippingOptionTableQuery = ({
   regionId,
@@ -25,18 +25,10 @@ export const useShippingOptionTableQuery = ({
       "stock_location_id",
     ],
     prefix
-  )
+  );
 
-  const {
-    offset,
-    order,
-    q,
-    admin_only,
-    is_return,
-    created_at,
-    updated_at,
-    stock_location_id,
-  } = queryObject
+  const { offset, order, q, admin_only, is_return, created_at, updated_at, stock_location_id } =
+    queryObject;
 
   const searchParams: HttpTypes.AdminShippingOptionListParams = {
     limit: pageSize,
@@ -52,10 +44,10 @@ export const useShippingOptionTableQuery = ({
     stock_location_id,
     created_at: created_at ? JSON.parse(created_at) : undefined,
     updated_at: updated_at ? JSON.parse(updated_at) : undefined,
-  }
+  };
 
   return {
     searchParams,
     raw: queryObject,
-  }
-}
+  };
+};

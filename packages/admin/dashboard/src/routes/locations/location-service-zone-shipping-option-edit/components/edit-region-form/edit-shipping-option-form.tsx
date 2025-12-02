@@ -1,32 +1,29 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { HttpTypes } from "@medusajs/types"
-import { Button, Divider, Input, RadioGroup, toast } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import * as zod from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { HttpTypes } from "@medusajs/types";
+import { Button, Divider, Input, RadioGroup, toast } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import * as zod from "zod";
 
-import { Form } from "../../../../../components/common/form"
-import { SwitchBox } from "../../../../../components/common/switch-box"
-import { Combobox } from "../../../../../components/inputs/combobox"
-import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useUpdateShippingOptions } from "../../../../../hooks/api/shipping-options"
-import { useComboboxData } from "../../../../../hooks/use-combobox-data"
-import { sdk } from "../../../../../lib/client"
-import { pick } from "../../../../../lib/common"
-import { isOptionEnabledInStore } from "../../../../../lib/shipping-options"
-import {
-  FulfillmentSetType,
-  ShippingOptionPriceType,
-} from "../../../common/constants"
-import { formatProvider } from "../../../../../lib/format-provider"
-import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
+import { Form } from "../../../../../components/common/form";
+import { SwitchBox } from "../../../../../components/common/switch-box";
+import { Combobox } from "../../../../../components/inputs/combobox";
+import { RouteDrawer, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useUpdateShippingOptions } from "../../../../../hooks/api/shipping-options";
+import { useComboboxData } from "../../../../../hooks/use-combobox-data";
+import { sdk } from "../../../../../lib/client";
+import { pick } from "../../../../../lib/common";
+import { isOptionEnabledInStore } from "../../../../../lib/shipping-options";
+import { FulfillmentSetType, ShippingOptionPriceType } from "../../../common/constants";
+import { formatProvider } from "../../../../../lib/format-provider";
+import { useDocumentDirection } from "../../../../../hooks/use-document-direction";
 
 type EditShippingOptionFormProps = {
-  locationId: string
-  shippingOption: HttpTypes.AdminShippingOption
-  type: FulfillmentSetType
-}
+  locationId: string;
+  shippingOption: HttpTypes.AdminShippingOption;
+  type: FulfillmentSetType;
+};
 
 const EditShippingOptionSchema = zod.object({
   name: zod.string().min(1),
@@ -35,38 +32,38 @@ const EditShippingOptionSchema = zod.object({
   shipping_profile_id: zod.string(),
   shipping_option_type_id: zod.string(),
   provider_id: zod.string().optional(), // just for UI purposes
-})
+});
 
 export const EditShippingOptionForm = ({
   locationId,
   shippingOption,
   type,
 }: EditShippingOptionFormProps) => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
-  const direction = useDocumentDirection()
-  const isPickup = type === FulfillmentSetType.Pickup
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
+  const direction = useDocumentDirection();
+  const isPickup = type === FulfillmentSetType.Pickup;
 
   const shippingProfiles = useComboboxData({
-    queryFn: (params) => sdk.admin.shippingProfile.list(params),
+    queryFn: params => sdk.admin.shippingProfile.list(params),
     queryKey: ["shipping_profiles"],
-    getOptions: (data) =>
-      data.shipping_profiles.map((profile) => ({
+    getOptions: data =>
+      data.shipping_profiles.map(profile => ({
         label: profile.name,
         value: profile.id,
       })),
     defaultValue: shippingOption.shipping_profile_id,
-  })
+  });
 
   const shippingOptionTypes = useComboboxData({
-    queryFn: (params) => sdk.admin.shippingOptionType.list(params),
+    queryFn: params => sdk.admin.shippingOptionType.list(params),
     queryKey: ["shipping_option_types"],
-    getOptions: (data) =>
-      data.shipping_option_types.map((type) => ({
+    getOptions: data =>
+      data.shipping_option_types.map(type => ({
         label: type.label,
         value: type.id,
       })),
-  })
+  });
 
   const form = useForm<zod.infer<typeof EditShippingOptionSchema>>({
     defaultValues: {
@@ -78,18 +75,16 @@ export const EditShippingOptionForm = ({
       provider_id: shippingOption.provider_id,
     },
     resolver: zodResolver(EditShippingOptionSchema),
-  })
+  });
 
-  const { mutateAsync, isPending: isLoading } = useUpdateShippingOptions(
-    shippingOption.id
-  )
+  const { mutateAsync, isPending: isLoading } = useUpdateShippingOptions(shippingOption.id);
 
-  const handleSubmit = form.handleSubmit(async (values) => {
-    const rules = shippingOption.rules.map((r) => ({
+  const handleSubmit = form.handleSubmit(async values => {
+    const rules = shippingOption.rules.map(r => ({
       ...pick(r, ["id", "attribute", "operator", "value"]),
-    })) as HttpTypes.AdminUpdateShippingOptionRule[]
+    })) as HttpTypes.AdminUpdateShippingOptionRule[];
 
-    const storeRule = rules.find((r) => r.attribute === "enabled_in_store")
+    const storeRule = rules.find(r => r.attribute === "enabled_in_store");
 
     if (!storeRule) {
       // NOTE: should always exist since we always create this rule when we create a shipping option
@@ -97,9 +92,9 @@ export const EditShippingOptionForm = ({
         value: values.enabled_in_store ? "true" : "false",
         attribute: "enabled_in_store",
         operator: "eq",
-      })
+      });
     } else {
-      storeRule.value = values.enabled_in_store ? "true" : "false"
+      storeRule.value = values.enabled_in_store ? "true" : "false";
     }
 
     await mutateAsync(
@@ -116,22 +111,19 @@ export const EditShippingOptionForm = ({
             t("stockLocations.shippingOptions.edit.successToast", {
               name: shipping_option.name,
             })
-          )
-          handleSuccess(`/settings/locations/${locationId}`)
+          );
+          handleSuccess(`/settings/locations/${locationId}`);
         },
-        onError: (e) => {
-          toast.error(e.message)
+        onError: e => {
+          toast.error(e.message);
         },
       }
-    )
-  })
+    );
+  });
 
   return (
     <RouteDrawer.Form form={form}>
-      <KeyboundForm
-        onSubmit={handleSubmit}
-        className="flex flex-1 flex-col overflow-hidden"
-      >
+      <KeyboundForm onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
         <RouteDrawer.Body className="overflow-y-auto">
           <div className="flex flex-col gap-y-8">
             <div className="flex flex-col gap-y-8">
@@ -143,16 +135,10 @@ export const EditShippingOptionForm = ({
                     return (
                       <Form.Item>
                         <Form.Label>
-                          {t(
-                            "stockLocations.shippingOptions.fields.priceType.label"
-                          )}
+                          {t("stockLocations.shippingOptions.fields.priceType.label")}
                         </Form.Label>
                         <Form.Control>
-                          <RadioGroup
-                            dir={direction}
-                            {...field}
-                            onValueChange={field.onChange}
-                          >
+                          <RadioGroup dir={direction} {...field} onValueChange={field.onChange}>
                             <RadioGroup.ChoiceBox
                               className="flex-1"
                               value={ShippingOptionPriceType.FlatRate}
@@ -177,7 +163,7 @@ export const EditShippingOptionForm = ({
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
               )}
@@ -195,7 +181,7 @@ export const EditShippingOptionForm = ({
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
 
@@ -213,15 +199,13 @@ export const EditShippingOptionForm = ({
                             {...field}
                             options={shippingProfiles.options}
                             searchValue={shippingProfiles.searchValue}
-                            onSearchValueChange={
-                              shippingProfiles.onSearchValueChange
-                            }
+                            onSearchValueChange={shippingProfiles.onSearchValueChange}
                             disabled={shippingProfiles.disabled}
                           />
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
 
@@ -231,23 +215,19 @@ export const EditShippingOptionForm = ({
                   render={({ field }) => {
                     return (
                       <Form.Item>
-                        <Form.Label>
-                          {t("stockLocations.shippingOptions.fields.type")}
-                        </Form.Label>
+                        <Form.Label>{t("stockLocations.shippingOptions.fields.type")}</Form.Label>
                         <Form.Control>
                           <Combobox
                             {...field}
                             options={shippingOptionTypes.options}
                             searchValue={shippingOptionTypes.searchValue}
-                            onSearchValueChange={
-                              shippingOptionTypes.onSearchValueChange
-                            }
+                            onSearchValueChange={shippingOptionTypes.onSearchValueChange}
                             disabled={shippingOptionTypes.disabled}
                           />
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
 
@@ -277,7 +257,7 @@ export const EditShippingOptionForm = ({
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
               </div>
@@ -286,12 +266,8 @@ export const EditShippingOptionForm = ({
               <SwitchBox
                 control={form.control}
                 name="enabled_in_store"
-                label={t(
-                  "stockLocations.shippingOptions.fields.enableInStore.label"
-                )}
-                description={t(
-                  "stockLocations.shippingOptions.fields.enableInStore.hint"
-                )}
+                label={t("stockLocations.shippingOptions.fields.enableInStore.label")}
+                description={t("stockLocations.shippingOptions.fields.enableInStore.hint")}
               />
             </div>
           </div>
@@ -310,5 +286,5 @@ export const EditShippingOptionForm = ({
         </RouteDrawer.Footer>
       </KeyboundForm>
     </RouteDrawer.Form>
-  )
-}
+  );
+};

@@ -1,30 +1,28 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button, Heading, Input, Text, toast } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import * as zod from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Heading, Input, Text, toast } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import * as zod from "zod";
+import { encryptObject, decryptObject } from "../../../../../utils/encryption";
 
-import { Form } from "../../../../../components/common/form"
-import {
-  RouteFocusModal,
-  useRouteModal,
-} from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useCreateCustomer } from "../../../../../hooks/api/customers"
+import { Form } from "../../../../../components/common/form";
+import { RouteFocusModal, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useCreateCustomerWithEmailEncryption } from "../../../../../hooks/api/customers";
 
 const CreateCustomerSchema = zod.object({
-  email: zod.string().email(),
+  email: zod.string().min(1, "Email is required").email("Invalid email"),
   first_name: zod.string().optional(),
   last_name: zod.string().optional(),
   company_name: zod.string().optional(),
   phone: zod.string().optional(),
-})
+});
 
 export const CreateCustomerForm = () => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
 
-  const { mutateAsync, isPending } = useCreateCustomer()
+  const { mutateAsync, isPending } = useCreateCustomerWithEmailEncryption();
 
   const form = useForm<zod.infer<typeof CreateCustomerSchema>>({
     defaultValues: {
@@ -35,39 +33,43 @@ export const CreateCustomerForm = () => {
       company_name: "",
     },
     resolver: zodResolver(CreateCustomerSchema),
-  })
+  });
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async data => {
+    const encryptedData = await encryptObject({
+      email: data.email,
+      first_name: data.first_name || undefined,
+      last_name: data.last_name || undefined,
+      company_name: data.company_name || undefined,
+      phone: data.phone || undefined,
+    });
+
     await mutateAsync(
       {
-        email: data.email,
-        first_name: data.first_name || undefined,
-        last_name: data.last_name || undefined,
-        company_name: data.company_name || undefined,
-        phone: data.phone || undefined,
+        ...(encryptedData as { [key: string]: any }),
+        email: encryptedData.email,
       },
       {
-        onSuccess: ({ customer }) => {
+        onSuccess: async ({ customer }) => {
+          const decryptedCustomer = await decryptObject({ customer });
+
           toast.success(
             t("customers.create.successToast", {
-              email: customer.email,
+              email: decryptedCustomer?.customer?.email,
             })
-          )
-          handleSuccess(`/customers/${customer.id}`)
+          );
+          handleSuccess(`/customers/${customer.id}`);
         },
-        onError: (error) => {
-          toast.error(error.message)
+        onError: error => {
+          toast.error(error.message);
         },
       }
-    )
-  })
+    );
+  });
 
   return (
     <RouteFocusModal.Form form={form}>
-      <KeyboundForm
-        onSubmit={handleSubmit}
-        className="flex flex-1 flex-col overflow-hidden"
-      >
+      <KeyboundForm onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
         <RouteFocusModal.Header />
         <RouteFocusModal.Body className="flex flex-1 flex-col items-center overflow-y-auto py-16">
           <div className="flex w-full max-w-[720px] flex-col gap-y-8">
@@ -90,7 +92,7 @@ export const CreateCustomerForm = () => {
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
               <Form.Field
@@ -105,7 +107,7 @@ export const CreateCustomerForm = () => {
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
               <Form.Field
@@ -114,13 +116,13 @@ export const CreateCustomerForm = () => {
                 render={({ field }) => {
                   return (
                     <Form.Item>
-                      <Form.Label>{t("fields.email")}</Form.Label>
+                      <Form.Label>{t("fields.email")}*</Form.Label>
                       <Form.Control>
                         <Input autoComplete="off" {...field} />
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
               <Form.Field
@@ -135,7 +137,7 @@ export const CreateCustomerForm = () => {
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
               <Form.Field
@@ -150,7 +152,7 @@ export const CreateCustomerForm = () => {
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
             </div>
@@ -163,17 +165,12 @@ export const CreateCustomerForm = () => {
                 {t("actions.cancel")}
               </Button>
             </RouteFocusModal.Close>
-            <Button
-              size="small"
-              variant="primary"
-              type="submit"
-              isLoading={isPending}
-            >
+            <Button size="small" variant="primary" type="submit" isLoading={isPending}>
               {t("actions.create")}
             </Button>
           </div>
         </RouteFocusModal.Footer>
       </KeyboundForm>
     </RouteFocusModal.Form>
-  )
-}
+  );
+};

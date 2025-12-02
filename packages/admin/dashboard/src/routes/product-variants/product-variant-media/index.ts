@@ -1,1 +1,1 @@
-export { ProductVariantMedia as Component } from "./product-variant-media"
+export { ProductVariantMedia as Component } from "./product-variant-media";

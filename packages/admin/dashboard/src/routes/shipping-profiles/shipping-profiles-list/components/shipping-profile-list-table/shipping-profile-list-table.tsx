@@ -1,43 +1,47 @@
-import { Button, Container, Heading, Text } from "@medusajs/ui"
-import { Link } from "react-router-dom"
+import { Button, Container, Heading, Text } from "@medusajs/ui";
+import { Link } from "react-router-dom";
 
-import { keepPreviousData } from "@tanstack/react-query"
-import { useTranslation } from "react-i18next"
-import { _DataTable } from "../../../../../components/table/data-table"
-import { useShippingProfiles } from "../../../../../hooks/api/shipping-profiles"
-import { useDataTable } from "../../../../../hooks/use-data-table"
-import { useShippingProfileTableColumns } from "./use-shipping-profile-table-columns"
-import { useShippingProfileTableFilters } from "./use-shipping-profile-table-filters"
-import { useShippingProfileTableQuery } from "./use-shipping-profile-table-query"
+import { keepPreviousData } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { _DataTable } from "../../../../../components/table/data-table";
+import { useShippingProfiles } from "../../../../../hooks/api/shipping-profiles";
+import { useDataTable } from "../../../../../hooks/use-data-table";
+import { useShippingProfileTableColumns } from "./use-shipping-profile-table-columns";
+import { useShippingProfileTableFilters } from "./use-shipping-profile-table-filters";
+import { useShippingProfileTableQuery } from "./use-shipping-profile-table-query";
+import { usePermission } from "../../../../../hooks/use-permission";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export const ShippingProfileListTable = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
+  const { hasPermission } = usePermission();
 
   const { raw, searchParams } = useShippingProfileTableQuery({
     pageSize: PAGE_SIZE,
-  })
+  });
 
-  const { shipping_profiles, count, isLoading, isError, error } =
-    useShippingProfiles(searchParams, {
+  const { shipping_profiles, count, isLoading, isError, error } = useShippingProfiles(
+    searchParams,
+    {
       placeholderData: keepPreviousData,
-    })
+    }
+  );
 
-  const columns = useShippingProfileTableColumns()
-  const filters = useShippingProfileTableFilters()
+  const columns = useShippingProfileTableColumns();
+  const filters = useShippingProfileTableFilters();
 
   const { table } = useDataTable({
     data: shipping_profiles,
     columns,
     count,
     enablePagination: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
     pageSize: PAGE_SIZE,
-  })
+  });
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
@@ -50,9 +54,11 @@ export const ShippingProfileListTable = () => {
           </Text>
         </div>
         <div>
-          <Button size="small" variant="secondary" asChild>
-            <Link to="create">{t("actions.create")}</Link>
-          </Button>
+          {hasPermission("/admin/shipping-profiles", "POST") && (
+            <Button size="small" variant="secondary" asChild>
+              <Link to="create">{t("actions.create")}</Link>
+            </Button>
+          )}
         </div>
       </div>
       <_DataTable
@@ -68,11 +74,11 @@ export const ShippingProfileListTable = () => {
           { key: "updated_at", label: t("fields.updatedAt") },
         ]}
         isLoading={isLoading}
-        navigateTo={(row) => row.id}
+        navigateTo={row => row.id}
         queryObject={raw}
         search
         pagination
       />
     </Container>
-  )
-}
+  );
+};

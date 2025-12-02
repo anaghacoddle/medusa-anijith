@@ -1,23 +1,23 @@
-import { Heading } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { json, useParams } from "react-router-dom"
+import { Heading } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { json, useParams } from "react-router-dom";
 
-import { RouteDrawer } from "../../../components/modals"
-import { VariantsTableForm } from "./components/variants-table-form/variants-table-form"
-import { useProduct } from "../../../hooks/api"
+import { RouteDrawer } from "../../../components/modals";
+import { VariantsTableForm } from "./components/variants-table-form/variants-table-form";
+import { useProduct } from "../../../hooks/api";
 
 type VariantImagesPartial = {
-  id: string
-  variants: { id: string }[]
-}
+  id: string;
+  variants: { id: string }[];
+};
 
 export const ProductImageVariantsEdit = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const { id: product_id, image_id } = useParams<{
-    id: string
-    image_id: string
-  }>()
+    id: string;
+    image_id: string;
+  }>();
 
   const { product, isPending } = useProduct(
     product_id!,
@@ -25,16 +25,16 @@ export const ProductImageVariantsEdit = () => {
     {
       enabled: !!product_id && !!image_id,
     }
-  )
+  );
 
-  const image = product?.images?.find((image) => image.id === image_id)
+  const image = product?.images?.find(image => image.id === image_id);
 
   if (!product_id || !image_id || isPending) {
-    return null
+    return null;
   }
 
   if (!isPending && !image) {
-    throw json({ message: `An image with ID ${image_id} was not found` }, 404)
+    throw json({ message: `An image with ID ${image_id} was not found` }, 404);
   }
 
   return (
@@ -52,10 +52,7 @@ export const ProductImageVariantsEdit = () => {
           </div>
         </div>
       </RouteDrawer.Header>
-      <VariantsTableForm
-        productId={product_id}
-        image={image! as VariantImagesPartial}
-      />
+      <VariantsTableForm productId={product_id} image={image! as VariantImagesPartial} />
     </RouteDrawer>
-  )
-}
+  );
+};

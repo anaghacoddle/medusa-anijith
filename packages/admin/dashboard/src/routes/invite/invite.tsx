@@ -1,53 +1,82 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Alert, Button, Heading, Hint, Input, Text, toast } from "@medusajs/ui"
-import i18n from "i18next"
-import { AnimatePresence, motion } from "motion/react"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { decodeToken } from "react-jwt"
-import { Link, useSearchParams } from "react-router-dom"
-import * as z from "zod"
-import { Form } from "../../components/common/form"
-import AvatarBox from "../../components/common/logo-box/avatar-box"
-import { useSignUpWithEmailPass } from "../../hooks/api/auth"
-import { useAcceptInvite } from "../../hooks/api/invites"
-import { isFetchError } from "../../lib/is-fetch-error"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Alert, Button, Heading, Hint, Input, Text, toast } from "@medusajs/ui";
+import i18n from "i18next";
+import { AnimatePresence, motion } from "motion/react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { decodeToken } from "react-jwt";
+import { Link, useSearchParams } from "react-router-dom";
+import * as z from "zod";
+import { Form } from "../../components/common/form";
+import AvatarBox from "../../components/common/logo-box/avatar-box";
+import { useSignUpWithEmailPass } from "../../hooks/api/auth";
+import { useAcceptInvite } from "../../hooks/api/invites";
+import { isFetchError } from "../../lib/is-fetch-error";
+import { encryptObject, decryptObject } from "../../utils/encryption";
+import { HttpTypes } from "@medusajs/types";
 
 const CreateAccountSchema = z
   .object({
     email: z.string().email(),
-    first_name: z.string().min(1),
-    last_name: z.string().min(1),
-    password: z.string().min(1),
-    repeat_password: z.string().min(1),
+    first_name: z
+      .string()
+      .trim()
+      .min(1, { message: "First name is required" })
+      .max(50, { message: "First name must be at most 50 characters" }),
+    last_name: z
+      .string()
+      .trim()
+      .min(1, { message: "Last name is required" })
+      .max(50, { message: "Last name must be at most 50 characters" }),
+    password: z.string().min(10, i18n.t("invite.passwordMinimum")),
+    repeat_password: z.string(),
   })
   .superRefine(({ password, repeat_password }, ctx) => {
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^a-zA-Z0-9]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNoSpaces = /^\S+$/.test(password);
+
+    if (!hasNoSpaces) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: i18n.t("invite.noSpaces"),
+        path: ["password"],
+      });
+    }
+    if (!hasNumber || !hasSpecial || !hasUppercase || !hasNoSpaces) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: i18n.t("invite.passwordFormat"),
+        path: ["password"],
+      });
+    }
     if (password !== repeat_password) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: i18n.t("invite.passwordMismatch"),
         path: ["repeat_password"],
-      })
+      });
     }
-  })
+  });
 
 // TODO: Update to V2 format
 type DecodedInvite = {
-  id: string
-  jti: any
-  exp: string
-  iat: number
-  email: string
-}
+  id: string;
+  jti: any;
+  exp: string;
+  iat: number;
+  email: string;
+};
 
 export const Invite = () => {
-  const [searchParams] = useSearchParams()
-  const [success, setSuccess] = useState(false)
+  const [searchParams] = useSearchParams();
+  const [success, setSuccess] = useState(false);
 
-  const token = searchParams.get("token")
-  const invite: DecodedInvite | null = token ? decodeToken(token) : null
-  const isValidInvite = invite && validateDecodedInvite(invite)
+  const token = searchParams.get("token");
+  const invite: DecodedInvite | null = token ? decodeToken(token) : null;
+  const isValidInvite = invite && validateDecodedInvite(invite);
 
   return (
     <div className="bg-ui-bg-subtle relative flex min-h-dvh w-dvw items-center justify-center p-4">
@@ -92,11 +121,7 @@ export const Invite = () => {
                     }}
                     key="inner-create-account"
                   >
-                    <CreateView
-                      onSuccess={() => setSuccess(true)}
-                      token={token!}
-                      invite={invite}
-                    />
+                    <CreateView onSuccess={() => setSuccess(true)} token={token!} invite={invite} />
                   </motion.div>
                 </motion.div>
               ) : (
@@ -127,11 +152,11 @@ export const Invite = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const LoginLink = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <div className="flex w-full flex-col items-center">
@@ -144,11 +169,11 @@ const LoginLink = () => {
         {t("invite.backToLogin")}
       </Link>
     </div>
-  )
-}
+  );
+};
 
 const InvalidView = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <div className="flex flex-col items-center">
@@ -160,86 +185,107 @@ const InvalidView = () => {
       </div>
       <LoginLink />
     </div>
-  )
-}
+  );
+};
 
 const CreateView = ({
   onSuccess,
   token,
   invite,
 }: {
-  onSuccess: () => void
-  token: string
-  invite: DecodedInvite
+  onSuccess: () => void;
+  token: string;
+  invite: DecodedInvite;
 }) => {
-  const { t } = useTranslation()
-  const [invalid, setInvalid] = useState(false)
+  const { t } = useTranslation();
+  const [invalid, setInvalid] = useState(false);
+  const [decryptedEmail, setDecryptedEmail] = useState("");
 
-  const [params] = useSearchParams()
-  const isFirstRun = params.get("first_run") === "true" // true when the invite page is open during a "create medusa app" run
+  const [params] = useSearchParams();
+  const isFirstRun = params.get("first_run") === "true"; // true when the invite page is open during a "create medusa app" run
+
+  useEffect(() => {
+    const encryptEmail = async () => {
+      const encrypted = await decryptObject({ email: invite.email });
+      setDecryptedEmail(encrypted.email || "");
+    };
+    encryptEmail();
+  }, [invite.email]);
 
   const form = useForm<z.infer<typeof CreateAccountSchema>>({
     resolver: zodResolver(CreateAccountSchema),
     defaultValues: {
-      email: isFirstRun ? "" : invite.email || "",
+      email: isFirstRun ? "" : decryptedEmail || "",
       first_name: "",
       last_name: "",
       password: "",
       repeat_password: "",
     },
-  })
+  });
+  useEffect(() => {
+    if (decryptedEmail && !isFirstRun) {
+      form.setValue("email", decryptedEmail);
+    }
+  }, [decryptedEmail, isFirstRun, form]);
 
-  const { mutateAsync: signUpEmailPass, isPending: isCreatingAuthUser } =
-    useSignUpWithEmailPass()
+  const { mutateAsync: signUpEmailPass, isPending: isCreatingAuthUser } = useSignUpWithEmailPass();
 
-  const { mutateAsync: acceptInvite, isPending: isAcceptingInvite } =
-    useAcceptInvite(token)
+  const { mutateAsync: acceptInvite, isPending: isAcceptingInvite } = useAcceptInvite(token);
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async data => {
     try {
-      const authToken = await signUpEmailPass({
+      const signupPayload = {
         email: data.email,
         password: data.password,
-      })
+      };
+      const encryptedSignupPayload = await encryptObject(signupPayload);
 
+      const authToken = await signUpEmailPass(
+        encryptedSignupPayload as HttpTypes.AdminSignInWithEmailPassword
+      );
       const invitePayload = {
         email: data.email,
-        first_name: data.first_name,
-        last_name: data.last_name,
-      }
+        first_name: data.first_name.trim(),
+        last_name: data.last_name.trim(),
+      };
+
+      const encryptedInvitePayload = await encryptObject(invitePayload);
 
       await acceptInvite({
-        ...invitePayload,
+        email: encryptedInvitePayload.email,
+        first_name: encryptedInvitePayload.first_name,
+        last_name: encryptedInvitePayload.last_name,
         auth_token: authToken,
-      })
+      });
 
-      toast.success(t("invite.toast.accepted"))
+      toast.success(t("invite.toast.accepted"));
 
-      onSuccess()
+      onSuccess();
     } catch (error) {
       if (isFetchError(error) && error.status === 400) {
         form.setError("root", {
           type: "manual",
           message: t("invite.invalidInvite"),
-        })
-        setInvalid(true)
-        return
+        });
+        setInvalid(true);
+        return;
       }
 
       form.setError("root", {
         type: "manual",
-        message: t("errors.serverError"),
-      })
+        message:
+          "Your invitation is no longer active. It may have been deleted or already accepted.",
+      });
     }
-  })
+  });
 
-  const serverError = form.formState.errors.root?.message
+  const serverError = form.formState.errors.root?.message;
   const validationError =
     form.formState.errors.email?.message ||
     form.formState.errors.password?.message ||
     form.formState.errors.repeat_password?.message ||
     form.formState.errors.first_name?.message ||
-    form.formState.errors.last_name?.message
+    form.formState.errors.last_name?.message;
 
   return (
     <div className="flex w-full flex-col items-center">
@@ -267,7 +313,7 @@ const CreateView = ({
                       />
                     </Form.Control>
                   </Form.Item>
-                )
+                );
               }}
             />
             <Form.Field
@@ -285,7 +331,7 @@ const CreateView = ({
                       />
                     </Form.Control>
                   </Form.Item>
-                )
+                );
               }}
             />
             <Form.Field
@@ -303,7 +349,7 @@ const CreateView = ({
                       />
                     </Form.Control>
                   </Form.Item>
-                )
+                );
               }}
             />
             <Form.Field
@@ -322,7 +368,7 @@ const CreateView = ({
                       />
                     </Form.Control>
                   </Form.Item>
-                )
+                );
               }}
             />
             <Form.Field
@@ -341,7 +387,7 @@ const CreateView = ({
                       />
                     </Form.Control>
                   </Form.Item>
-                )
+                );
               }}
             />
             {validationError && (
@@ -352,11 +398,7 @@ const CreateView = ({
               </div>
             )}
             {serverError && (
-              <Alert
-                className="bg-ui-bg-base items-center p-2"
-                dismissible
-                variant="error"
-              >
+              <Alert className="bg-ui-bg-base items-center p-2" dismissible variant="error">
                 {serverError}
               </Alert>
             )}
@@ -373,11 +415,11 @@ const CreateView = ({
       </Form>
       <LoginLink />
     </div>
-  )
-}
+  );
+};
 
 const SuccessView = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <div className="flex w-full flex-col items-center gap-y-6">
@@ -401,16 +443,16 @@ const SuccessView = () => {
         {t("invite.backToLogin")}
       </Link>
     </div>
-  )
-}
+  );
+};
 
 const InviteSchema = z.object({
   id: z.string(),
   jti: z.string(),
   exp: z.number(),
   iat: z.number(),
-})
+});
 
 const validateDecodedInvite = (decoded: any): decoded is DecodedInvite => {
-  return InviteSchema.safeParse(decoded).success
-}
+  return InviteSchema.safeParse(decoded).success;
+};

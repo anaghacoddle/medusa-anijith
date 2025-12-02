@@ -1,24 +1,60 @@
-import { Button, Container, Heading, Text } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
+import { Button, Container, Heading, Text } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
-import { HttpTypes } from "@medusajs/types"
-import { keepPreviousData } from "@tanstack/react-query"
-import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo } from "react"
-import { _DataTable } from "../../../../../components/table/data-table"
-import { useCollections } from "../../../../../hooks/api/collections"
-import { useCollectionTableColumns } from "../../../../../hooks/table/columns/use-collection-table-columns"
-import { useCollectionTableFilters } from "../../../../../hooks/table/filters"
-import { useCollectionTableQuery } from "../../../../../hooks/table/query"
-import { useDataTable } from "../../../../../hooks/use-data-table"
-import { CollectionRowActions } from "./collection-row-actions"
+import { HttpTypes } from "@medusajs/types";
+import { keepPreviousData } from "@tanstack/react-query";
+import { createColumnHelper } from "@tanstack/react-table";
+import { useMemo } from "react";
+import { _DataTable } from "../../../../../components/table/data-table";
+import { useCollections } from "../../../../../hooks/api/collections";
+import { useCollectionTableColumns } from "../../../../../hooks/table/columns/use-collection-table-columns";
+import { useCollectionTableFilters } from "../../../../../hooks/table/filters";
+import { useCollectionTableQuery } from "../../../../../hooks/table/query";
+import { useDataTable } from "../../../../../hooks/use-data-table";
+import { usePermission } from "../../../../../hooks/use-permission";
+import { CollectionRowActions } from "./collection-row-actions";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
+
+const columnHelper = createColumnHelper<HttpTypes.AdminCollection>();
+
+const formatDate = (dateString: string | null | undefined) => {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const useColumns = () => {
+  const base = useCollectionTableColumns();
+
+  return useMemo(
+    () => [
+      ...base,
+      columnHelper.accessor("created_at", {
+        header: () => <span>Created At</span>,
+        cell: info => formatDate(info.getValue()),
+      }),
+      columnHelper.accessor("updated_at", {
+        header: () => <span>Updated At</span>,
+        cell: info => formatDate(info.getValue()),
+      }),
+      columnHelper.display({
+        id: "actions",
+        cell: ({ row }) => <CollectionRowActions collection={row.original} />,
+      }),
+    ],
+    [base]
+  );
+};
 
 export const CollectionListTable = () => {
-  const { t } = useTranslation()
-  const { searchParams, raw } = useCollectionTableQuery({ pageSize: PAGE_SIZE })
+  const { t } = useTranslation();
+  const { searchParams, raw } = useCollectionTableQuery({ pageSize: PAGE_SIZE });
   const { collections, count, isError, error, isLoading } = useCollections(
     {
       ...searchParams,
@@ -27,10 +63,11 @@ export const CollectionListTable = () => {
     {
       placeholderData: keepPreviousData,
     }
-  )
+  );
 
-  const filters = useCollectionTableFilters()
-  const columns = useColumns()
+  const filters = useCollectionTableFilters();
+  const columns = useColumns();
+  const { hasPermission } = usePermission();
 
   const { table } = useDataTable({
     data: collections ?? [],
@@ -39,10 +76,10 @@ export const CollectionListTable = () => {
     enablePagination: true,
     getRowId: (row, index) => row.id ?? `${index}`,
     pageSize: PAGE_SIZE,
-  })
+  });
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
@@ -54,11 +91,13 @@ export const CollectionListTable = () => {
             {t("collections.subtitle")}
           </Text>
         </div>
-        <Link to="/collections/create">
-          <Button size="small" variant="secondary">
-            {t("actions.create")}
-          </Button>
-        </Link>
+        {hasPermission("/admin/collections", "POST") && (
+          <Link to="/collections/create">
+            <Button size="small" variant="secondary">
+              {t("actions.create")}
+            </Button>
+          </Link>
+        )}
       </div>
       <_DataTable
         table={table}
@@ -73,27 +112,10 @@ export const CollectionListTable = () => {
           { key: "updated_at", label: t("fields.updatedAt") },
         ]}
         search
-        navigateTo={(row) => `/collections/${row.original.id}`}
+        navigateTo={row => `/collections/${row.original.id}`}
         queryObject={raw}
         isLoading={isLoading}
       />
     </Container>
-  )
-}
-
-const columnHelper = createColumnHelper<HttpTypes.AdminCollection>()
-
-const useColumns = () => {
-  const base = useCollectionTableColumns()
-
-  return useMemo(
-    () => [
-      ...base,
-      columnHelper.display({
-        id: "actions",
-        cell: ({ row }) => <CollectionRowActions collection={row.original} />,
-      }),
-    ],
-    [base]
-  )
-}
+  );
+};

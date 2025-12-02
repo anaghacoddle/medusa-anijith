@@ -1,75 +1,89 @@
-import { ArrowUturnLeft, MinusMini } from "@medusajs/icons"
-import { clx, Divider, IconButton, Text } from "@medusajs/ui"
-import { Collapsible as RadixCollapsible } from "radix-ui"
-import { Fragment, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Link, useLocation } from "react-router-dom"
+import { ArrowUturnLeft, MinusMini } from "@medusajs/icons";
+import { clx, Divider, IconButton, Text } from "@medusajs/ui";
+import { Collapsible as RadixCollapsible } from "radix-ui";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useLocation } from "react-router-dom";
 
-import { useExtension } from "../../../providers/extension-provider"
-import { INavItem, NavItem } from "../nav-item"
-import { Shell } from "../shell"
-import { UserMenu } from "../user-menu"
+import { useExtension } from "../../../providers/extension-provider";
+import { INavItem, NavItem } from "../nav-item";
+import { Shell } from "../shell";
+import { UserMenu } from "../user-menu";
+import { usePermission } from "../../../hooks/use-permission";
 
 export const SettingsLayout = () => {
   return (
     <Shell>
       <SettingsSidebar />
     </Shell>
-  )
-}
+  );
+};
 
-const useSettingRoutes = (): INavItem[] => {
-  const { t } = useTranslation()
-
+export const useSettingRoutes = (): INavItem[] => {
+  const { t } = useTranslation();
+  const { hasPermission } = usePermission();
   return useMemo(
-    () => [
-      {
-        label: t("store.domain"),
-        to: "/settings/store",
-      },
-      {
-        label: t("users.domain"),
-        to: "/settings/users",
-      },
-      {
-        label: t("regions.domain"),
-        to: "/settings/regions",
-      },
-      {
-        label: t("taxRegions.domain"),
-        to: "/settings/tax-regions",
-      },
-      {
-        label: t("returnReasons.domain"),
-        to: "/settings/return-reasons",
-      },
-      {
-        label: t("refundReasons.domain"),
-        to: "/settings/refund-reasons",
-      },
-      {
-        label: t("salesChannels.domain"),
-        to: "/settings/sales-channels",
-      },
-      {
-        label: t("productTypes.domain"),
-        to: "/settings/product-types",
-      },
-      {
-        label: t("productTags.domain"),
-        to: "/settings/product-tags",
-      },
-      {
-        label: t("stockLocations.domain"),
-        to: "/settings/locations",
-      },
-    ],
-    [t]
-  )
-}
+    () =>
+      [
+        hasPermission("/admin/stores", "GET") && {
+          label: t("store.domain"),
+          to: "/settings/store",
+        },
+        hasPermission("/admin/rbac", "GET") && {
+          label: t("rbac.domain"),
+          to: "/settings/rbac",
+        },
+        hasPermission("/admin/users", "GET") && {
+          label: t("users.domain"),
+          to: "/settings/users",
+        },
+        hasPermission("/admin/regions", "GET") && {
+          label: t("regions.domain"),
+          to: "/settings/regions",
+        },
+        hasPermission("/admin/tax-regions", "GET") && {
+          label: t("taxRegions.domain"),
+          to: "/settings/tax-regions",
+        },
+        hasPermission("/admin/return-reasons", "GET") && {
+          label: t("returnReasons.domain"),
+          to: "/settings/return-reasons",
+        },
+        hasPermission("/admin/refund-reasons", "GET") && {
+          label: t("refundReasons.domain"),
+          to: "/settings/refund-reasons",
+        },
+        hasPermission("/admin/sales-channels", "GET") && {
+          label: t("salesChannels.domain"),
+          to: "/settings/sales-channels",
+        },
+        hasPermission("/admin/product-types", "GET") && {
+          label: t("productTypes.domain"),
+          to: "/settings/product-types",
+        },
+        hasPermission("/admin/product-tags", "GET") && {
+          label: t("productTags.domain"),
+          to: "/settings/product-tags",
+        },
+        hasPermission("/admin/stock-locations", "GET") && {
+          label: t("stockLocations.domain"),
+          to: "/settings/locations",
+        },
+        hasPermission("/admin/loyalty-points", "GET") && {
+          label: t("loyaltypoint.domain"),
+          to: "/settings/loyalty-points",
+        },
+        {
+          label: t("invoiceConfig.domain"),
+          to: "/settings/invoice-config",
+        },
+      ].filter(Boolean),
+    [t, hasPermission]
+  );
+};
 
 const useDeveloperRoutes = (): INavItem[] => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return useMemo(
     () => [
@@ -87,11 +101,11 @@ const useDeveloperRoutes = (): INavItem[] => {
       },
     ],
     [t]
-  )
-}
+  );
+};
 
 const useMyAccountRoutes = (): INavItem[] => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return useMemo(
     () => [
@@ -101,8 +115,8 @@ const useMyAccountRoutes = (): INavItem[] => {
       },
     ],
     [t]
-  )
-}
+  );
+};
 
 /**
  * Ensure that the `from` prop is not another settings route, to avoid
@@ -110,21 +124,21 @@ const useMyAccountRoutes = (): INavItem[] => {
  */
 const getSafeFromValue = (from: string) => {
   if (from.startsWith("/settings")) {
-    return "/orders"
+    return "/orders";
   }
 
-  return from
-}
+  return from;
+};
 
 const SettingsSidebar = () => {
-  const { getMenu } = useExtension()
+  const { getMenu } = useExtension();
 
-  const routes = useSettingRoutes()
-  const developerRoutes = useDeveloperRoutes()
-  const myAccountRoutes = useMyAccountRoutes()
-  const extensionRoutes = getMenu("settingsExtensions")
+  const routes = useSettingRoutes();
+  const developerRoutes = useDeveloperRoutes();
+  const myAccountRoutes = useMyAccountRoutes();
+  const extensionRoutes = getMenu("settingsExtensions");
 
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <aside className="relative flex flex-1 flex-col justify-between overflow-y-auto">
@@ -136,10 +150,9 @@ const SettingsSidebar = () => {
       </div>
       <div className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col overflow-y-auto">
-          <RadixCollapsibleSection
-            label={t("app.nav.settings.general")}
-            items={routes}
-          />
+          {routes.length > 0 && (
+            <RadixCollapsibleSection label={t("app.nav.settings.general")} items={routes} />
+          )}
           <div className="flex items-center justify-center px-3">
             <Divider variant="dashed" />
           </div>
@@ -147,9 +160,11 @@ const SettingsSidebar = () => {
             label={t("app.nav.settings.developer")}
             items={developerRoutes}
           />
-          <div className="flex items-center justify-center px-3">
-            <Divider variant="dashed" />
-          </div>
+          {routes.length > 0 && (
+            <div className="flex items-center justify-center px-3">
+              <Divider variant="dashed" />
+            </div>
+          )}
           <RadixCollapsibleSection
             label={t("app.nav.settings.myAccount")}
             items={myAccountRoutes}
@@ -171,20 +186,20 @@ const SettingsSidebar = () => {
         </div>
       </div>
     </aside>
-  )
-}
+  );
+};
 
 const Header = () => {
-  const [from, setFrom] = useState("/orders")
+  const [from, setFrom] = useState("/orders");
 
-  const { t } = useTranslation()
-  const location = useLocation()
+  const { t } = useTranslation();
+  const location = useLocation();
 
   useEffect(() => {
     if (location.state?.from) {
-      setFrom(getSafeFromValue(location.state.from))
+      setFrom(getSafeFromValue(location.state.from));
     }
-  }, [location])
+  }, [location]);
 
   return (
     <div className="bg-ui-bg-subtle p-3">
@@ -207,16 +222,10 @@ const Header = () => {
         </div>
       </Link>
     </div>
-  )
-}
+  );
+};
 
-const RadixCollapsibleSection = ({
-  label,
-  items,
-}: {
-  label: string
-  items: INavItem[]
-}) => {
+const RadixCollapsibleSection = ({ label, items }: { label: string; items: INavItem[] }) => {
   return (
     <RadixCollapsible.Root defaultOpen className="py-3">
       <div className="px-3">
@@ -234,15 +243,15 @@ const RadixCollapsibleSection = ({
       <RadixCollapsible.Content>
         <div className="pt-0.5">
           <nav className="flex flex-col gap-y-0.5">
-            {items.map((setting) => (
+            {items.map(setting => (
               <NavItem key={setting.to} type="setting" {...setting} />
             ))}
           </nav>
         </div>
       </RadixCollapsible.Content>
     </RadixCollapsible.Root>
-  )
-}
+  );
+};
 
 const UserSection = () => {
   return (
@@ -252,5 +261,5 @@ const UserSection = () => {
       </div>
       <UserMenu />
     </div>
-  )
-}
+  );
+};

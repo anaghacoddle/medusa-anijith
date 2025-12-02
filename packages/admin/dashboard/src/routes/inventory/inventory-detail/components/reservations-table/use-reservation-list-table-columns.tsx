@@ -26,51 +26,43 @@ export const useReservationTableColumn = ({ sku }: { sku: string }) => {
         id: "sku",
         header: () => <TextHeader text={t("fields.sku")} />,
         cell: () => {
-          return (
-            <TextCell text={sku} />
-          )
+          return <TextCell text={sku} />;
         },
       }),
       columnHelper.accessor("line_item.order_id", {
         header: () => <TextHeader text={t("inventory.reservation.orderID")} />,
         cell: ({ getValue }) => {
-          const orderId = getValue()
+          const orderId = getValue();
 
           if (!orderId) {
-            return <PlaceholderCell />
+            return <PlaceholderCell />;
           }
 
-          return (
-            <TextCell text={orderId} />
-          )
+          return <TextCell text={orderId} />;
         },
       }),
       columnHelper.accessor("description", {
         header: () => <TextHeader text={t("fields.description")} />,
         cell: ({ getValue }) => {
-          const description = getValue()
+          const description = getValue();
 
           if (!description) {
-            return <PlaceholderCell />
+            return <PlaceholderCell />;
           }
 
-          return (
-            <TextCell text={description} />
-          )
+          return <TextCell text={description} />;
         },
       }),
       columnHelper.accessor("location.name", {
         header: () => <TextHeader text={t("inventory.reservation.location")} />,
         cell: ({ getValue }) => {
-          const location = getValue()
+          const location = getValue();
 
           if (!location) {
-            return <PlaceholderCell />
+            return <PlaceholderCell />;
           }
 
-          return (
-            <TextCell text={location} />
-          )
+          return <TextCell text={location} />;
         },
       }),
       columnHelper.accessor("created_at", {
@@ -80,7 +72,7 @@ export const useReservationTableColumn = ({ sku }: { sku: string }) => {
       columnHelper.accessor("quantity", {
         header: () => <TextHeader text={t("fields.quantity")} align="right" />,
         cell: ({ getValue }) => {
-          return <TextCell text={getValue()} align="right" />
+          return <TextCell text={getValue()} align="right" />;
         },
       }),
       columnHelper.display({
@@ -88,6 +80,6 @@ export const useReservationTableColumn = ({ sku }: { sku: string }) => {
         cell: ({ row }) => <ReservationActions reservation={row.original} />,
       }),
     ],
-    [t]
-  )
+    [t, sku]
+  );
 }

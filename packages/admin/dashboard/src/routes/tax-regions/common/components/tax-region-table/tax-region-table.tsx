@@ -1,27 +1,24 @@
-import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
-import { Table } from "@tanstack/react-table"
-import { ReactNode } from "react"
-import { Link } from "react-router-dom"
-import {
-  NoRecords,
-  NoResults,
-} from "../../../../../components/common/empty-table-content"
-import { TableFooterSkeleton } from "../../../../../components/common/skeleton"
-import { LocalizedTablePagination } from "../../../../../components/localization/localized-table-pagination"
-import { DataTableOrderBy } from "../../../../../components/table/data-table/data-table-order-by"
-import { TaxRegionCard } from "../tax-region-card"
+import { HttpTypes } from "@medusajs/types";
+import { Button } from "@medusajs/ui";
+import { Table } from "@tanstack/react-table";
+import { ReactNode } from "react";
+import { Link } from "react-router-dom";
+import { NoRecords, NoResults } from "../../../../../components/common/empty-table-content";
+import { TableFooterSkeleton } from "../../../../../components/common/skeleton";
+import { LocalizedTablePagination } from "../../../../../components/localization/localized-table-pagination";
+import { DataTableOrderBy } from "../../../../../components/table/data-table/data-table-order-by";
+import { TaxRegionCard } from "../tax-region-card";
 
 type TaxRegionTableProps = {
-  variant?: "country" | "province"
-  isPending: boolean
-  queryObject: Record<string, any>
-  count?: number
-  table: Table<HttpTypes.AdminTaxRegion>
-  action: { label: string; to: string }
-  prefix?: string
-  children?: ReactNode
-}
+  variant?: "country" | "province";
+  isPending: boolean;
+  queryObject: Record<string, any>;
+  count?: number;
+  table: Table<HttpTypes.AdminTaxRegion>;
+  action: { label: string; to: string };
+  prefix?: string;
+  children?: ReactNode;
+};
 
 export const TaxRegionTable = ({
   variant = "country",
@@ -38,23 +35,19 @@ export const TaxRegionTable = ({
       <div className="flex flex-col divide-y">
         {Array.from({ length: 3 }).map((_, index) => {
           return (
-            <div
-              key={index}
-              className="bg-ui-bg-field-component h-[52px] w-full animate-pulse"
-            />
-          )
+            <div key={index} className="bg-ui-bg-field-component h-[52px] w-full animate-pulse" />
+          );
         })}
         <TableFooterSkeleton layout="fit" />
       </div>
-    )
+    );
   }
 
-  const noQuery =
-    Object.values(queryObject).filter((v) => Boolean(v)).length === 0
-  const noResults = !isPending && count === 0 && !noQuery
-  const noRecords = !isPending && count === 0 && noQuery
+  const noQuery = Object.values(queryObject).filter(v => Boolean(v)).length === 0;
+  const noResults = !isPending && count === 0 && !noQuery;
+  const noRecords = !isPending && count === 0 && noQuery;
 
-  const { pageIndex, pageSize } = table.getState().pagination
+  const { pageIndex, pageSize } = table.getState().pagination;
 
   return (
     <div className="flex flex-col divide-y">
@@ -68,7 +61,10 @@ export const TaxRegionTable = ({
                 <DataTableSearch prefix={prefix} />
               </div> */}
               <DataTableOrderBy
-                keys={["updated_at", "created_at"]}
+                keys={[
+                  { key: "updated_at", label: "Updated At" },
+                  { key: "created_at", label: "Created At" },
+                ]}
                 prefix={prefix}
               />
             </div>
@@ -84,7 +80,7 @@ export const TaxRegionTable = ({
       {noRecords && <NoRecords />}
       {!noRecords && !noResults
         ? !isPending
-          ? table.getRowModel().rows.map((row) => {
+          ? table.getRowModel().rows.map(row => {
               return (
                 <TaxRegionCard
                   variant={variant}
@@ -93,7 +89,7 @@ export const TaxRegionTable = ({
                   role="row"
                   aria-rowindex={row.index}
                 />
-              )
+              );
             })
           : Array.from({ length: 3 }).map((_, index) => {
               return (
@@ -101,7 +97,7 @@ export const TaxRegionTable = ({
                   key={index}
                   className="bg-ui-bg-field-component h-[60px] w-full animate-pulse"
                 />
-              )
+              );
             })
         : null}
       {!noRecords && (
@@ -118,5 +114,5 @@ export const TaxRegionTable = ({
         />
       )}
     </div>
-  )
-}
+  );
+};

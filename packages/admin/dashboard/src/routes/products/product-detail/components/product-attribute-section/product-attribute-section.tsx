@@ -1,22 +1,21 @@
-import { PencilSquare } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import { Container, Heading } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { SectionRow } from "../../../../../components/common/section"
-import { getFormattedCountry } from "../../../../../lib/addresses"
-import { useExtension } from "../../../../../providers/extension-provider"
+import { PencilSquare } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Container, Heading } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { SectionRow } from "../../../../../components/common/section";
+import { getFormattedCountry } from "../../../../../lib/addresses";
+import { useExtension } from "../../../../../providers/extension-provider";
+import { usePermission } from "../../../../../hooks/use-permission";
 
 type ProductAttributeSectionProps = {
-  product: HttpTypes.AdminProduct
-}
+  product: HttpTypes.AdminProduct;
+};
 
-export const ProductAttributeSection = ({
-  product,
-}: ProductAttributeSectionProps) => {
-  const { t } = useTranslation()
-  const { getDisplays } = useExtension()
-
+export const ProductAttributeSection = ({ product }: ProductAttributeSectionProps) => {
+  const { t } = useTranslation();
+  const { getDisplays } = useExtension();
+  const { hasPermission } = usePermission();
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
@@ -29,6 +28,9 @@ export const ProductAttributeSection = ({
                   label: t("actions.edit"),
                   to: "attributes",
                   icon: <PencilSquare />,
+                  disabled:
+                    !hasPermission("/admin/products", "PUT") ||
+                    !hasPermission("/admin/products", "POST"),
                 },
               ],
             },
@@ -46,8 +48,8 @@ export const ProductAttributeSection = ({
         value={getFormattedCountry(product.origin_country)}
       />
       {getDisplays("product", "attributes").map((Component, i) => {
-        return <Component key={i} data={product} />
+        return <Component key={i} data={product} />;
       })}
     </Container>
-  )
-}
+  );
+};

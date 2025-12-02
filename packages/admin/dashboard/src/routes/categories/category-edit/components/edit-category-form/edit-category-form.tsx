@@ -1,33 +1,36 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button, Input, Select, Textarea, toast } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Input, Select, Textarea, toast } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
-import { HttpTypes } from "@medusajs/types"
-import { Form } from "../../../../../components/common/form"
-import { HandleInput } from "../../../../../components/inputs/handle-input"
-import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useUpdateProductCategory } from "../../../../../hooks/api/categories"
-import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
+import { HttpTypes } from "@medusajs/types";
+import { Form } from "../../../../../components/common/form";
+import { HandleInput } from "../../../../../components/inputs/handle-input";
+import { RouteDrawer, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import {
+  useProductCategories,
+  useUpdateProductCategory,
+} from "../../../../../hooks/api/categories";
+import { useDocumentDirection } from "../../../../../hooks/use-document-direction";
 
 const EditCategorySchema = z.object({
   name: z.string().min(1),
-  handle: z.string().min(1),
+  handle: z.string().min(1, { message: "Handle is required" }),
   description: z.string().optional(),
   status: z.enum(["active", "inactive"]),
   visibility: z.enum(["public", "internal"]),
-})
+});
 
 type EditCategoryFormProps = {
-  category: HttpTypes.AdminProductCategory
-}
+  category: HttpTypes.AdminProductCategory;
+};
 
 export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
-  const direction = useDocumentDirection()
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
+  const direction = useDocumentDirection();
   const form = useForm<z.infer<typeof EditCategorySchema>>({
     defaultValues: {
       name: category.name,
@@ -37,10 +40,25 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
       visibility: category.is_internal ? "internal" : "public",
     },
     resolver: zodResolver(EditCategorySchema),
-  })
+  });
 
-  const { mutateAsync, isPending } = useUpdateProductCategory(category.id)
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const { product_categories, isLoading } = useProductCategories();
+
+  const { mutateAsync, isPending } = useUpdateProductCategory(category.id);
+
+  const handleSubmit = form.handleSubmit(async data => {
+    const newName = data.name.trim();
+
+    const hasDuplicate =
+      product_categories?.some(
+        c => c.name.trim().toLowerCase() === newName.toLowerCase() && c.id !== category.id
+      ) ?? false;
+
+    if (hasDuplicate) {
+      toast.error("A category with this name already exists.");
+      return;
+    }
+
     await mutateAsync(
       {
         name: data.name,
@@ -51,15 +69,15 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
       },
       {
         onSuccess: () => {
-          toast.success(t("categories.edit.successToast"))
-          handleSuccess()
+          toast.success(t("categories.edit.successToast"));
+          handleSuccess();
         },
-        onError: (error) => {
-          toast.error(error.message)
+        onError: error => {
+          toast.error(error.message);
         },
       }
-    )
-  })
+    );
+  });
 
   return (
     <RouteDrawer.Form form={form}>
@@ -74,11 +92,11 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
                   <Form.Item>
                     <Form.Label>{t("fields.title")}</Form.Label>
                     <Form.Control>
-                      <Input autoComplete="off" {...field} />
+                      <Input autoComplete="off" {...field} placeholder="Enter the Title" />
                     </Form.Control>
                     <Form.ErrorMessage />
                   </Form.Item>
-                )
+                );
               }}
             />
             <Form.Field
@@ -88,17 +106,17 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
                 return (
                   <Form.Item>
                     <Form.Label
-                      optional
-                      tooltip={t("collections.handleTooltip")}
+                      tooltip="The handle is used to reference the collection in your storefront. 
+  If not specified, provide a valid and unique handle."
                     >
                       {t("fields.handle")}
                     </Form.Label>
                     <Form.Control>
-                      <HandleInput {...field} />
+                      <HandleInput {...field} placeholder="Enter the Handle" />
                     </Form.Control>
                     <Form.ErrorMessage />
                   </Form.Item>
-                )
+                );
               }}
             />
             <Form.Field
@@ -109,11 +127,11 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
                   <Form.Item>
                     <Form.Label optional>{t("fields.description")}</Form.Label>
                     <Form.Control>
-                      <Textarea {...field} />
+                      <Textarea {...field} placeholder="Enter the Description" />
                     </Form.Control>
                     <Form.ErrorMessage />
                   </Form.Item>
-                )
+                );
               }}
             />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -123,15 +141,9 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
                 render={({ field: { ref, onChange, ...field } }) => {
                   return (
                     <Form.Item>
-                      <Form.Label>
-                        {t("categories.fields.status.label")}
-                      </Form.Label>
+                      <Form.Label>{t("categories.fields.status.label")}</Form.Label>
                       <Form.Control>
-                        <Select
-                          dir={direction}
-                          {...field}
-                          onValueChange={onChange}
-                        >
+                        <Select dir={direction} {...field} onValueChange={onChange}>
                           <Select.Trigger ref={ref}>
                             <Select.Value />
                           </Select.Trigger>
@@ -147,7 +159,7 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
               <Form.Field
@@ -156,15 +168,9 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
                 render={({ field: { ref, onChange, ...field } }) => {
                   return (
                     <Form.Item>
-                      <Form.Label>
-                        {t("categories.fields.visibility.label")}
-                      </Form.Label>
+                      <Form.Label>{t("categories.fields.visibility.label")}</Form.Label>
                       <Form.Control>
-                        <Select
-                          dir={direction}
-                          {...field}
-                          onValueChange={onChange}
-                        >
+                        <Select dir={direction} {...field} onValueChange={onChange}>
                           <Select.Trigger ref={ref}>
                             <Select.Value />
                           </Select.Trigger>
@@ -180,7 +186,7 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
             </div>
@@ -200,5 +206,5 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
         </RouteDrawer.Footer>
       </KeyboundForm>
     </RouteDrawer.Form>
-  )
-}
+  );
+};

@@ -1,35 +1,30 @@
-import React, { useState } from "react"
+import React, { useState } from "react";
+import { Button, Input, Label, Drawer, Heading, Text } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
 import {
-  Button,
-  Input,
-  Label,
-  Drawer,
-  Heading,
-  Text,
-} from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useViewConfigurations, useViewConfiguration } from "../../../hooks/use-view-configurations"
-import type { ViewConfiguration } from "../../../hooks/use-view-configurations"
-
+  useViewConfigurations,
+  useViewConfiguration,
+} from "../../../hooks/use-view-configurations";
+import type { ViewConfiguration } from "../../../hooks/use-view-configurations";
 
 type SaveViewFormData = {
-  name: string
-}
+  name: string;
+};
 
 interface SaveViewDialogProps {
-  entity: string
+  entity: string;
   currentColumns?: {
-    visible: string[]
-    order: string[]
-  }
+    visible: string[];
+    order: string[];
+  };
   currentConfiguration?: {
-    filters?: Record<string, unknown>
-    sorting?: { id: string; desc: boolean } | null
-    search?: string
-  }
-  editingView?: ViewConfiguration | null
-  onClose: () => void
-  onSaved: (view: ViewConfiguration) => void
+    filters?: Record<string, unknown>;
+    sorting?: { id: string; desc: boolean } | null;
+    search?: string;
+  };
+  editingView?: ViewConfiguration | null;
+  onClose: () => void;
+  onSaved: (view: ViewConfiguration) => void;
 }
 
 export const SaveViewDialog: React.FC<SaveViewDialogProps> = ({
@@ -40,9 +35,9 @@ export const SaveViewDialog: React.FC<SaveViewDialogProps> = ({
   onClose,
   onSaved,
 }) => {
-  const { createView } = useViewConfigurations(entity)
-  const { updateView } = useViewConfiguration(entity, editingView?.id || '')
-  const [isLoading, setIsLoading] = useState(false)
+  const { createView } = useViewConfigurations(entity);
+  const { updateView } = useViewConfiguration(entity, editingView?.id || "");
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -52,14 +47,14 @@ export const SaveViewDialog: React.FC<SaveViewDialogProps> = ({
     defaultValues: {
       name: editingView?.name || "",
     },
-  })
+  });
 
   const onSubmit = async (data: SaveViewFormData) => {
     if (!data.name.trim()) {
-      return
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       if (editingView) {
         // Update existing view
@@ -72,8 +67,8 @@ export const SaveViewDialog: React.FC<SaveViewDialogProps> = ({
             sorting: currentConfiguration?.sorting || editingView.configuration.sorting || null,
             search: currentConfiguration?.search || editingView.configuration.search || "",
           },
-        })
-        onSaved(result.view_configuration)
+        });
+        onSaved(result.view_configuration);
       } else {
         // Create new view
         const result = await createView.mutateAsync({
@@ -86,24 +81,22 @@ export const SaveViewDialog: React.FC<SaveViewDialogProps> = ({
             sorting: currentConfiguration?.sorting || null,
             search: currentConfiguration?.search || "",
           },
-        })
-        onSaved(result.view_configuration)
+        });
+        onSaved(result.view_configuration);
       }
     } catch (error) {
       // Error is handled by the hook
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Drawer open onOpenChange={onClose}>
       <Drawer.Content className="flex flex-col">
         <Drawer.Header>
           <Drawer.Title asChild>
-            <Heading>
-              {editingView ? "Edit View Name" : "Save as New View"}
-            </Heading>
+            <Heading>{editingView ? "Edit View Name" : "Save as New View"}</Heading>
           </Drawer.Title>
           <Drawer.Description asChild>
             <Text>
@@ -123,41 +116,30 @@ export const SaveViewDialog: React.FC<SaveViewDialogProps> = ({
               <Input
                 {...register("name", {
                   required: "Name is required",
-                  validate: value => value.trim().length > 0 || "Name cannot be empty"
+                  validate: value => value.trim().length > 0 || "Name cannot be empty",
                 })}
                 type="text"
                 placeholder="Enter view name"
                 autoFocus
               />
               {errors.name && (
-                <span className="text-sm text-ui-fg-error">
-                  {errors.name.message}
-                </span>
+                <span className="text-sm text-ui-fg-error">{errors.name.message}</span>
               )}
             </div>
           </Drawer.Body>
 
           <Drawer.Footer>
             <Drawer.Close asChild>
-              <Button
-                variant="secondary"
-                size="small"
-                type="button"
-              >
+              <Button variant="secondary" size="small" type="button">
                 Cancel
               </Button>
             </Drawer.Close>
-            <Button
-              variant="primary"
-              size="small"
-              type="submit"
-              isLoading={isLoading}
-            >
+            <Button variant="primary" size="small" type="submit" isLoading={isLoading}>
               {editingView ? "Update" : "Save"}
             </Button>
           </Drawer.Footer>
         </form>
       </Drawer.Content>
     </Drawer>
-  )
-}
+  );
+};

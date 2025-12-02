@@ -1,14 +1,20 @@
-import { ExclamationCircle } from "@medusajs/icons"
-import { Button, Text } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
+import { ExclamationCircle } from "@medusajs/icons";
+import { Button, Text } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 // TODO: Add 404 page
 export const NoMatch = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  const title = t("errorBoundary.notFoundTitle")
-  const message = t("errorBoundary.noMatchMessage")
+  const title = t("errorBoundary.notFoundTitle");
+  const message = t("errorBoundary.noMatchMessage");
+
+  const isVerified = sessionStorage.getItem("admin_verified") === "true";
+
+  const buttonText = isVerified ? t("errorBoundary.backToDashboard") : t("invite.backToLogin");
+
+  const buttonHref = isVerified ? "/orders" : "/login";
 
   return (
     <div className="flex size-full min-h-screen items-center justify-center">
@@ -19,18 +25,15 @@ export const NoMatch = () => {
             <Text size="small" leading="compact" weight="plus">
               {title}
             </Text>
-            <Text
-              size="small"
-              className="text-ui-fg-muted text-balance text-center"
-            >
+            <Text size="small" className="text-ui-fg-muted text-balance text-center">
               {message}
             </Text>
           </div>
         </div>
         <Button asChild size="small" variant="secondary">
-          <Link to="/">{t("errorBoundary.backToDashboard")}</Link>
+          <Link to={buttonHref}>{buttonText}</Link>
         </Button>
       </div>
     </div>
-  )
-}
+  );
+};

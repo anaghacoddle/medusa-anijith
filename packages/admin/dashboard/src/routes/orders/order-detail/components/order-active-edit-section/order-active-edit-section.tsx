@@ -93,7 +93,7 @@ export const OrderActiveEditSection = ({
     })
 
     return [added, removed]
-  }, [orderPreview])
+  }, [orderPreview, order.items])
 
   const onConfirmOrderEdit = async () => {
     try {

@@ -1,38 +1,38 @@
-import { AdminCampaign } from "@medusajs/types"
-import { Heading, Text } from "@medusajs/ui"
-import { Fragment } from "react"
-import { useTranslation } from "react-i18next"
+import { AdminCampaign } from "@medusajs/types";
+import { Heading, Text } from "@medusajs/ui";
+import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 
 const translationKeyMap = {
   spend: "spend",
   usage: "usage",
   use_by_attribute: "useByAttribute",
-}
+};
 
 const getTranslationKey = (budget: AdminCampaign["budget"]) => {
-  const translationKey = translationKeyMap[budget?.type] || "-"
+  const translationKey = translationKeyMap[budget?.type] || "-";
 
   if (budget?.type === "use_by_attribute") {
     if (budget?.attribute === "customer_id") {
-      return `campaigns.budget.type.useByAttribute.titleCustomerId`
+      return `campaigns.budget.type.useByAttribute.titleCustomerId`;
     } else if (budget?.attribute === "customer_email") {
-      return `campaigns.budget.type.useByAttribute.titleEmail`
+      return `campaigns.budget.type.useByAttribute.titleEmail`;
     }
-    return `campaigns.budget.type.useByAttribute.title`
+    return `campaigns.budget.type.useByAttribute.title`;
   }
 
-  return `campaigns.budget.type.${translationKey}.title`
-}
+  return `campaigns.budget.type.${translationKey}.title`;
+};
 
 type CampaignDetailsProps = {
-  campaign?: AdminCampaign
-}
+  campaign?: AdminCampaign;
+};
 
 export const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   if (!campaign) {
-    return
+    return;
   }
 
   return (
@@ -43,14 +43,10 @@ export const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
         </Heading>
 
         <div className="text-ui-fg-subtle grid grid-cols-2 items-center py-1">
-          <Text className="txt-small-plus font-">
-            {t("campaigns.fields.identifier")}
-          </Text>
+          <Text className="txt-small-plus font-">{t("campaigns.fields.identifier")}</Text>
 
           <div className="flex items-center gap-1">
-            <Text className="txt-small">
-              {campaign.campaign_identifier || "-"}
-            </Text>
+            <Text className="txt-small">{campaign.campaign_identifier || "-"}</Text>
           </div>
         </div>
 
@@ -63,26 +59,18 @@ export const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
         </div>
 
         <div className="text-ui-fg-subtle grid grid-cols-2 items-center py-1">
-          <Text className="txt-small-plus">
-            {t("campaigns.fields.start_date")}
-          </Text>
+          <Text className="txt-small-plus">{t("campaigns.fields.start_date")}</Text>
 
           <div className="flex items-center gap-1">
-            <Text className="txt-small">
-              {campaign.starts_at?.toString() || "-"}
-            </Text>
+            <Text className="txt-small">{campaign.starts_at?.toString() || "-"}</Text>
           </div>
         </div>
 
         <div className="text-ui-fg-subtle grid grid-cols-2 items-center py-1">
-          <Text className="txt-small-plus">
-            {t("campaigns.fields.end_date")}
-          </Text>
+          <Text className="txt-small-plus">{t("campaigns.fields.end_date")}</Text>
 
           <div className="flex items-center gap-1">
-            <Text className="txt-small">
-              {campaign.ends_at?.toString() || "-"}
-            </Text>
+            <Text className="txt-small">{campaign.ends_at?.toString() || "-"}</Text>
           </div>
         </div>
       </div>
@@ -93,9 +81,7 @@ export const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
         </Heading>
 
         <div className="text-ui-fg-subtle grid grid-cols-2 items-center py-1">
-          <Text className="txt-small-plus font-">
-            {t("campaigns.budget.fields.type")}
-          </Text>
+          <Text className="txt-small-plus font-">{t("campaigns.budget.fields.type")}</Text>
 
           <div className="flex items-center gap-1">
             <Text className="txt-small truncate">
@@ -107,21 +93,15 @@ export const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
         </div>
 
         <div className="text-ui-fg-subtle grid grid-cols-2 items-center py-1">
-          <Text className="txt-small-plus">
-            {t("campaigns.budget.fields.currency")}
-          </Text>
+          <Text className="txt-small-plus">{t("campaigns.budget.fields.currency")}</Text>
 
           <div className="flex items-center gap-1">
-            <Text className="txt-small">
-              {campaign?.budget?.currency_code || "-"}
-            </Text>
+            <Text className="txt-small">{campaign?.budget?.currency_code || "-"}</Text>
           </div>
         </div>
 
         <div className="text-ui-fg-subtle grid grid-cols-2 items-center py-1">
-          <Text className="txt-small-plus">
-            {t("campaigns.budget.fields.limit")}
-          </Text>
+          <Text className="txt-small-plus">{t("campaigns.budget.fields.limit")}</Text>
 
           <div className="flex items-center gap-1">
             <Text className="txt-small">{campaign.budget?.limit || "-"}</Text>
@@ -141,5 +121,5 @@ export const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
         </div>
       </div>
     </Fragment>
-  )
-}
+  );
+};

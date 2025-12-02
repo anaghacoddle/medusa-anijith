@@ -1,48 +1,37 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { PencilSquare } from "@medusajs/icons"
-import { AdminExchange, AdminOrder, AdminOrderPreview } from "@medusajs/types"
-import {
-  Button,
-  CurrencyInput,
-  Heading,
-  IconButton,
-  Switch,
-  toast,
-  usePrompt,
-} from "@medusajs/ui"
-import { useEffect, useMemo, useState } from "react"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { PencilSquare } from "@medusajs/icons";
+import { AdminExchange, AdminOrder, AdminOrderPreview } from "@medusajs/types";
+import { Button, CurrencyInput, Heading, IconButton, Switch, toast, usePrompt } from "@medusajs/ui";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
-import {
-  RouteFocusModal,
-  useRouteModal,
-} from "../../../../../components/modals"
+import { RouteFocusModal, useRouteModal } from "../../../../../components/modals";
 
-import { Form } from "../../../../../components/common/form"
-import { getStylizedAmount } from "../../../../../lib/money-amount-helpers"
-import { CreateExchangeSchemaType, ExchangeCreateSchema } from "./schema"
+import { Form } from "../../../../../components/common/form";
+import { getStylizedAmount } from "../../../../../lib/money-amount-helpers";
+import { CreateExchangeSchemaType, ExchangeCreateSchema } from "./schema";
 
-import { AdminReturn } from "@medusajs/types"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form/keybound-form.tsx"
+import { AdminReturn } from "@medusajs/types";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form/keybound-form.tsx";
 import {
   useCancelExchangeRequest,
   useExchangeConfirmRequest,
   useUpdateExchangeInboundShipping,
   useUpdateExchangeOutboundShipping,
-} from "../../../../../hooks/api/exchanges"
-import { currencies } from "../../../../../lib/data/currencies"
-import { ExchangeInboundSection } from "./exchange-inbound-section.tsx"
-import { ExchangeOutboundSection } from "./exchange-outbound-section"
+} from "../../../../../hooks/api/exchanges";
+import { currencies } from "../../../../../lib/data/currencies";
+import { ExchangeInboundSection } from "./exchange-inbound-section.tsx";
+import { ExchangeOutboundSection } from "./exchange-outbound-section";
 
 type ReturnCreateFormProps = {
-  order: AdminOrder
-  exchange: AdminExchange
-  preview: AdminOrderPreview
-  orderReturn?: AdminReturn
-}
+  order: AdminOrder;
+  exchange: AdminExchange;
+  preview: AdminOrderPreview;
+  orderReturn?: AdminReturn;
+};
 
-let IS_CANCELING = false
+let IS_CANCELING = false;
 
 export const ExchangeCreateForm = ({
   order,
@@ -50,95 +39,83 @@ export const ExchangeCreateForm = ({
   exchange,
   orderReturn,
 }: ReturnCreateFormProps) => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
 
   /**
    * STATE
    */
-  const [isInboundShippingPriceEdit, setIsInboundShippingPriceEdit] =
-    useState(false)
-  const [isOutboundShippingPriceEdit, setIsOutboundShippingPriceEdit] =
-    useState(false)
+  const [isInboundShippingPriceEdit, setIsInboundShippingPriceEdit] = useState(false);
+  const [isOutboundShippingPriceEdit, setIsOutboundShippingPriceEdit] = useState(false);
 
-  const [customInboundShippingAmount, setCustomInboundShippingAmount] =
-    useState<{ value: string; float: number | null }>({
-      value: "0",
-      float: 0,
-    })
+  const [customInboundShippingAmount, setCustomInboundShippingAmount] = useState<{
+    value: string;
+    float: number | null;
+  }>({
+    value: "0",
+    float: 0,
+  });
 
-  const [customOutboundShippingAmount, setCustomOutboundShippingAmount] =
-    useState<{ value: string; float: number | null }>({
-      value: "0",
-      float: 0,
-    })
+  const [customOutboundShippingAmount, setCustomOutboundShippingAmount] = useState<{
+    value: string;
+    float: number | null;
+  }>({
+    value: "0",
+    float: 0,
+  });
 
   /**
    * MUTATIONS
    */
   const { mutateAsync: confirmExchangeRequest, isPending: isConfirming } =
-    useExchangeConfirmRequest(exchange.id, order.id)
+    useExchangeConfirmRequest(exchange.id, order.id);
 
-  const { mutateAsync: cancelExchangeRequest, isPending: isCanceling } =
-    useCancelExchangeRequest(exchange.id, order.id)
+  const { mutateAsync: cancelExchangeRequest, isPending: isCanceling } = useCancelExchangeRequest(
+    exchange.id,
+    order.id
+  );
 
-  const {
-    mutateAsync: updateInboundShipping,
-    isPending: isUpdatingOutboundShipping,
-  } = useUpdateExchangeInboundShipping(exchange.id, order.id)
+  const { mutateAsync: updateInboundShipping, isPending: isUpdatingOutboundShipping } =
+    useUpdateExchangeInboundShipping(exchange.id, order.id);
 
-  const {
-    mutateAsync: updateOutboundShipping,
-    isPending: isUpdatingInboundShipping,
-  } = useUpdateExchangeOutboundShipping(exchange.id, order.id)
+  const { mutateAsync: updateOutboundShipping, isPending: isUpdatingInboundShipping } =
+    useUpdateExchangeOutboundShipping(exchange.id, order.id);
 
   const isRequestLoading =
-    isConfirming ||
-    isCanceling ||
-    isUpdatingInboundShipping ||
-    isUpdatingOutboundShipping
+    isConfirming || isCanceling || isUpdatingInboundShipping || isUpdatingOutboundShipping;
 
   /**
    * Only consider items that belong to this exchange.
    */
   const previewItems = useMemo(
-    () =>
-      preview?.items?.filter(
-        (i) => !!i.actions?.find((a) => a.exchange_id === exchange.id)
-      ),
-    [preview.items]
-  )
+    () => preview?.items?.filter(i => !!i.actions?.find(a => a.exchange_id === exchange.id)),
+    [preview.items, exchange.id]
+  );
 
   const inboundPreviewItems = previewItems.filter(
-    (item) => !!item.actions?.find((a) => a.action === "RETURN_ITEM")
-  )
+    item => !!item.actions?.find(a => a.action === "RETURN_ITEM")
+  );
 
   const outboundPreviewItems = previewItems.filter(
-    (item) => !!item.actions?.find((a) => a.action === "ITEM_ADD")
-  )
+    item => !!item.actions?.find(a => a.action === "ITEM_ADD")
+  );
 
   /**
    * FORM
    */
   const form = useForm<CreateExchangeSchemaType>({
     defaultValues: () => {
-      const inboundShippingMethod = preview.shipping_methods.find((s) => {
-        return !!s.actions?.find(
-          (a) => a.action === "SHIPPING_ADD" && !!a.return_id
-        )
-      })
+      const inboundShippingMethod = preview.shipping_methods.find(s => {
+        return !!s.actions?.find(a => a.action === "SHIPPING_ADD" && !!a.return_id);
+      });
 
-      const outboundShippingMethod = preview.shipping_methods.find((s) => {
-        return !!s.actions?.find(
-          (a) => a.action === "SHIPPING_ADD" && !a.return_id
-        )
-      })
+      const outboundShippingMethod = preview.shipping_methods.find(s => {
+        return !!s.actions?.find(a => a.action === "SHIPPING_ADD" && !a.return_id);
+      });
 
       return Promise.resolve({
-        inbound_items: inboundPreviewItems.map((i) => {
-          const inboundAction = i.actions?.find(
-            (a) => a.action === "RETURN_ITEM"
-          )
+        inbound_items: inboundPreviewItems.map(i => {
+          const inboundAction = i.actions?.find(a => a.action === "RETURN_ITEM");
 
           return {
             item_id: i.id,
@@ -146,54 +123,48 @@ export const ExchangeCreateForm = ({
             quantity: i.detail.return_requested_quantity,
             note: inboundAction?.internal_note,
             reason_id: inboundAction?.details?.reason_id as string | undefined,
-          }
+          };
         }),
-        outbound_items: outboundPreviewItems.map((i) => ({
+        outbound_items: outboundPreviewItems.map(i => ({
           item_id: i.id,
           variant_id: i.variant_id,
           quantity: i.detail.quantity,
         })),
-        inbound_option_id: inboundShippingMethod
-          ? inboundShippingMethod.shipping_option_id
-          : "",
-        outbound_option_id: outboundShippingMethod
-          ? outboundShippingMethod.shipping_option_id
-          : "",
+        inbound_option_id: inboundShippingMethod ? inboundShippingMethod.shipping_option_id : "",
+        outbound_option_id: outboundShippingMethod ? outboundShippingMethod.shipping_option_id : "",
         location_id: orderReturn?.location_id,
         send_notification: false,
-      })
+      });
     },
     resolver: zodResolver(ExchangeCreateSchema),
-  })
+  });
 
-  const inboundShipping = preview.shipping_methods.find((s) => {
-    return !!s.actions?.find(
-      (a) => a.action === "SHIPPING_ADD" && !!a.return_id
-    )
-  })
+  const inboundShipping = preview.shipping_methods.find(s => {
+    return !!s.actions?.find(a => a.action === "SHIPPING_ADD" && !!a.return_id);
+  });
 
-  const outboundShipping = preview.shipping_methods.find((s) => {
-    return !!s.actions?.find((a) => a.action === "SHIPPING_ADD" && !a.return_id)
-  })
+  const outboundShipping = preview.shipping_methods.find(s => {
+    return !!s.actions?.find(a => a.action === "SHIPPING_ADD" && !a.return_id);
+  });
 
   useEffect(() => {
     if (inboundShipping) {
-      setCustomInboundShippingAmount(inboundShipping.total)
+      setCustomInboundShippingAmount(inboundShipping.total);
     }
-  }, [inboundShipping])
+  }, [inboundShipping]);
 
   useEffect(() => {
     if (outboundShipping) {
-      setCustomOutboundShippingAmount(outboundShipping.total)
+      setCustomOutboundShippingAmount(outboundShipping.total);
     }
-  }, [outboundShipping])
+  }, [outboundShipping]);
 
-  const inboundShippingOptionId = form.watch("inbound_option_id")
-  const outboundShippingOptionId = form.watch("outbound_option_id")
+  const inboundShippingOptionId = form.watch("inbound_option_id");
+  const outboundShippingOptionId = form.watch("outbound_option_id");
 
-  const prompt = usePrompt()
+  const prompt = usePrompt();
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async data => {
     try {
       const res = await prompt({
         title: t("general.areYouSure"),
@@ -201,33 +172,33 @@ export const ExchangeCreateForm = ({
         confirmText: t("actions.continue"),
         cancelText: t("actions.cancel"),
         variant: "confirmation",
-      })
+      });
 
       if (!res) {
-        return
+        return;
       }
 
-      await confirmExchangeRequest({ no_notification: !data.send_notification })
+      await confirmExchangeRequest({ no_notification: !data.send_notification });
 
-      handleSuccess()
+      handleSuccess();
     } catch (e) {
       toast.error(t("general.error"), {
         description: e.message,
-      })
+      });
     }
-  })
+  });
 
   useEffect(() => {
     if (isInboundShippingPriceEdit) {
-      document.getElementById("js-inbound-shipping-input")?.focus()
+      document.getElementById("js-inbound-shipping-input")?.focus();
     }
-  }, [isInboundShippingPriceEdit])
+  }, [isInboundShippingPriceEdit]);
 
   useEffect(() => {
     if (isOutboundShippingPriceEdit) {
-      document.getElementById("js-outbound-shipping-input")?.focus()
+      document.getElementById("js-outbound-shipping-input")?.focus();
     }
-  }, [isOutboundShippingPriceEdit])
+  }, [isOutboundShippingPriceEdit]);
 
   useEffect(() => {
     /**
@@ -237,37 +208,33 @@ export const ExchangeCreateForm = ({
       if (IS_CANCELING) {
         cancelExchangeRequest(undefined, {
           onSuccess: () => {
-            toast.success(
-              t("orders.exchanges.actions.cancelExchange.successToast")
-            )
+            toast.success(t("orders.exchanges.actions.cancelExchange.successToast"));
           },
-          onError: (error) => {
-            toast.error(error.message)
+          onError: error => {
+            toast.error(error.message);
           },
-        })
+        });
 
-        IS_CANCELING = false
+        IS_CANCELING = false;
       }
-    }
-  }, [])
+    };
+  }, [cancelExchangeRequest, t]);
 
   const inboundShippingTotal = useMemo(() => {
     const method = preview.shipping_methods.find(
-      (sm) =>
-        !!sm.actions?.find((a) => a.action === "SHIPPING_ADD" && !!a.return_id)
-    )
+      sm => !!sm.actions?.find(a => a.action === "SHIPPING_ADD" && !!a.return_id)
+    );
 
-    return (method?.total as number) || 0
-  }, [preview.shipping_methods])
+    return (method?.total as number) || 0;
+  }, [preview.shipping_methods]);
 
   const outboundShippingTotal = useMemo(() => {
     const method = preview.shipping_methods.find(
-      (sm) =>
-        !!sm.actions?.find((a) => a.action === "SHIPPING_ADD" && !a.return_id)
-    )
+      sm => !!sm.actions?.find(a => a.action === "SHIPPING_ADD" && !a.return_id)
+    );
 
-    return (method?.total as number) || 0
-  }, [preview.shipping_methods])
+    return (method?.total as number) || 0;
+  }, [preview.shipping_methods]);
 
   return (
     <RouteFocusModal.Form form={form}>
@@ -303,12 +270,10 @@ export const ExchangeCreateForm = ({
                 <span className="txt-small text-ui-fg-subtle">
                   {getStylizedAmount(
                     inboundPreviewItems.reduce((acc, item) => {
-                      const action = item.actions?.find(
-                        (act) => act.action === "RETURN_ITEM"
-                      )
-                      acc = acc + (action?.amount || 0)
+                      const action = item.actions?.find(act => act.action === "RETURN_ITEM");
+                      acc = acc + (action?.amount || 0);
 
-                      return acc
+                      return acc;
                     }, 0) * -1,
                     order.currency_code
                   )}
@@ -323,12 +288,10 @@ export const ExchangeCreateForm = ({
                 <span className="txt-small text-ui-fg-subtle">
                   {getStylizedAmount(
                     outboundPreviewItems.reduce((acc, item) => {
-                      const action = item.actions?.find(
-                        (act) => act.action === "ITEM_ADD"
-                      )
-                      acc = acc + (action?.amount || 0)
+                      const action = item.actions?.find(act => act.action === "ITEM_ADD");
+                      acc = acc + (action?.amount || 0);
 
-                      return acc
+                      return acc;
                     }, 0),
                     order.currency_code
                   )}
@@ -346,9 +309,7 @@ export const ExchangeCreateForm = ({
                       onClick={() => setIsInboundShippingPriceEdit(true)}
                       variant="transparent"
                       className="text-ui-fg-muted"
-                      disabled={
-                        !inboundPreviewItems?.length || !inboundShippingOptionId
-                      }
+                      disabled={!inboundPreviewItems?.length || !inboundShippingOptionId}
                     >
                       <PencilSquare />
                     </IconButton>
@@ -358,22 +319,19 @@ export const ExchangeCreateForm = ({
                     <CurrencyInput
                       id="js-inbound-shipping-input"
                       onBlur={() => {
-                        let actionId
+                        let actionId;
 
-                        preview.shipping_methods.forEach((s) => {
+                        preview.shipping_methods.forEach(s => {
                           if (s.actions) {
                             for (const a of s.actions) {
-                              if (
-                                a.action === "SHIPPING_ADD" &&
-                                !!a.return_id
-                              ) {
-                                actionId = a.id
+                              if (a.action === "SHIPPING_ADD" && !!a.return_id) {
+                                actionId = a.id;
                               }
                             }
                           }
-                        })
+                        });
 
-                        const customPrice = customInboundShippingAmount.float
+                        const customPrice = customInboundShippingAmount.float;
 
                         if (actionId) {
                           updateInboundShipping(
@@ -382,18 +340,15 @@ export const ExchangeCreateForm = ({
                               custom_amount: customPrice,
                             },
                             {
-                              onError: (error) => {
-                                toast.error(error.message)
+                              onError: error => {
+                                toast.error(error.message);
                               },
                             }
-                          )
+                          );
                         }
-                        setIsInboundShippingPriceEdit(false)
+                        setIsInboundShippingPriceEdit(false);
                       }}
-                      symbol={
-                        currencies[order.currency_code.toUpperCase()]
-                          .symbol_native
-                      }
+                      symbol={currencies[order.currency_code.toUpperCase()].symbol_native}
                       code={order.currency_code}
                       onValueChange={(value, name, values) =>
                         setCustomInboundShippingAmount({
@@ -421,10 +376,7 @@ export const ExchangeCreateForm = ({
                       onClick={() => setIsOutboundShippingPriceEdit(true)}
                       variant="transparent"
                       className="text-ui-fg-muted"
-                      disabled={
-                        !outboundPreviewItems?.length ||
-                        !outboundShippingOptionId
-                      }
+                      disabled={!outboundPreviewItems?.length || !outboundShippingOptionId}
                     >
                       <PencilSquare />
                     </IconButton>
@@ -434,19 +386,19 @@ export const ExchangeCreateForm = ({
                     <CurrencyInput
                       id="js-outbound-shipping-input"
                       onBlur={() => {
-                        let actionId
+                        let actionId;
 
-                        preview.shipping_methods.forEach((s) => {
+                        preview.shipping_methods.forEach(s => {
                           if (s.actions) {
                             for (const a of s.actions) {
                               if (a.action === "SHIPPING_ADD" && !a.return_id) {
-                                actionId = a.id
+                                actionId = a.id;
                               }
                             }
                           }
-                        })
+                        });
 
-                        const customPrice = customOutboundShippingAmount.float
+                        const customPrice = customOutboundShippingAmount.float;
 
                         if (actionId) {
                           updateOutboundShipping(
@@ -455,18 +407,15 @@ export const ExchangeCreateForm = ({
                               custom_amount: customPrice,
                             },
                             {
-                              onError: (error) => {
-                                toast.error(error.message)
+                              onError: error => {
+                                toast.error(error.message);
                               },
                             }
-                          )
+                          );
                         }
-                        setIsOutboundShippingPriceEdit(false)
+                        setIsOutboundShippingPriceEdit(false);
                       }}
-                      symbol={
-                        currencies[order.currency_code.toUpperCase()]
-                          .symbol_native
-                      }
+                      symbol={currencies[order.currency_code.toUpperCase()].symbol_native}
                       code={order.currency_code}
                       onValueChange={(value, name, values) =>
                         setCustomOutboundShippingAmount({
@@ -478,23 +427,15 @@ export const ExchangeCreateForm = ({
                       disabled={!outboundPreviewItems?.length}
                     />
                   ) : (
-                    getStylizedAmount(
-                      outboundShippingTotal,
-                      order.currency_code
-                    )
+                    getStylizedAmount(outboundShippingTotal, order.currency_code)
                   )}
                 </span>
               </div>
 
               <div className="mt-4 flex items-center justify-between border-t border-dotted pt-4">
+                <span className="txt-small font-medium">{t("orders.exchanges.refundAmount")}</span>
                 <span className="txt-small font-medium">
-                  {t("orders.exchanges.refundAmount")}
-                </span>
-                <span className="txt-small font-medium">
-                  {getStylizedAmount(
-                    preview.summary.pending_difference,
-                    order.currency_code
-                  )}
+                  {getStylizedAmount(preview.summary.pending_difference, order.currency_code)}
                 </span>
               </div>
             </div>
@@ -517,9 +458,7 @@ export const ExchangeCreateForm = ({
                           />
                         </Form.Control>
                         <div className="block">
-                          <Form.Label>
-                            {t("orders.returns.sendNotification")}
-                          </Form.Label>
+                          <Form.Label>{t("orders.returns.sendNotification")}</Form.Label>
                           <Form.Hint className="!mt-1">
                             {t("orders.returns.sendNotificationHint")}
                           </Form.Hint>
@@ -527,7 +466,7 @@ export const ExchangeCreateForm = ({
                       </div>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
             </div>
@@ -563,5 +502,5 @@ export const ExchangeCreateForm = ({
         </RouteFocusModal.Footer>
       </KeyboundForm>
     </RouteFocusModal.Form>
-  )
-}
+  );
+};

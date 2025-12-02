@@ -10,7 +10,9 @@
     "test": "../../../node_modules/.bin/vitest --run",
     "i18n:validate": "node ./scripts/i18n/validate-translation.js",
     "i18n:schema": "node ./scripts/i18n/generate-schema.js",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext .ts,.tsx,.js --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "main": "dist/app.js",
   "module": "dist/app.mjs",
@@ -38,6 +40,10 @@
     "src",
     "dist"
   ],
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@ariakit/react": "^0.4.15",
     "@babel/runtime": "^7.26.10",
@@ -56,8 +62,10 @@
     "@tanstack/react-table": "8.20.5",
     "@tanstack/react-virtual": "^3.8.3",
     "@uiw/react-json-view": "^2.0.0-alpha.17",
+    "axios": "^1.10.0",
     "cmdk": "^0.2.0",
     "copy-to-clipboard": "^3.3.3",
+    "crypto-js": "^4.2.0",
     "date-fns": "^3.6.0",
     "i18next": "23.7.11",
     "i18next-browser-languagedetector": "7.2.0",
@@ -67,6 +75,7 @@
     "lodash.set": "^4.3.2",
     "match-sorter": "^6.3.4",
     "motion": "^11.15.0",
+    "path": "^0.12.7",
     "qs": "^6.12.1",
     "radix-ui": "1.1.2",
     "react": "^18.3.1",
@@ -81,10 +90,28 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@medusajs/admin-shared": "2.11.3",
-    "@medusajs/admin-vite-plugin": "2.11.3",
-    "@medusajs/types": "2.11.3",
-    "@medusajs/ui-preset": "2.11.3"
+    "@medusajs/admin-shared": "2.11.2",
+    "@medusajs/admin-vite-plugin": "2.11.2",
+    "@medusajs/types": "2.11.2",
+    "@medusajs/ui-preset": "2.11.2",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^20.11.15",
+    "@types/react": "^18.2.79",
+    "@types/react-dom": "^18.2.25",
+    "@typescript-eslint/parser": "^8.34.0",
+    "@vitejs/plugin-react": "4.2.1",
+    "ajv": "^8.17.1",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^9.29.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "postcss": "^8.4.33",
+    "prettier": "^3.1.1",
+    "tailwindcss": "^3.4.1",
+    "tsup": "^8.0.2",
+    "typescript": "5.2.2",
+    "vite": "^5.4.14",
+    "vite-plugin-inspect": "^0.8.7",
+    "vitest": "^3.0.5"
   },
   "packageManager": "yarn@3.2.1"
 }

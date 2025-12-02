@@ -4,15 +4,15 @@
  * @param keys
  */
 export function pick(obj: Record<string, any>, keys: string[]) {
-  const ret: Record<string, any> = {}
+  const ret: Record<string, any> = {};
 
-  keys.forEach((k) => {
+  keys.forEach(k => {
     if (k in obj) {
-      ret[k] = obj[k]
+      ret[k] = obj[k];
     }
-  })
+  });
 
-  return ret
+  return ret;
 }
 
 /**
@@ -20,15 +20,15 @@ export function pick(obj: Record<string, any>, keys: string[]) {
  * @param obj
  */
 export function cleanNonValues(obj: Record<string, any>) {
-  const ret: Record<string, any> = {}
+  const ret: Record<string, any> = {};
 
   for (const key in obj) {
     if (obj[key] !== null && typeof obj[key] !== "undefined") {
-      ret[key] = obj[key]
+      ret[key] = obj[key];
     }
   }
 
-  return ret
+  return ret;
 }
 
 /**
@@ -39,7 +39,5 @@ export function cleanNonValues(obj: Record<string, any>) {
 export function toCamelCase(str: string): string {
   return /^([a-zA-Z]+)(([A-Z]([a-z]+))+)$/.test(str)
     ? str
-    : str
-        .toLowerCase()
-        .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase())
+    : str.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
 }

@@ -1,16 +1,16 @@
-import { HttpTypes } from "@medusajs/types"
-import { Button, Container, Heading } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
-import { ItemLocationListTable } from "./location-levels-table/location-list-table"
+import { HttpTypes } from "@medusajs/types";
+import { Button, Container, Heading } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import { ItemLocationListTable } from "./location-levels-table/location-list-table";
 
 type InventoryItemLocationLevelsSectionProps = {
-  inventoryItem: HttpTypes.AdminInventoryItemResponse["inventory_item"]
-}
+  inventoryItem: HttpTypes.AdminInventoryItemResponse["inventory_item"];
+};
 export const InventoryItemLocationLevelsSection = ({
   inventoryItem,
 }: InventoryItemLocationLevelsSectionProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <Container className="divide-y p-0">
@@ -22,5 +22,5 @@ export const InventoryItemLocationLevelsSection = ({
       </div>
       <ItemLocationListTable inventory_item_id={inventoryItem.id} />
     </Container>
-  )
-}
+  );
+};

@@ -1,41 +1,39 @@
-import { PencilSquare, Plus, Trash } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import { Checkbox, Container, Heading, toast, usePrompt } from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import { RowSelectionState, createColumnHelper } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
+import { PencilSquare, Plus, Trash } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Checkbox, Container, Heading, toast, usePrompt } from "@medusajs/ui";
+import { keepPreviousData } from "@tanstack/react-query";
+import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { _DataTable } from "../../../../../components/table/data-table"
-import { usePriceListLinkProducts } from "../../../../../hooks/api/price-lists"
-import { useProducts } from "../../../../../hooks/api/products"
-import { useProductTableColumns } from "../../../../../hooks/table/columns/use-product-table-columns"
-import { useProductTableFilters } from "../../../../../hooks/table/filters/use-product-table-filters"
-import { useProductTableQuery } from "../../../../../hooks/table/query/use-product-table-query"
-import { useDataTable } from "../../../../../hooks/use-data-table"
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { _DataTable } from "../../../../../components/table/data-table";
+import { usePriceListLinkProducts } from "../../../../../hooks/api/price-lists";
+import { useProducts } from "../../../../../hooks/api/products";
+import { useProductTableColumns } from "../../../../../hooks/table/columns/use-product-table-columns";
+import { useProductTableFilters } from "../../../../../hooks/table/filters/use-product-table-filters";
+import { useProductTableQuery } from "../../../../../hooks/table/query/use-product-table-query";
+import { useDataTable } from "../../../../../hooks/use-data-table";
 
 type PriceListProductSectionProps = {
-  priceList: HttpTypes.AdminPriceList
-}
+  priceList: HttpTypes.AdminPriceList;
+};
 
-const PAGE_SIZE = 10
-const PREFIX = "p"
+const PAGE_SIZE = 10;
+const PREFIX = "p";
 
-export const PriceListProductSection = ({
-  priceList,
-}: PriceListProductSectionProps) => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const prompt = usePrompt()
+export const PriceListProductSection = ({ priceList }: PriceListProductSectionProps) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const prompt = usePrompt();
 
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const { searchParams, raw } = useProductTableQuery({
     pageSize: PAGE_SIZE,
     prefix: PREFIX,
-  })
+  });
   const { products, count, isLoading, isError, error } = useProducts(
     {
       ...searchParams,
@@ -44,11 +42,11 @@ export const PriceListProductSection = ({
     {
       placeholderData: keepPreviousData,
     }
-  )
+  );
 
-  const filters = useProductTableFilters()
-  const columns = useColumns(priceList)
-  const { mutateAsync } = usePriceListLinkProducts(priceList.id)
+  const filters = useProductTableFilters();
+  const columns = useColumns(priceList);
+  const { mutateAsync } = usePriceListLinkProducts(priceList.id);
 
   const { table } = useDataTable({
     data: products || [],
@@ -57,13 +55,13 @@ export const PriceListProductSection = ({
     enablePagination: true,
     enableRowSelection: true,
     pageSize: PAGE_SIZE,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
     rowSelection: {
       state: rowSelection,
       updater: setRowSelection,
     },
     prefix: PREFIX,
-  })
+  });
 
   const handleDelete = async () => {
     const res = await prompt({
@@ -73,10 +71,10 @@ export const PriceListProductSection = ({
       }),
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
-    })
+    });
 
     if (!res) {
-      return
+      return;
     }
 
     mutateAsync(
@@ -89,25 +87,25 @@ export const PriceListProductSection = ({
             t("priceLists.products.delete.successToast", {
               count: Object.keys(rowSelection).length,
             })
-          )
+          );
 
-          setRowSelection({})
+          setRowSelection({});
         },
-        onError: (e) => {
-          toast.error(e.message)
+        onError: e => {
+          toast.error(e.message);
         },
       }
-    )
-  }
+    );
+  };
 
   const handleEdit = async () => {
-    const ids = Object.keys(rowSelection).join(",")
+    const ids = Object.keys(rowSelection).join(",");
 
-    navigate(`products/edit?ids[]=${ids}`)
-  }
+    navigate(`products/edit?ids[]=${ids}`);
+  };
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
@@ -140,7 +138,7 @@ export const PriceListProductSection = ({
         count={count}
         pageSize={PAGE_SIZE}
         isLoading={isLoading}
-        navigateTo={(row) => `/products/${row.original.id}`}
+        navigateTo={row => `/products/${row.original.id}`}
         orderBy={[
           { key: "title", label: t("fields.title") },
           { key: "created_at", label: t("fields.createdAt") },
@@ -164,19 +162,19 @@ export const PriceListProductSection = ({
         queryObject={raw}
       />
     </Container>
-  )
-}
+  );
+};
 
 const ProductRowAction = ({
   product,
   priceList,
 }: {
-  product: HttpTypes.AdminProduct
-  priceList: HttpTypes.AdminPriceList
+  product: HttpTypes.AdminProduct;
+  priceList: HttpTypes.AdminPriceList;
 }) => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
-  const { mutateAsync } = usePriceListLinkProducts(priceList.id)
+  const { t } = useTranslation();
+  const prompt = usePrompt();
+  const { mutateAsync } = usePriceListLinkProducts(priceList.id);
 
   const handleDelete = async () => {
     const res = await prompt({
@@ -186,10 +184,10 @@ const ProductRowAction = ({
       }),
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
-    })
+    });
 
     if (!res) {
-      return
+      return;
     }
 
     mutateAsync(
@@ -202,14 +200,14 @@ const ProductRowAction = ({
             t("priceLists.products.delete.successToast", {
               count: 1,
             })
-          )
+          );
         },
-        onError: (e) => {
-          toast.error(e.message)
+        onError: e => {
+          toast.error(e.message);
         },
       }
-    )
-  }
+    );
+  };
 
   return (
     <ActionMenu
@@ -234,13 +232,13 @@ const ProductRowAction = ({
         },
       ]}
     />
-  )
-}
+  );
+};
 
-const columnHelper = createColumnHelper<HttpTypes.AdminProduct>()
+const columnHelper = createColumnHelper<HttpTypes.AdminProduct>();
 
 const useColumns = (priceList: HttpTypes.AdminPriceList) => {
-  const base = useProductTableColumns()
+  const base = useProductTableColumns();
 
   return useMemo(
     () => [
@@ -254,32 +252,28 @@ const useColumns = (priceList: HttpTypes.AdminPriceList) => {
                   ? "indeterminate"
                   : table.getIsAllPageRowsSelected()
               }
-              onCheckedChange={(value) =>
-                table.toggleAllPageRowsSelected(!!value)
-              }
+              onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
             />
-          )
+          );
         },
         cell: ({ row }) => {
           return (
             <Checkbox
               checked={row.getIsSelected()}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-              onClick={(e) => {
-                e.stopPropagation()
+              onCheckedChange={value => row.toggleSelected(!!value)}
+              onClick={e => {
+                e.stopPropagation();
               }}
             />
-          )
+          );
         },
       }),
       ...base,
       columnHelper.display({
         id: "actions",
-        cell: ({ row }) => (
-          <ProductRowAction product={row.original} priceList={priceList} />
-        ),
+        cell: ({ row }) => <ProductRowAction product={row.original} priceList={priceList} />,
       }),
     ],
     [base, priceList]
-  )
-}
+  );
+};

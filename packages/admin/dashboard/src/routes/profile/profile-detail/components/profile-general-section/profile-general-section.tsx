@@ -1,18 +1,34 @@
-import { PencilSquare } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import { Container, Heading, Text } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { languages } from "../../../../../i18n/languages"
+import { PencilSquare } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Container, Heading, Text } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { languages } from "../../../../../i18n/languages";
+import { decryptObject } from "../../../../../utils/encryption";
+import { useState, useEffect } from "react";
 
 type ProfileGeneralSectionProps = {
-  user: HttpTypes.AdminUser
-}
+  user: HttpTypes.AdminUser;
+};
 
 export const ProfileGeneralSection = ({ user }: ProfileGeneralSectionProps) => {
-  const { i18n, t } = useTranslation()
+  const { i18n, t } = useTranslation();
 
-  const name = [user.first_name, user.last_name].filter(Boolean).join(" ")
+  const [decryptedUser, setDecryptedUser] = useState<HttpTypes.AdminUser | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      decryptObject(user).then(result => {
+        setDecryptedUser(result as HttpTypes.AdminUser);
+      });
+    }
+  }, [user]);
+
+  let name = "";
+
+  if (decryptedUser && Object.keys(decryptedUser).length > 0) {
+    name = [decryptedUser.first_name, decryptedUser.last_name].filter(Boolean).join(" ");
+  }
 
   return (
     <Container className="divide-y p-0">
@@ -50,7 +66,7 @@ export const ProfileGeneralSection = ({ user }: ProfileGeneralSectionProps) => {
           {t("fields.email")}
         </Text>
         <Text size="small" leading="compact">
-          {user.email}
+          {decryptedUser?.email || "-"}
         </Text>
       </div>
       <div className="grid grid-cols-2 items-center px-6 py-4">
@@ -58,8 +74,7 @@ export const ProfileGeneralSection = ({ user }: ProfileGeneralSectionProps) => {
           {t("profile.fields.languageLabel")}
         </Text>
         <Text size="small" leading="compact">
-          {languages.find((lang) => lang.code === i18n.language)
-            ?.display_name || "-"}
+          {languages.find(lang => lang.code === i18n.language)?.display_name || "-"}
         </Text>
       </div>
       {/* TODO: Do we want to implement usage insights in V2? */}
@@ -72,5 +87,5 @@ export const ProfileGeneralSection = ({ user }: ProfileGeneralSectionProps) => {
         </StatusBadge>
       </div> */}
     </Container>
-  )
-}
+  );
+};

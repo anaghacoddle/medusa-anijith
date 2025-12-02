@@ -48,7 +48,7 @@ const CopyPaymentLink = React.forwardRef<any, CopyPaymentLinkProps>(
       setTimeout(() => {
         setText(t("actions.copy"))
       }, 500)
-    }, [done])
+    }, [done, t])
 
     return (
       <Tooltip content={text} open={done || open} onOpenChange={setOpen}>

@@ -1,42 +1,33 @@
-import { PlusMini } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import {
-  Checkbox,
-  CommandBar,
-  Container,
-  Heading,
-  toast,
-  usePrompt,
-} from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import { RowSelectionState, createColumnHelper } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { PlusMini } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Checkbox, CommandBar, Container, Heading, toast, usePrompt } from "@medusajs/ui";
+import { keepPreviousData } from "@tanstack/react-query";
+import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { _DataTable } from "../../../../../components/table/data-table"
-import { useUpdateProductCategoryProducts } from "../../../../../hooks/api/categories"
-import { useProducts } from "../../../../../hooks/api/products"
-import { useProductTableColumns } from "../../../../../hooks/table/columns/use-product-table-columns"
-import { useProductTableFilters } from "../../../../../hooks/table/filters/use-product-table-filters"
-import { useProductTableQuery } from "../../../../../hooks/table/query/use-product-table-query"
-import { useDataTable } from "../../../../../hooks/use-data-table"
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { _DataTable } from "../../../../../components/table/data-table";
+import { useUpdateProductCategoryProducts } from "../../../../../hooks/api/categories";
+import { useProducts } from "../../../../../hooks/api/products";
+import { useProductTableColumns } from "../../../../../hooks/table/columns/use-product-table-columns";
+import { useProductTableFilters } from "../../../../../hooks/table/filters/use-product-table-filters";
+import { useProductTableQuery } from "../../../../../hooks/table/query/use-product-table-query";
+import { useDataTable } from "../../../../../hooks/use-data-table";
 
 type CategoryProductSectionProps = {
-  category: HttpTypes.AdminProductCategory
-}
+  category: HttpTypes.AdminProductCategory;
+};
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 10;
 
-export const CategoryProductSection = ({
-  category,
-}: CategoryProductSectionProps) => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
+export const CategoryProductSection = ({ category }: CategoryProductSectionProps) => {
+  const { t } = useTranslation();
+  const prompt = usePrompt();
 
-  const [selection, setSelection] = useState<RowSelectionState>({})
+  const [selection, setSelection] = useState<RowSelectionState>({});
 
-  const { raw, searchParams } = useProductTableQuery({ pageSize: PAGE_SIZE })
+  const { raw, searchParams } = useProductTableQuery({ pageSize: PAGE_SIZE });
   const { products, count, isLoading, isError, error } = useProducts(
     {
       ...searchParams,
@@ -45,16 +36,16 @@ export const CategoryProductSection = ({
     {
       placeholderData: keepPreviousData,
     }
-  )
+  );
 
-  const columns = useColumns()
-  const filters = useProductTableFilters(["categories"])
+  const columns = useColumns();
+  const filters = useProductTableFilters(["categories"]);
 
   const { table } = useDataTable({
     data: products || [],
     columns,
     count,
-    getRowId: (original) => original.id,
+    getRowId: original => original.id,
     pageSize: PAGE_SIZE,
     enableRowSelection: true,
     enablePagination: true,
@@ -62,12 +53,12 @@ export const CategoryProductSection = ({
       state: selection,
       updater: setSelection,
     },
-  })
+  });
 
-  const { mutateAsync } = useUpdateProductCategoryProducts(category.id)
+  const { mutateAsync } = useUpdateProductCategoryProducts(category.id);
 
   const handleRemove = async () => {
-    const selected = Object.keys(selection)
+    const selected = Object.keys(selection);
 
     const res = await prompt({
       title: t("general.areYouSure"),
@@ -76,10 +67,10 @@ export const CategoryProductSection = ({
       }),
       confirmText: t("actions.remove"),
       cancelText: t("actions.cancel"),
-    })
+    });
 
     if (!res) {
-      return
+      return;
     }
 
     await mutateAsync(
@@ -92,19 +83,19 @@ export const CategoryProductSection = ({
             t("categories.products.remove.successToast", {
               count: selected.length,
             })
-          )
+          );
 
-          setSelection({})
+          setSelection({});
         },
-        onError: (error) => {
-          toast.error(error.message)
+        onError: error => {
+          toast.error(error.message);
         },
       }
-    )
-  }
+    );
+  };
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
@@ -136,7 +127,7 @@ export const CategoryProductSection = ({
         ]}
         pageSize={PAGE_SIZE}
         count={count}
-        navigateTo={(row) => `/products/${row.id}`}
+        navigateTo={row => `/products/${row.id}`}
         isLoading={isLoading}
         queryObject={raw}
         noRecords={{
@@ -151,21 +142,17 @@ export const CategoryProductSection = ({
             })}
           </CommandBar.Value>
           <CommandBar.Seperator />
-          <CommandBar.Command
-            action={handleRemove}
-            label={t("actions.remove")}
-            shortcut="r"
-          />
+          <CommandBar.Command action={handleRemove} label={t("actions.remove")} shortcut="r" />
         </CommandBar.Bar>
       </CommandBar>
     </Container>
-  )
-}
+  );
+};
 
-const columnHelper = createColumnHelper<HttpTypes.AdminProduct>()
+const columnHelper = createColumnHelper<HttpTypes.AdminProduct>();
 
 const useColumns = () => {
-  const base = useProductTableColumns()
+  const base = useProductTableColumns();
 
   return useMemo(
     () => [
@@ -179,26 +166,24 @@ const useColumns = () => {
                   ? "indeterminate"
                   : table.getIsAllPageRowsSelected()
               }
-              onCheckedChange={(value) =>
-                table.toggleAllPageRowsSelected(!!value)
-              }
+              onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
             />
-          )
+          );
         },
         cell: ({ row }) => {
           return (
             <Checkbox
               checked={row.getIsSelected()}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-              onClick={(e) => {
-                e.stopPropagation()
+              onCheckedChange={value => row.toggleSelected(!!value)}
+              onClick={e => {
+                e.stopPropagation();
               }}
             />
-          )
+          );
         },
       }),
       ...base,
     ],
     [base]
-  )
-}
+  );
+};

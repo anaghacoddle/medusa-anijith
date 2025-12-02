@@ -2,7 +2,7 @@ const formatter = new Intl.NumberFormat([], {
   style: "percent",
   minimumFractionDigits: 2,
   maximumFractionDigits: 4,
-})
+});
 
 /**
  * Formats a number as a percentage
@@ -14,15 +14,12 @@ const formatter = new Intl.NumberFormat([], {
  * formatPercentage(0.5, true) // "50%"
  * formatPercentage(50) // "50%"
  */
-export const formatPercentage = (
-  value?: number | null,
-  isPercentageValue = false
-) => {
-  let val = value || 0
+export const formatPercentage = (value?: number | null, isPercentageValue = false) => {
+  let val = value || 0;
 
   if (!isPercentageValue) {
-    val = val / 100
+    val = val / 100;
   }
 
-  return formatter.format(val)
-}
+  return formatter.format(val);
+};

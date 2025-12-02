@@ -1,23 +1,22 @@
-import { PencilSquare, ShoppingBag } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import { Container, Heading } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
+import { PencilSquare, ShoppingBag } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Container, Heading } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
 
-import { SidebarLink } from "../../../../../components/common/sidebar-link/sidebar-link"
-import { ActionMenu } from "../../../../../components/common/action-menu"
+import { SidebarLink } from "../../../../../components/common/sidebar-link/sidebar-link";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { usePermission } from "../../../../../hooks/use-permission";
 
 type ProductShippingProfileSectionProps = {
   product: HttpTypes.AdminProduct & {
-    shipping_profile: HttpTypes.AdminShippingProfile
-  }
-}
+    shipping_profile: HttpTypes.AdminShippingProfile;
+  };
+};
 
-export const ProductShippingProfileSection = ({
-  product,
-}: ProductShippingProfileSectionProps) => {
-  const { t } = useTranslation()
-
-  const shippingProfile = product.shipping_profile
+export const ProductShippingProfileSection = ({ product }: ProductShippingProfileSectionProps) => {
+  const { t } = useTranslation();
+  const { hasPermission } = usePermission();
+  const shippingProfile = product.shipping_profile;
 
   return (
     <Container className="p-0">
@@ -31,6 +30,7 @@ export const ProductShippingProfileSection = ({
                   label: t("actions.edit"),
                   to: "shipping-profile",
                   icon: <PencilSquare />,
+                  disabled: !hasPermission("/admin/products", "POST"),
                 },
               ],
             },
@@ -47,5 +47,5 @@ export const ProductShippingProfileSection = ({
         />
       )}
     </Container>
-  )
-}
+  );
+};

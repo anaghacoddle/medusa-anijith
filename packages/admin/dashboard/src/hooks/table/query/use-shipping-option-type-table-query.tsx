@@ -1,21 +1,18 @@
-import { HttpTypes } from "@medusajs/types"
-import { useQueryParams } from "../../use-query-params"
+import { HttpTypes } from "@medusajs/types";
+import { useQueryParams } from "../../use-query-params";
 
 type UseShippingOptionTypeTableQueryProps = {
-  prefix?: string
-  pageSize?: number
-}
+  prefix?: string;
+  pageSize?: number;
+};
 
 export const useShippingOptionTypeTableQuery = ({
   prefix,
   pageSize = 20,
 }: UseShippingOptionTypeTableQueryProps) => {
-  const queryObject = useQueryParams(
-    ["offset", "q", "order", "created_at", "updated_at"],
-    prefix
-  )
+  const queryObject = useQueryParams(["offset", "q", "order", "created_at", "updated_at"], prefix);
 
-  const { offset, q, order, created_at, updated_at } = queryObject
+  const { offset, q, order, created_at, updated_at } = queryObject;
   const searchParams: HttpTypes.AdminShippingOptionTypeListParams = {
     limit: pageSize,
     offset: offset ? Number(offset) : 0,
@@ -23,10 +20,10 @@ export const useShippingOptionTypeTableQuery = ({
     created_at: created_at ? JSON.parse(created_at) : undefined,
     updated_at: updated_at ? JSON.parse(updated_at) : undefined,
     q,
-  }
+  };
 
   return {
     searchParams,
     raw: queryObject,
-  }
-}
+  };
+};

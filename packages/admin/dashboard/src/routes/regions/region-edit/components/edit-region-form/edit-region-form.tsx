@@ -1,28 +1,25 @@
-import { HttpTypes, PaymentProviderDTO } from "@medusajs/types"
-import { Button, Input, Select, Switch, Text, toast } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import * as zod from "zod"
+import { HttpTypes, PaymentProviderDTO } from "@medusajs/types";
+import { Button, Input, Select, Switch, Text, toast } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import * as zod from "zod";
 
-import { Form } from "../../../../../components/common/form/index.ts"
-import { Combobox } from "../../../../../components/inputs/combobox"
-import {
-  RouteDrawer,
-  useRouteModal,
-} from "../../../../../components/modals/index.ts"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form/keybound-form.tsx"
-import { useUpdateRegion } from "../../../../../hooks/api/regions.tsx"
-import { CurrencyInfo } from "../../../../../lib/data/currencies.ts"
-import { formatProvider } from "../../../../../lib/format-provider.ts"
-import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
-import { useComboboxData } from "../../../../../hooks/use-combobox-data.tsx"
-import { sdk } from "../../../../../lib/client/index.ts"
+import { Form } from "../../../../../components/common/form/index.ts";
+import { Combobox } from "../../../../../components/inputs/combobox";
+import { RouteDrawer, useRouteModal } from "../../../../../components/modals/index.ts";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form/keybound-form.tsx";
+import { useUpdateRegion } from "../../../../../hooks/api/regions.tsx";
+import { CurrencyInfo } from "../../../../../lib/data/currencies.ts";
+import { formatProvider } from "../../../../../lib/format-provider.ts";
+import { useDocumentDirection } from "../../../../../hooks/use-document-direction";
+import { useComboboxData } from "../../../../../hooks/use-combobox-data.tsx";
+import { sdk } from "../../../../../lib/client/index.ts";
 
 type EditRegionFormProps = {
-  region: HttpTypes.AdminRegion
-  currencies: CurrencyInfo[]
-  pricePreferences: HttpTypes.AdminPricePreference[]
-}
+  region: HttpTypes.AdminRegion;
+  currencies: CurrencyInfo[];
+  pricePreferences: HttpTypes.AdminPricePreference[];
+};
 
 const EditRegionSchema = zod.object({
   name: zod.string().min(1),
@@ -30,45 +27,38 @@ const EditRegionSchema = zod.object({
   payment_providers: zod.array(zod.string()),
   automatic_taxes: zod.boolean(),
   is_tax_inclusive: zod.boolean(),
-})
+});
 
-export const EditRegionForm = ({
-  region,
-  currencies,
-  pricePreferences,
-}: EditRegionFormProps) => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
+export const EditRegionForm = ({ region, currencies, pricePreferences }: EditRegionFormProps) => {
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
   const pricePreferenceForRegion = pricePreferences?.find(
-    (preference) =>
-      preference.attribute === "region_id" && preference.value === region.id
-  )
-  const direction = useDocumentDirection()
+    preference => preference.attribute === "region_id" && preference.value === region.id
+  );
+  const direction = useDocumentDirection();
   const form = useForm<zod.infer<typeof EditRegionSchema>>({
     defaultValues: {
       name: region.name,
       currency_code: region.currency_code.toUpperCase(),
-      payment_providers: region.payment_providers?.map((pp) => pp.id) || [],
+      payment_providers: region.payment_providers?.map(pp => pp.id) || [],
       automatic_taxes: region.automatic_taxes,
       is_tax_inclusive: pricePreferenceForRegion?.is_tax_inclusive || false,
     },
-  })
+  });
 
   const comboboxProviders = useComboboxData({
     queryKey: ["payment_providers"],
-    queryFn: (params) =>
-      sdk.admin.payment.listPaymentProviders({ ...params, is_enabled: true }),
-    getOptions: (data) =>
-      data.payment_providers.map((pp) => ({
+    queryFn: params => sdk.admin.payment.listPaymentProviders({ ...params, is_enabled: true }),
+    getOptions: data =>
+      data.payment_providers.map(pp => ({
         label: formatProvider(pp.id),
         value: pp.id,
       })),
-  })
+  });
 
-  const { mutateAsync: updateRegion, isPending: isPendingRegion } =
-    useUpdateRegion(region.id)
+  const { mutateAsync: updateRegion, isPending: isPendingRegion } = useUpdateRegion(region.id);
 
-  const handleSubmit = form.handleSubmit(async (values) => {
+  const handleSubmit = form.handleSubmit(async values => {
     await updateRegion(
       {
         name: values.name,
@@ -79,22 +69,19 @@ export const EditRegionForm = ({
       },
       {
         onSuccess: () => {
-          toast.success(t("regions.toast.edit"))
-          handleSuccess()
+          toast.success(t("regions.toast.edit"));
+          handleSuccess();
         },
-        onError: (e) => {
-          toast.error(e.message)
+        onError: e => {
+          toast.error(e.message);
         },
       }
-    )
-  })
+    );
+  });
 
   return (
     <RouteDrawer.Form form={form}>
-      <KeyboundForm
-        onSubmit={handleSubmit}
-        className="flex flex-1 flex-col overflow-hidden"
-      >
+      <KeyboundForm onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
         <RouteDrawer.Body className="overflow-y-auto">
           <div className="flex flex-col gap-y-8">
             <div className="flex flex-col gap-y-4">
@@ -110,7 +97,7 @@ export const EditRegionForm = ({
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
               <Form.Field
@@ -121,16 +108,12 @@ export const EditRegionForm = ({
                     <Form.Item>
                       <Form.Label>{t("fields.currency")}</Form.Label>
                       <Form.Control>
-                        <Select
-                          dir={direction}
-                          onValueChange={onChange}
-                          {...field}
-                        >
+                        <Select dir={direction} onValueChange={onChange} {...field}>
                           <Select.Trigger ref={ref}>
                             <Select.Value />
                           </Select.Trigger>
                           <Select.Content>
-                            {currencies.map((c) => (
+                            {currencies.map(c => (
                               <Select.Item key={c.code} value={c.code}>
                                 {c.code.toUpperCase()}
                               </Select.Item>
@@ -140,7 +123,7 @@ export const EditRegionForm = ({
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
             </div>
@@ -168,7 +151,7 @@ export const EditRegionForm = ({
                         <Form.ErrorMessage />
                       </div>
                     </Form.Item>
-                  )
+                  );
                 }}
               />
 
@@ -180,9 +163,7 @@ export const EditRegionForm = ({
                     <Form.Item>
                       <div>
                         <div className="flex items-start justify-between">
-                          <Form.Label>
-                            {t("fields.taxInclusivePricing")}
-                          </Form.Label>
+                          <Form.Label>{t("fields.taxInclusivePricing")}</Form.Label>
                           <Form.Control>
                             <Switch
                               dir="ltr"
@@ -197,7 +178,7 @@ export const EditRegionForm = ({
                         <Form.ErrorMessage />
                       </div>
                     </Form.Item>
-                  )
+                  );
                 }}
               />
             </div>
@@ -227,7 +208,7 @@ export const EditRegionForm = ({
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
             </div>
@@ -247,5 +228,5 @@ export const EditRegionForm = ({
         </RouteDrawer.Footer>
       </KeyboundForm>
     </RouteDrawer.Form>
-  )
-}
+  );
+};

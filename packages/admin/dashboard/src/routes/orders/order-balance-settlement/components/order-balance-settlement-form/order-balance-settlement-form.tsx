@@ -1,5 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { AdminOrder, AdminPayment } from "@medusajs/types"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AdminOrder, AdminPayment } from "@medusajs/types";
 import {
   Button,
   clx,
@@ -10,25 +10,22 @@ import {
   Select,
   Textarea,
   toast,
-} from "@medusajs/ui"
-import { useEffect, useMemo, useState } from "react"
-import { formatValue } from "react-currency-input-field"
-import { useForm } from "react-hook-form"
-import { useSearchParams } from "react-router-dom"
-import { useTranslation } from "react-i18next"
-import * as zod from "zod"
+} from "@medusajs/ui";
+import { useEffect, useMemo, useState } from "react";
+import { formatValue } from "react-currency-input-field";
+import { useForm } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import * as zod from "zod";
 
-import { Form } from "../../../../../components/common/form"
-import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import {
-  useCreateOrderCreditLine,
-  useRefundPayment,
-} from "../../../../../hooks/api"
-import { currencies } from "../../../../../lib/data/currencies"
-import { formatCurrency } from "../../../../../lib/format-currency"
-import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
-import { getPaymentsFromOrder } from "../../../../../lib/orders"
+import { Form } from "../../../../../components/common/form";
+import { RouteDrawer, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useCreateOrderCreditLine, useRefundPayment } from "../../../../../hooks/api";
+import { currencies } from "../../../../../lib/data/currencies";
+import { formatCurrency } from "../../../../../lib/format-currency";
+import { getLocaleAmount } from "../../../../../lib/money-amount-helpers";
+import { getPaymentsFromOrder } from "../../../../../lib/orders";
 
 const OrderBalanceSettlementSchema = zod.object({
   settlement_type: zod.enum(["credit_line", "refund"]),
@@ -50,23 +47,19 @@ const OrderBalanceSettlementSchema = zod.object({
       note: zod.string().optional(),
     })
     .optional(),
-})
+});
 
-export const OrderBalanceSettlementForm = ({
-  order,
-}: {
-  order: AdminOrder
-}) => {
-  const { t } = useTranslation()
-  const [searchParams] = useSearchParams()
-  const { handleSuccess } = useRouteModal()
-  const paymentId = searchParams.get("paymentId")
-  const payments = getPaymentsFromOrder(order)
-  const pendingDifference = order.summary.pending_difference * -1
+export const OrderBalanceSettlementForm = ({ order }: { order: AdminOrder }) => {
+  const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const { handleSuccess } = useRouteModal();
+  const paymentId = searchParams.get("paymentId");
+  const payments = getPaymentsFromOrder(order);
+  const pendingDifference = order.summary.pending_difference * -1;
 
   const [activePayment, setActivePayment] = useState<AdminPayment | null>(
-    paymentId ? payments.find((p) => p.id === paymentId) || null : null
-  )
+    paymentId ? payments.find(p => p.id === paymentId) || null : null
+  );
 
   const form = useForm<zod.infer<typeof OrderBalanceSettlementSchema>>({
     defaultValues: {
@@ -85,20 +78,22 @@ export const OrderBalanceSettlementForm = ({
       },
     },
     resolver: zodResolver(OrderBalanceSettlementSchema),
-  })
+  });
 
   const { mutateAsync: createCreditLine, isPending: isCreditLinePending } =
-    useCreateOrderCreditLine(order.id)
+    useCreateOrderCreditLine(order.id);
 
-  const { mutateAsync: createRefund, isPending: isRefundPending } =
-    useRefundPayment(order.id, activePayment?.id!)
+  const { mutateAsync: createRefund, isPending: isRefundPending } = useRefundPayment(
+    order.id,
+    activePayment?.id!
+  );
 
-  const settlementType = form.watch("settlement_type")
+  const settlementType = form.watch("settlement_type");
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async data => {
     if (data.settlement_type === "credit_line") {
       if (data.credit_line?.amount.float === null) {
-        return
+        return;
       }
       await createCreditLine(
         {
@@ -108,20 +103,20 @@ export const OrderBalanceSettlementForm = ({
         },
         {
           onSuccess: () => {
-            toast.success(t("orders.creditLines.createCreditLineSuccess"))
+            toast.success(t("orders.creditLines.createCreditLineSuccess"));
 
-            handleSuccess()
+            handleSuccess();
           },
-          onError: (error) => {
-            toast.error(error.message)
+          onError: error => {
+            toast.error(error.message);
           },
         }
-      )
+      );
     }
 
     if (data.settlement_type === "refund") {
       if (data.refund?.amount.float === null) {
-        return
+        return;
       }
       await createRefund(
         {
@@ -132,55 +127,49 @@ export const OrderBalanceSettlementForm = ({
           onSuccess: () => {
             toast.success(
               t("orders.payment.refundPaymentSuccess", {
-                amount: formatCurrency(
-                  data.refund!.amount!.float!,
-                  order.currency_code!
-                ),
+                amount: formatCurrency(data.refund!.amount!.float!, order.currency_code!),
               })
-            )
+            );
 
-            handleSuccess()
+            handleSuccess();
           },
-          onError: (error) => {
-            toast.error(error.message)
+          onError: error => {
+            toast.error(error.message);
           },
         }
-      )
+      );
     }
-  })
+  });
 
   const currency = useMemo(
     () => currencies[order.currency_code.toUpperCase()],
     [order.currency_code]
-  )
+  );
 
   useEffect(() => {
-    form.clearErrors()
+    form.clearErrors();
 
     const _minimum = activePayment?.amount
       ? Math.min(pendingDifference, activePayment.amount)
-      : pendingDifference
+      : pendingDifference;
 
     const minimum = {
       value: _minimum.toFixed(currency.decimal_digits),
       float: _minimum,
-    }
+    };
 
     if (settlementType === "refund") {
-      form.setValue("refund.amount", minimum)
+      form.setValue("refund.amount", minimum);
     }
 
     if (settlementType === "credit_line") {
-      form.setValue("credit_line.amount", minimum)
+      form.setValue("credit_line.amount", minimum);
     }
-  }, [settlementType, activePayment, pendingDifference, form, currency])
+  }, [settlementType, activePayment, pendingDifference, form, currency]);
 
   return (
     <RouteDrawer.Form form={form}>
-      <KeyboundForm
-        onSubmit={handleSubmit}
-        className="flex size-full flex-col overflow-hidden"
-      >
+      <KeyboundForm onSubmit={handleSubmit} className="flex size-full flex-col overflow-hidden">
         <RouteDrawer.Body className="flex-1 overflow-auto">
           <div className="flex flex-col gap-y-4">
             <div className="flex flex-col gap-y-4">
@@ -200,20 +189,14 @@ export const OrderBalanceSettlementForm = ({
                   description={t(
                     "orders.balanceSettlement.settlementTypes.paymentMethodDescription"
                   )}
-                  label={t(
-                    "orders.balanceSettlement.settlementTypes.paymentMethod"
-                  )}
+                  label={t("orders.balanceSettlement.settlementTypes.paymentMethod")}
                   className={clx("basis-1/2")}
                 />
 
                 <RadioGroup.ChoiceBox
                   value={"credit_line"}
-                  description={t(
-                    "orders.balanceSettlement.settlementTypes.creditLineDescription"
-                  )}
-                  label={t(
-                    "orders.balanceSettlement.settlementTypes.creditLine"
-                  )}
+                  description={t("orders.balanceSettlement.settlementTypes.creditLineDescription")}
+                  label={t("orders.balanceSettlement.settlementTypes.creditLine")}
                   className={clx("basis-1/2")}
                 />
               </RadioGroup>
@@ -226,8 +209,8 @@ export const OrderBalanceSettlementForm = ({
                 <div className="flex flex-col gap-y-4">
                   <Select
                     defaultValue={activePayment?.id}
-                    onValueChange={(value) => {
-                      setActivePayment(payments.find((p) => p.id === value)!)
+                    onValueChange={value => {
+                      setActivePayment(payments.find(p => p.id === value)!);
                     }}
                   >
                     <Label className="txt-compact-small mb-[-6px] font-sans font-medium">
@@ -235,39 +218,28 @@ export const OrderBalanceSettlementForm = ({
                     </Label>
 
                     <Select.Trigger>
-                      <Select.Value
-                        placeholder={t("orders.payment.selectPaymentToRefund")}
-                      />
+                      <Select.Value placeholder={t("orders.payment.selectPaymentToRefund")} />
                     </Select.Trigger>
 
                     <Select.Content>
-                      {payments.map((payment) => {
+                      {payments.map(payment => {
                         const totalRefunded =
-                          payment.refunds?.reduce(
-                            (acc, next) => next.amount + acc,
-                            0
-                          ) ?? 0
+                          payment.refunds?.reduce((acc, next) => next.amount + acc, 0) ?? 0;
 
                         return (
                           <Select.Item
                             value={payment!.id}
                             key={payment.id}
-                            disabled={
-                              !!payment.canceled_at ||
-                              totalRefunded >= payment.amount
-                            }
+                            disabled={!!payment.canceled_at || totalRefunded >= payment.amount}
                           >
                             <span>
-                              {getLocaleAmount(
-                                payment.amount as number,
-                                payment.currency_code
-                              )}
+                              {getLocaleAmount(payment.amount as number, payment.currency_code)}
                               {" - "}
                             </span>
                             <span>{payment.provider_id}</span>
                             <span> - ({payment.id.replace("pay_", "")})</span>
                           </Select.Item>
-                        )
+                        );
                       })}
                     </Select.Content>
                   </Select>
@@ -305,7 +277,7 @@ export const OrderBalanceSettlementForm = ({
 
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
 
@@ -323,7 +295,7 @@ export const OrderBalanceSettlementForm = ({
 
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
               </>
@@ -355,7 +327,7 @@ export const OrderBalanceSettlementForm = ({
                               onChange({
                                 value: values?.value ?? "",
                                 float: values?.float ?? null,
-                              })
+                              });
                             }}
                             autoFocus
                           />
@@ -363,7 +335,7 @@ export const OrderBalanceSettlementForm = ({
 
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
               </>
@@ -392,5 +364,5 @@ export const OrderBalanceSettlementForm = ({
         </RouteDrawer.Footer>
       </KeyboundForm>
     </RouteDrawer.Form>
-  )
-}
+  );
+};

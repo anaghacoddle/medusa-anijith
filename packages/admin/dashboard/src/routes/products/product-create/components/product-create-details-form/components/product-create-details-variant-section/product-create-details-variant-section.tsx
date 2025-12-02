@@ -1,4 +1,4 @@
-import { XMarkMini } from "@medusajs/icons"
+import { XMarkMini } from "@medusajs/icons";
 import {
   Alert,
   Button,
@@ -11,132 +11,128 @@ import {
   Input,
   Label,
   Text,
-} from "@medusajs/ui"
+} from "@medusajs/ui";
 import {
   Controller,
   FieldArrayWithId,
   useFieldArray,
   UseFormReturn,
   useWatch,
-} from "react-hook-form"
-import { useTranslation } from "react-i18next"
+} from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
-import { Form } from "../../../../../../../components/common/form"
-import { SortableList } from "../../../../../../../components/common/sortable-list"
-import { SwitchBox } from "../../../../../../../components/common/switch-box"
-import { ChipInput } from "../../../../../../../components/inputs/chip-input"
-import { ProductCreateSchemaType } from "../../../../types"
-import { decorateVariantsWithDefaultValues } from "../../../../utils"
+import { Form } from "../../../../../../../components/common/form";
+import { SortableList } from "../../../../../../../components/common/sortable-list";
+import { SwitchBox } from "../../../../../../../components/common/switch-box";
+import { ChipInput } from "../../../../../../../components/inputs/chip-input";
+import { ProductCreateSchemaType } from "../../../../types";
+import { decorateVariantsWithDefaultValues } from "../../../../utils";
 
 type ProductCreateVariantsSectionProps = {
-  form: UseFormReturn<ProductCreateSchemaType>
-}
+  form: UseFormReturn<ProductCreateSchemaType>;
+};
 
 const getPermutations = (
   data: { title: string; values: string[] }[]
 ): { [key: string]: string }[] => {
   if (data.length === 0) {
-    return []
+    return [];
   }
 
   if (data.length === 1) {
-    return data[0].values.map((value) => ({ [data[0].title]: value }))
+    return data[0].values.map(value => ({ [data[0].title]: value }));
   }
 
-  const toProcess = data[0]
-  const rest = data.slice(1)
+  const toProcess = data[0];
+  const rest = data.slice(1);
 
-  return toProcess.values.flatMap((value) => {
-    return getPermutations(rest).map((permutation) => {
+  return toProcess.values.flatMap(value => {
+    return getPermutations(rest).map(permutation => {
       return {
         [toProcess.title]: value,
         ...permutation,
-      }
-    })
-  })
-}
+      };
+    });
+  });
+};
 
 const getVariantName = (options: Record<string, string>) => {
-  return Object.values(options).join(" / ")
-}
+  return Object.values(options).join(" / ");
+};
 
-export const ProductCreateVariantsSection = ({
-  form,
-}: ProductCreateVariantsSectionProps) => {
-  const { t } = useTranslation()
+export const ProductCreateVariantsSection = ({ form }: ProductCreateVariantsSectionProps) => {
+  const { t } = useTranslation();
 
   const options = useFieldArray({
     control: form.control,
     name: "options",
-  })
+  });
 
   const variants = useFieldArray({
     control: form.control,
     name: "variants",
-  })
+  });
 
   const watchedAreVariantsEnabled = useWatch({
     control: form.control,
     name: "enable_variants",
     defaultValue: false,
-  })
+  });
 
   const watchedOptions = useWatch({
     control: form.control,
     name: "options",
     defaultValue: [],
-  })
+  });
 
   const watchedVariants = useWatch({
     control: form.control,
     name: "variants",
     defaultValue: [],
-  })
+  });
 
-  const showInvalidOptionsMessage = !!form.formState.errors.options?.length
+  const showInvalidOptionsMessage = !!form.formState.errors.options?.length;
   const showInvalidVariantsMessage =
-    form.formState.errors.variants?.root?.message === "invalid_length"
+    form.formState.errors.variants?.root?.message === "invalid_length";
 
   const handleOptionValueUpdate = (index: number, value: string[]) => {
-    const { isTouched: hasUserSelectedVariants } =
-      form.getFieldState("variants")
+    const { isTouched: hasUserSelectedVariants } = form.getFieldState("variants");
 
-    const newOptions = [...watchedOptions]
-    newOptions[index].values = value
+    const newOptions = [...watchedOptions];
+    newOptions[index].values = value;
 
-    const permutations = getPermutations(
-      newOptions.filter(({ values }) => values.length)
-    )
-    const oldVariants = [...watchedVariants]
+    const permutations = getPermutations(newOptions.filter(({ values }) => values.length));
+    const oldVariants = [...watchedVariants];
 
     const findMatchingPermutation = (options: Record<string, string>) => {
-      return permutations.find((permutation) =>
-        Object.keys(options).every((key) => options[key] === permutation[key])
-      )
-    }
+      return permutations.find(permutation =>
+        Object.keys(options).every(key => options[key] === permutation[key])
+      );
+    };
 
-    const newVariants = oldVariants.reduce((variants, variant) => {
-      const match = findMatchingPermutation(variant.options)
+    const newVariants = oldVariants.reduce(
+      (variants, variant) => {
+        const match = findMatchingPermutation(variant.options);
 
-      if (match) {
-        variants.push({
-          ...variant,
-          title: getVariantName(match),
-          options: match,
-        })
-      }
+        if (match) {
+          variants.push({
+            ...variant,
+            title: getVariantName(match),
+            options: match,
+          });
+        }
 
-      return variants
-    }, [] as typeof oldVariants)
+        return variants;
+      },
+      [] as typeof oldVariants
+    );
 
-    const usedPermutations = new Set(
-      newVariants.map((variant) => variant.options)
-    )
+    const usedPermutations = new Set(newVariants.map(variant => variant.options));
     const unusedPermutations = permutations.filter(
-      (permutation) => !usedPermutations.has(permutation)
-    )
+      permutation => !usedPermutations.has(permutation)
+    );
 
-    unusedPermutations.forEach((permutation) => {
+    unusedPermutations.forEach(permutation => {
       newVariants.push({
         title: getVariantName(permutation),
         options: permutation,
@@ -144,105 +140,106 @@ export const ProductCreateVariantsSection = ({
         variant_rank: newVariants.length,
         // NOTE - prepare inventory array here for now so we prevent rendering issue if we append the items later
         inventory: [{ inventory_item_id: "", required_quantity: "" }],
-      })
-    })
+      });
+    });
 
-    form.setValue("variants", newVariants)
-  }
+    form.setValue("variants", newVariants);
+  };
 
   const handleRemoveOption = (index: number) => {
     if (index === 0) {
-      return
+      return;
     }
 
-    options.remove(index)
+    options.remove(index);
 
-    const newOptions = [...watchedOptions]
-    newOptions.splice(index, 1)
-    const validOptionTitles = new Set(newOptions.map((option) => option.title))
+    const newOptions = [...watchedOptions];
+    newOptions.splice(index, 1);
+    const validOptionTitles = new Set(newOptions.map(option => option.title));
 
-    const permutations = getPermutations(newOptions)
-    const oldVariants = [...watchedVariants]
+    const permutations = getPermutations(newOptions);
+    const oldVariants = [...watchedVariants];
 
-    const newVariants = permutations.reduce((variants, permutation) => {
-      const variant = oldVariants.find(({ options }) =>
-        Object.keys(options)
-          .filter((option) => validOptionTitles.has(option))
-          .every((key) => options[key] === permutation[key])
-      )
+    const newVariants = permutations.reduce(
+      (variants, permutation) => {
+        const variant = oldVariants.find(({ options }) =>
+          Object.keys(options)
+            .filter(option => validOptionTitles.has(option))
+            .every(key => options[key] === permutation[key])
+        );
 
-      if (variant) {
-        variants.push({
-          ...variant,
-          title: variant.title,
-          options: permutation,
-        })
-      }
+        if (variant) {
+          variants.push({
+            ...variant,
+            title: variant.title,
+            options: permutation,
+          });
+        }
 
-      return variants
-    }, [] as typeof oldVariants)
+        return variants;
+      },
+      [] as typeof oldVariants
+    );
 
-    form.setValue("variants", newVariants)
-  }
+    form.setValue("variants", newVariants);
+  };
 
-  const handleRankChange = (
-    items: FieldArrayWithId<ProductCreateSchemaType, "variants">[]
-  ) => {
+  const handleRankChange = (items: FieldArrayWithId<ProductCreateSchemaType, "variants">[]) => {
     // Items in the SortableList are memorised, so we need to find the current
     // value to preserve any changes that have been made to `should_create`.
     const update = items.map((item, index) => {
-      const variant = watchedVariants.find((v) => v.title === item.title)
+      const variant = watchedVariants.find(v => v.title === item.title);
 
       return {
         id: item.id,
         ...(variant || item),
         variant_rank: index,
-      }
-    })
+      };
+    });
 
-    variants.replace(update)
-  }
+    variants.replace(update);
+  };
 
   const getCheckboxState = (variants: ProductCreateSchemaType["variants"]) => {
-    if (variants.every((variant) => variant.should_create)) {
-      return true
+    if (variants.every(variant => variant.should_create)) {
+      return true;
     }
 
-    if (variants.some((variant) => variant.should_create)) {
-      return "indeterminate"
+    if (variants.some(variant => variant.should_create)) {
+      return "indeterminate";
     }
 
-    return false
-  }
+    return false;
+  };
 
   const onCheckboxChange = (value: boolean | "indeterminate") => {
     switch (value) {
       case true: {
-        const update = watchedVariants.map((variant) => {
+        const update = watchedVariants.map(variant => {
           return {
             ...variant,
             should_create: true,
-          }
-        })
+          };
+        });
 
-        form.setValue("variants", update)
-        break
+        form.setValue("variants", update);
+        break;
       }
       case false: {
-        const update = watchedVariants.map((variant) => {
+        const update = watchedVariants.map(variant => {
           return {
             ...variant,
             should_create: false,
-          }
-        })
+          };
+        });
 
-        form.setValue("variants", decorateVariantsWithDefaultValues(update))
-        break
+        form.setValue("variants", decorateVariantsWithDefaultValues(update));
+        break;
       }
       case "indeterminate":
-        break
+        break;
     }
-  }
+  };
 
   const createDefaultOptionAndVariant = () => {
     form.setValue("options", [
@@ -250,7 +247,7 @@ export const ProductCreateVariantsSection = ({
         title: "Default option",
         values: ["Default option value"],
       },
-    ])
+    ]);
     form.setValue(
       "variants",
       decorateVariantsWithDefaultValues([
@@ -265,8 +262,8 @@ export const ProductCreateVariantsSection = ({
           is_default: true,
         },
       ])
-    )
-  }
+    );
+  };
 
   return (
     <div id="variants" className="flex flex-col gap-y-8">
@@ -277,17 +274,17 @@ export const ProductCreateVariantsSection = ({
           name="enable_variants"
           label={t("products.create.variants.subHeadingTitle")}
           description={t("products.create.variants.subHeadingDescription")}
-          onCheckedChange={(checked) => {
+          onCheckedChange={checked => {
             if (checked) {
               form.setValue("options", [
                 {
                   title: "",
                   values: [],
                 },
-              ])
-              form.setValue("variants", [])
+              ]);
+              form.setValue("variants", []);
             } else {
-              createDefaultOptionAndVariant()
+              createDefaultOptionAndVariant();
             }
           }}
         />
@@ -307,9 +304,7 @@ export const ProductCreateVariantsSection = ({
                           <Form.Label>
                             {t("products.create.variants.productOptions.label")}
                           </Form.Label>
-                          <Form.Hint>
-                            {t("products.create.variants.productOptions.hint")}
-                          </Form.Hint>
+                          <Form.Hint>{t("products.create.variants.productOptions.hint")}</Form.Hint>
                         </div>
                         <Button
                           size="small"
@@ -319,7 +314,7 @@ export const ProductCreateVariantsSection = ({
                             options.append({
                               title: "",
                               values: [],
-                            })
+                            });
                           }}
                         >
                           {t("actions.add")}
@@ -332,16 +327,14 @@ export const ProductCreateVariantsSection = ({
                       )}
                       <ul className="flex flex-col gap-y-4">
                         {options.fields.map((option, index) => {
-                          const hasError =
-                            !!form.formState.errors.options?.[index]
+                          const hasError = !!form.formState.errors.options?.[index];
                           return (
                             <li
                               key={option.id}
                               className={clx(
                                 "bg-ui-bg-component shadow-elevation-card-rest grid grid-cols-[1fr_28px] items-center gap-1.5 rounded-xl p-1.5",
                                 {
-                                  "border-ui-border-error shadow-borders-error":
-                                    hasError,
+                                  "border-ui-border-error shadow-borders-error": hasError,
                                 }
                               )}
                             >
@@ -358,12 +351,8 @@ export const ProductCreateVariantsSection = ({
                                 </div>
                                 <Input
                                   className="bg-ui-bg-field-component hover:bg-ui-bg-field-component-hover"
-                                  {...form.register(
-                                    `options.${index}.title` as const
-                                  )}
-                                  placeholder={t(
-                                    "products.fields.options.optionTitlePlaceholder"
-                                  )}
+                                  {...form.register(`options.${index}.title` as const)}
+                                  placeholder={t("products.fields.options.optionTitlePlaceholder")}
                                 />
                                 <div className="flex items-center px-2 py-1.5">
                                   <Label
@@ -378,15 +367,11 @@ export const ProductCreateVariantsSection = ({
                                 <Controller
                                   control={form.control}
                                   name={`options.${index}.values` as const}
-                                  render={({
-                                    field: { onChange, ...field },
-                                  }) => {
-                                    const handleValueChange = (
-                                      value: string[]
-                                    ) => {
-                                      handleOptionValueUpdate(index, value)
-                                      onChange(value)
-                                    }
+                                  render={({ field: { onChange, ...field } }) => {
+                                    const handleValueChange = (value: string[]) => {
+                                      handleOptionValueUpdate(index, value);
+                                      onChange(value);
+                                    };
 
                                     return (
                                       <ChipInput
@@ -397,7 +382,7 @@ export const ProductCreateVariantsSection = ({
                                           "products.fields.options.variantionsPlaceholder"
                                         )}
                                       />
-                                    )
+                                    );
                                   }}
                                 />
                               </div>
@@ -412,24 +397,20 @@ export const ProductCreateVariantsSection = ({
                                 <XMarkMini />
                               </IconButton>
                             </li>
-                          )
+                          );
                         })}
                       </ul>
                     </div>
                   </Form.Item>
-                )
+                );
               }}
             />
           </div>
           <div className="grid grid-cols-1 gap-x-4 gap-y-8">
             <div className="flex flex-col gap-y-6">
               <div className="flex flex-col">
-                <Label weight="plus">
-                  {t("products.create.variants.productVariants.label")}
-                </Label>
-                <Hint>
-                  {t("products.create.variants.productVariants.hint")}
-                </Hint>
+                <Label weight="plus">{t("products.create.variants.productVariants.label")}</Label>
+                <Hint>{t("products.create.variants.productVariants.hint")}</Hint>
               </div>
               {!showInvalidOptionsMessage && showInvalidVariantsMessage && (
                 <Alert dismissible variant="error">
@@ -480,9 +461,7 @@ export const ProductCreateVariantsSection = ({
                             <Form.Field
                               control={form.control}
                               name={`variants.${index}.should_create` as const}
-                              render={({
-                                field: { value, onChange, ...field },
-                              }) => {
+                              render={({ field: { value, onChange, ...field } }) => {
                                 return (
                                   <Form.Item>
                                     <Form.Control>
@@ -494,7 +473,7 @@ export const ProductCreateVariantsSection = ({
                                       />
                                     </Form.Control>
                                   </Form.Item>
-                                )
+                                );
                               }}
                             />
                             <SortableList.DragHandle />
@@ -505,14 +484,12 @@ export const ProductCreateVariantsSection = ({
                             ))}
                           </div>
                         </SortableList.Item>
-                      )
+                      );
                     }}
                   />
                 </div>
               ) : (
-                <Alert>
-                  {t("products.create.variants.productVariants.alert")}
-                </Alert>
+                <Alert>{t("products.create.variants.productVariants.alert")}</Alert>
               )}
               {variants.fields.length > 0 && (
                 <InlineTip label={t("general.tip")}>
@@ -524,5 +501,5 @@ export const ProductCreateVariantsSection = ({
         </>
       )}
     </div>
-  )
-}
+  );
+};

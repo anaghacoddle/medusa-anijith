@@ -1,32 +1,28 @@
-import { Container, Heading } from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import { useTranslation } from "react-i18next"
+import { Container, Heading } from "@medusajs/ui";
+import { keepPreviousData } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
-import { _DataTable } from "../../../../../components/table/data-table/data-table"
-import { useOrders } from "../../../../../hooks/api/orders"
-import { useOrderTableColumns } from "../../../../../hooks/table/columns/use-order-table-columns"
-import { useOrderTableFilters } from "./use-order-table-filters"
-import { useOrderTableQuery } from "../../../../../hooks/table/query/use-order-table-query"
-import { useDataTable } from "../../../../../hooks/use-data-table"
-import { useFeatureFlag } from "../../../../../providers/feature-flag-provider"
-import { ConfigurableOrderListTable } from "./configurable-order-list-table"
+import { _DataTable } from "../../../../../components/table/data-table/data-table";
+import { useOrders } from "../../../../../hooks/api/orders";
+import { useOrderTableColumns } from "../../../../../hooks/table/columns/use-order-table-columns";
+import { useOrderTableFilters } from "./use-order-table-filters";
+import { useOrderTableQuery } from "../../../../../hooks/table/query/use-order-table-query";
+import { useDataTable } from "../../../../../hooks/use-data-table";
+import { usePermission } from "../../../../../hooks/use-permission";
+import { useFeatureFlag } from "../../../../../providers/feature-flag-provider";
+import { ConfigurableOrderListTable } from "./configurable-order-list-table";
 
-import { DEFAULT_FIELDS } from "../../const"
+import { DEFAULT_FIELDS } from "../../const";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export const OrderListTable = () => {
-  const { t } = useTranslation()
-  const isViewConfigEnabled = useFeatureFlag("view_configurations")
-
-  // If feature flag is enabled, use the new configurable table
-  if (isViewConfigEnabled) {
-    return <ConfigurableOrderListTable />
-  }
+  const { t } = useTranslation();
+  const isViewConfigEnabled = useFeatureFlag("view_configurations");
 
   const { searchParams, raw } = useOrderTableQuery({
     pageSize: PAGE_SIZE,
-  })
+  });
 
   const { orders, count, isError, error, isLoading } = useOrders(
     {
@@ -36,10 +32,11 @@ export const OrderListTable = () => {
     {
       placeholderData: keepPreviousData,
     }
-  )
+  );
 
-  const filters = useOrderTableFilters()
-  const columns = useOrderTableColumns({})
+  const filters = useOrderTableFilters();
+  const columns = useOrderTableColumns({});
+  const { hasPermission } = usePermission();
 
   const { table } = useDataTable({
     data: orders ?? [],
@@ -47,22 +44,33 @@ export const OrderListTable = () => {
     enablePagination: true,
     count,
     pageSize: PAGE_SIZE,
-  })
+  });
+
+  // If feature flag is enabled, use the new configurable table
+  if (isViewConfigEnabled) {
+    return <ConfigurableOrderListTable />;
+  }
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
         <Heading>{t("orders.domain")}</Heading>
+        {/* Example: Add create order button if needed */}
+        {/* {hasPermission("/admin/orders", "POST") && (
+          <Button size="small" variant="secondary" asChild>
+            <Link to="create">{t("actions.create")}</Link>
+          </Button>
+        )} */}
       </div>
       <_DataTable
         columns={columns}
         table={table}
         pagination
-        navigateTo={(row) => `/orders/${row.original.id}`}
+        navigateTo={row => `/orders/${row.original.id}`}
         filters={filters}
         count={count}
         search
@@ -79,5 +87,5 @@ export const OrderListTable = () => {
         }}
       />
     </Container>
-  )
-}
+  );
+};

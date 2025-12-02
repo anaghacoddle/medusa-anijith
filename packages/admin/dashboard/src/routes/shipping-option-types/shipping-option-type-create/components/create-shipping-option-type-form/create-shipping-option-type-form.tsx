@@ -1,22 +1,22 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button, Heading, Input, Text, toast } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { z } from "zod"
-import { Form } from "../../../../../components/common/form"
-import { RouteFocusModal, useRouteModal, } from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useCreateShippingOptionType } from "../../../../../hooks/api"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Heading, Input, Text, toast } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
+import { Form } from "../../../../../components/common/form";
+import { RouteFocusModal, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useCreateShippingOptionType } from "../../../../../hooks/api";
 
 const CreateShippingOptionTypeSchema = z.object({
   label: z.string().min(1),
   code: z.string().min(1),
   description: z.string().optional(),
-})
+});
 
 export const CreateShippingOptionTypeForm = () => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
 
   const form = useForm<z.infer<typeof CreateShippingOptionTypeSchema>>({
     defaultValues: {
@@ -25,17 +25,17 @@ export const CreateShippingOptionTypeForm = () => {
       description: undefined,
     },
     resolver: zodResolver(CreateShippingOptionTypeSchema),
-  })
+  });
 
   const generateCodeFromLabel = (label: string) => {
     return label
       .toLowerCase()
       .replace(/[^a-z0-9]/g, "_")
       .replace(/_+/g, "_")
-      .replace(/^_|_$/g, "")
-  }
+      .replace(/^_|_$/g, "");
+  };
 
-  const { mutateAsync, isPending } = useCreateShippingOptionType()
+  const { mutateAsync, isPending } = useCreateShippingOptionType();
 
   const handleSubmit = form.handleSubmit(
     async (values: z.infer<typeof CreateShippingOptionTypeSchema>) => {
@@ -45,18 +45,16 @@ export const CreateShippingOptionTypeForm = () => {
             t("shippingOptionTypes.create.successToast", {
               label: shipping_option_type.label.trim(),
             })
-          )
+          );
 
-          handleSuccess(
-            `/settings/locations/shipping-option-types/${shipping_option_type.id}`
-          )
+          handleSuccess(`/settings/locations/shipping-option-types/${shipping_option_type.id}`);
         },
-        onError: (e) => {
-          toast.error(e.message)
+        onError: e => {
+          toast.error(e.message);
         },
-      })
+      });
     }
-  )
+  );
 
   return (
     <RouteFocusModal.Form form={form}>
@@ -76,29 +74,21 @@ export const CreateShippingOptionTypeForm = () => {
                 render={({ field }) => {
                   return (
                     <Form.Item>
-                      <Form.Label>
-                        {t("shippingOptionTypes.fields.label")}
-                      </Form.Label>
+                      <Form.Label>{t("shippingOptionTypes.fields.label")}</Form.Label>
                       <Form.Control>
                         <Input
                           {...field}
-                          onChange={(e) => {
-                            if (
-                              !form.getFieldState("code").isTouched ||
-                              !form.getValues("code")
-                            ) {
-                              form.setValue(
-                                "code",
-                                generateCodeFromLabel(e.target.value)
-                              )
+                          onChange={e => {
+                            if (!form.getFieldState("code").isTouched || !form.getValues("code")) {
+                              form.setValue("code", generateCodeFromLabel(e.target.value));
                             }
-                            field.onChange(e)
+                            field.onChange(e);
                           }}
                         />
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
               <Form.Field
@@ -107,15 +97,13 @@ export const CreateShippingOptionTypeForm = () => {
                 render={({ field }) => {
                   return (
                     <Form.Item>
-                      <Form.Label>
-                        {t("shippingOptionTypes.fields.code")}
-                      </Form.Label>
+                      <Form.Label>{t("shippingOptionTypes.fields.code")}</Form.Label>
                       <Form.Control>
                         <Input {...field} />
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
               <Form.Field
@@ -139,7 +127,7 @@ export const CreateShippingOptionTypeForm = () => {
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
             </div>
@@ -152,17 +140,12 @@ export const CreateShippingOptionTypeForm = () => {
                 {t("actions.cancel")}
               </Button>
             </RouteFocusModal.Close>
-            <Button
-              size="small"
-              variant="primary"
-              type="submit"
-              isLoading={isPending}
-            >
+            <Button size="small" variant="primary" type="submit" isLoading={isPending}>
               {t("actions.create")}
             </Button>
           </div>
         </RouteFocusModal.Footer>
       </KeyboundForm>
     </RouteFocusModal.Form>
-  )
-}
+  );
+};

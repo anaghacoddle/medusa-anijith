@@ -1,22 +1,20 @@
-import { TriangleRightMini } from "@medusajs/icons"
-import { Container, Heading } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
+import { TriangleRightMini } from "@medusajs/icons";
+import { Container, Heading } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
-import { ProductVariantDTO } from "@medusajs/types"
-import { Thumbnail } from "../../../../../components/common/thumbnail"
+import { ProductVariantDTO } from "@medusajs/types";
+import { Thumbnail } from "../../../../../components/common/thumbnail";
 
 type InventoryItemVariantsSectionProps = {
-  variants: ProductVariantDTO[]
-}
+  variants: ProductVariantDTO[];
+};
 
-export const InventoryItemVariantsSection = ({
-  variants,
-}: InventoryItemVariantsSectionProps) => {
-  const { t } = useTranslation()
+export const InventoryItemVariantsSection = ({ variants }: InventoryItemVariantsSectionProps) => {
+  const { t } = useTranslation();
 
   if (!variants?.length) {
-    return null
+    return null;
   }
 
   return (
@@ -26,10 +24,10 @@ export const InventoryItemVariantsSection = ({
       </div>
 
       <div className="txt-small flex flex-col gap-2 px-2 pb-2">
-        {variants.map((variant) => {
+        {variants.map(variant => {
           const link = variant.product
             ? `/products/${variant.product.id}/variants/${variant.id}`
-            : null
+            : null;
 
           const Inner = (
             <div className="shadow-elevation-card-rest bg-ui-bg-component rounded-md px-4 py-2 transition-colors">
@@ -38,11 +36,9 @@ export const InventoryItemVariantsSection = ({
                   <Thumbnail src={variant.product?.thumbnail} />
                 </div>
                 <div className="flex flex-1 flex-col">
-                  <span className="text-ui-fg-base font-medium">
-                    {variant.title}
-                  </span>
+                  <span className="text-ui-fg-base font-medium">{variant.title}</span>
                   <span className="text-ui-fg-subtle">
-                    {variant.options.map((o) => o.value).join(" ⋅ ")}
+                    {variant.options.map(o => o.value).join(" ⋅ ")}
                   </span>
                 </div>
                 <div className="size-7 flex items-center justify-center">
@@ -50,10 +46,10 @@ export const InventoryItemVariantsSection = ({
                 </div>
               </div>
             </div>
-          )
+          );
 
           if (!link) {
-            return <div key={variant.id}>{Inner}</div>
+            return <div key={variant.id}>{Inner}</div>;
           }
 
           return (
@@ -64,9 +60,9 @@ export const InventoryItemVariantsSection = ({
             >
               {Inner}
             </Link>
-          )
+          );
         })}
       </div>
     </Container>
-  )
-}
+  );
+};

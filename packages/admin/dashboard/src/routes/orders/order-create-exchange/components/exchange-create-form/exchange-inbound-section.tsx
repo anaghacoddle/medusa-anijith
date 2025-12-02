@@ -101,7 +101,7 @@ export const ExchangeInboundSection = ({
       preview?.items?.filter(
         (i) => !!i.actions?.find((a) => a.exchange_id === exchange.id)
       ),
-    [preview.items]
+    [preview.items, exchange.id]
   )
 
   const inboundPreviewItems = previewInboundItems.filter(
@@ -149,7 +149,7 @@ export const ExchangeInboundSection = ({
 
   const inboundItemsMap = useMemo(
     () => new Map(previewInboundItems.map((i) => [i.id, i])),
-    [previewInboundItems, inboundItems]
+    [previewInboundItems]
   )
 
   useEffect(() => {
@@ -186,7 +186,7 @@ export const ExchangeInboundSection = ({
         remove(ind)
       }
     })
-  }, [previewInboundItems])
+  }, [inboundPreviewItems, inboundItems, append, remove, update])
 
   useEffect(() => {
     const inboundShippingMethod = preview.shipping_methods.find((s) =>
@@ -201,11 +201,11 @@ export const ExchangeInboundSection = ({
     } else {
       form.setValue("inbound_option_id", "")
     }
-  }, [preview.shipping_methods])
+  }, [preview.shipping_methods, form])
 
   useEffect(() => {
     form.setValue("location_id", orderReturn?.location_id)
-  }, [orderReturn])
+  }, [orderReturn, form])
 
   const showInboundItemsPlaceholder = !inboundItems.length
 
@@ -302,7 +302,7 @@ export const ExchangeInboundSection = ({
       .every(Boolean)
 
     return !allItemsHaveLocation
-  }, [inboundItems, inventoryMap, locationId])
+  }, [inboundItems, inventoryMap, locationId, itemsMap])
 
   useEffect(() => {
     const getInventoryMap = async () => {

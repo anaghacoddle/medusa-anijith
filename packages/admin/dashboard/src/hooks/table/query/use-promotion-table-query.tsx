@@ -1,21 +1,15 @@
-import { HttpTypes } from "@medusajs/types"
-import { useQueryParams } from "../../use-query-params"
+import { HttpTypes } from "@medusajs/types";
+import { useQueryParams } from "../../use-query-params";
 
 type UsePromotionTableQueryProps = {
-  prefix?: string
-  pageSize?: number
-}
+  prefix?: string;
+  pageSize?: number;
+};
 
-export const usePromotionTableQuery = ({
-  prefix,
-  pageSize = 20,
-}: UsePromotionTableQueryProps) => {
-  const queryObject = useQueryParams(
-    ["offset", "q", "order", "created_at", "updated_at"],
-    prefix
-  )
+export const usePromotionTableQuery = ({ prefix, pageSize = 20 }: UsePromotionTableQueryProps) => {
+  const queryObject = useQueryParams(["offset", "q", "order", "created_at", "updated_at"], prefix);
 
-  const { offset, q, order, created_at, updated_at } = queryObject
+  const { offset, q, order, created_at, updated_at } = queryObject;
 
   const searchParams: HttpTypes.AdminGetPromotionsParams = {
     limit: pageSize,
@@ -24,10 +18,10 @@ export const usePromotionTableQuery = ({
     offset: offset ? Number(offset) : 0,
     order,
     q,
-  }
+  };
 
   return {
     searchParams,
     raw: queryObject,
-  }
-}
+  };
+};

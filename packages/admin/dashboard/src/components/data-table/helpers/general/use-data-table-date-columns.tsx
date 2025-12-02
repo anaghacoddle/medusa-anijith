@@ -1,22 +1,18 @@
-import {
-  createDataTableColumnHelper,
-  DataTableColumnDef,
-  Tooltip,
-} from "@medusajs/ui"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useDate } from "../../../../hooks/use-date"
+import { createDataTableColumnHelper, DataTableColumnDef, Tooltip } from "@medusajs/ui";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useDate } from "../../../../hooks/use-date";
 
 type EntityWithDates = {
-  created_at: string
-  updated_at: string
-}
+  created_at: string;
+  updated_at: string;
+};
 
-const columnHelper = createDataTableColumnHelper<EntityWithDates>()
+const columnHelper = createDataTableColumnHelper<EntityWithDates>();
 
 export const useDataTableDateColumns = <TData extends EntityWithDates>() => {
-  const { t } = useTranslation()
-  const { getFullDate } = useDate()
+  const { t } = useTranslation();
+  const { getFullDate } = useDate();
 
   return useMemo(() => {
     return [
@@ -32,11 +28,11 @@ export const useDataTableDateColumns = <TData extends EntityWithDates>() => {
             >
               <span>{getFullDate({ date: row.original.created_at })}</span>
             </Tooltip>
-          )
+          );
         },
         enableSorting: true,
-        sortAscLabel: t("filters.sorting.dateAsc"),
-        sortDescLabel: t("filters.sorting.dateDesc"),
+        sortAscLabel: t("filters.sorting.dateDesc"),
+        sortDescLabel: t("filters.sorting.dateAsc"),
       }),
       columnHelper.accessor("updated_at", {
         header: t("fields.updatedAt"),
@@ -50,12 +46,12 @@ export const useDataTableDateColumns = <TData extends EntityWithDates>() => {
             >
               <span>{getFullDate({ date: row.original.updated_at })}</span>
             </Tooltip>
-          )
+          );
         },
         enableSorting: true,
-        sortAscLabel: t("filters.sorting.dateAsc"),
-        sortDescLabel: t("filters.sorting.dateDesc"),
+        sortDescLabel: t("filters.sorting.dateAsc"),
+        sortAscLabel: t("filters.sorting.dateDesc"),
       }),
-    ] as DataTableColumnDef<TData>[]
-  }, [t, getFullDate])
-}
+    ] as DataTableColumnDef<TData>[];
+  }, [t, getFullDate]);
+};

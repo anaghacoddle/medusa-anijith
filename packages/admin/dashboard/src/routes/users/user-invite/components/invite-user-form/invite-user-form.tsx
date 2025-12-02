@@ -1,6 +1,6 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { ArrowPath, Link, Trash } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowPath, Link, Trash } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
 import {
   Alert,
   Button,
@@ -11,101 +11,131 @@ import {
   Text,
   Tooltip,
   usePrompt,
-} from "@medusajs/ui"
-import { createColumnHelper } from "@tanstack/react-table"
-import copy from "copy-to-clipboard"
-import { format } from "date-fns"
-import { useMemo } from "react"
-import { useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import * as zod from "zod"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { Form } from "../../../../../components/common/form"
-import { RouteFocusModal } from "../../../../../components/modals/index.ts"
-import { _DataTable } from "../../../../../components/table/data-table"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form/keybound-form.tsx"
+} from "@medusajs/ui";
+import { createColumnHelper } from "@tanstack/react-table";
+import copy from "copy-to-clipboard";
+import { format } from "date-fns";
+import { useMemo, useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
+import * as zod from "zod";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { Form } from "../../../../../components/common/form";
+import { RouteFocusModal } from "../../../../../components/modals/index.ts";
+import { _DataTable } from "../../../../../components/table/data-table";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form/keybound-form.tsx";
 import {
-  useCreateInvite,
+  useCreateInviteWithRole,
   useDeleteInvite,
   useInvites,
   useResendInvite,
-} from "../../../../../hooks/api/invites"
-import { useUserInviteTableQuery } from "../../../../../hooks/table/query/use-user-invite-table-query"
-import { useDataTable } from "../../../../../hooks/use-data-table"
-import { isFetchError } from "../../../../../lib/is-fetch-error"
+} from "../../../../../hooks/api/invites";
+import { useUserInviteTableQuery } from "../../../../../hooks/table/query/use-user-invite-table-query";
+import { useDataTable } from "../../../../../hooks/use-data-table";
+import { isFetchError } from "../../../../../lib/is-fetch-error";
+import { toast } from "@medusajs/ui";
+import { useRbacRoles } from "../../../../../hooks/api/rbac.tsx";
+import { Combobox } from "../../../../../components/inputs/combobox";
+import { encryptObject, decryptObject } from "../../../../../utils/encryption.ts";
 
 const InviteUserSchema = zod.object({
-  email: zod.string().email(),
-})
+  email: zod
+    .string({ required_error: "Email is required" })
+    .email("Please enter a valid email address"),
+  role_id: zod.string().min(1, { message: "Role is required" }),
+});
 
-const PAGE_SIZE = 10
-const PREFIX = "usr_invite"
-const INVITE_URL = `${window.location.origin}${
-  __BASE__ === "/" ? "" : __BASE__
-}/invite?token=`
+const PAGE_SIZE = 10;
+const PREFIX = "usr_invite";
+const INVITE_URL = `${window.location.origin}${__BASE__ === "/" ? "" : __BASE__}/invite?token=`;
 
 export const InviteUserForm = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const form = useForm<zod.infer<typeof InviteUserSchema>>({
     defaultValues: {
       email: "",
+      role_id: "",
     },
     resolver: zodResolver(InviteUserSchema),
-  })
+  });
 
   const { raw, searchParams } = useUserInviteTableQuery({
     prefix: PREFIX,
     pageSize: PAGE_SIZE,
-  })
+  });
 
-  const {
-    invites,
-    count,
-    isPending: isLoading,
-    isError,
-    error,
-  } = useInvites(searchParams)
+  const { invites, count, isPending: isLoading, isError, error } = useInvites(searchParams);
 
-  const columns = useColumns()
+  const [decryptedInvites, setDecryptedInvites] = useState<HttpTypes.AdminInvite[]>([]);
+
+  useEffect(() => {
+    if (invites) {
+      decryptObject(invites).then(result => {
+        setDecryptedInvites(result as HttpTypes.AdminInvite[]);
+      });
+    }
+  }, [invites]);
+
+  const columns = useColumns();
 
   const { table } = useDataTable({
-    data: invites ?? [],
+    data: decryptedInvites,
     columns,
     count,
     enablePagination: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
     pageSize: PAGE_SIZE,
     prefix: PREFIX,
-  })
+  });
 
-  const { mutateAsync, isPending } = useCreateInvite()
+  const { mutateAsync, isPending } = useCreateInviteWithRole();
+  const { roles } = useRbacRoles();
+  const roleOptions = useMemo(() => {
+    return (
+      roles?.map(role => ({
+        value: role.id,
+        label: role.name,
+      })) || []
+    );
+  }, [roles]);
 
-  const handleSubmit = form.handleSubmit(async (values) => {
+  const handleSubmit = form.handleSubmit(async values => {
     try {
-      await mutateAsync({ email: values.email })
-      form.reset()
-    } catch (error) {
+      const encrypted = await encryptObject({ email: values.email });
+      await mutateAsync({
+        email: encrypted?.email,
+        metadata: { role_id: values.role_id },
+      });
+      form.reset();
+      toast.success(t("users.inviteSuccess"));
+    } catch (error: any) {
       if (isFetchError(error) && error.status === 400) {
         form.setError("root", {
           type: "manual",
           message: error.message,
-        })
-        return
+        });
+        toast.error(error.message || t("users.inviteError"));
+        return;
       }
+      // Handle unknown errors
+      // const message =
+      //   (error && (error.response?.data?.message || error.message)) || t("users.inviteError");
+      // form.setError("root", {
+      //   type: "manual",
+      //   message: "Email already exists",
+      // });
+      toast.error("Email already exists");
     }
-  })
+  });
 
   if (isError) {
-    throw error
+    throw error;
   }
 
   return (
     <RouteFocusModal.Form form={form}>
-      <KeyboundForm
-        onSubmit={handleSubmit}
-        className="flex h-full flex-col overflow-hidden"
-      >
+      <KeyboundForm onSubmit={handleSubmit} className="flex h-full flex-col overflow-hidden">
         <RouteFocusModal.Header />
         <RouteFocusModal.Body className="flex flex-1 flex-col overflow-hidden">
           <div className="flex flex-1 flex-col items-center overflow-y-auto">
@@ -118,40 +148,50 @@ export const InviteUserForm = () => {
               </div>
 
               {form.formState.errors.root && (
-                <Alert
-                  variant="error"
-                  dismissible={false}
-                  className="text-balance"
-                >
+                <Alert variant="error" dismissible={false} className="text-balance">
                   {form.formState.errors.root.message}
                 </Alert>
               )}
 
               <div className="flex flex-col gap-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Form.Field
                     control={form.control}
                     name="email"
                     render={({ field }) => {
                       return (
                         <Form.Item>
-                          <Form.Label>{t("fields.email")}</Form.Label>
+                          <Form.Label>{t("fields.email")}*</Form.Label>
                           <Form.Control>
                             <Input {...field} />
                           </Form.Control>
                           <Form.ErrorMessage />
                         </Form.Item>
-                      )
+                      );
                     }}
+                  />
+
+                  <Form.Field
+                    control={form.control}
+                    name="role_id"
+                    render={({ field }) => (
+                      <Form.Item>
+                        <Form.Label>{t("fields.role")}*</Form.Label>
+                        <Form.Control>
+                          <Combobox
+                            value={field.value}
+                            onChange={field.onChange}
+                            options={roleOptions}
+                            // placeholder="Select a role"
+                          />
+                        </Form.Control>
+                        <Form.ErrorMessage />
+                      </Form.Item>
+                    )}
                   />
                 </div>
                 <div className="flex items-center justify-end">
-                  <Button
-                    size="small"
-                    variant="secondary"
-                    type="submit"
-                    isLoading={isPending}
-                  >
+                  <Button size="small" variant="secondary" type="submit" isLoading={isPending}>
                     {t("users.sendInvite")}
                   </Button>
                 </div>
@@ -182,15 +222,15 @@ export const InviteUserForm = () => {
         </RouteFocusModal.Body>
       </KeyboundForm>
     </RouteFocusModal.Form>
-  )
-}
+  );
+};
 
 const InviteActions = ({ invite }: { invite: HttpTypes.AdminInvite }) => {
-  const { mutateAsync: revokeAsync } = useDeleteInvite(invite.id)
-  const { mutateAsync: resendAsync } = useResendInvite(invite.id)
+  const { mutateAsync: revokeAsync } = useDeleteInvite(invite.id);
+  const { mutateAsync: resendAsync } = useResendInvite(invite.id);
 
-  const prompt = usePrompt()
-  const { t } = useTranslation()
+  const prompt = usePrompt();
+  const { t } = useTranslation();
 
   const handleDelete = async () => {
     const res = await prompt({
@@ -200,23 +240,28 @@ const InviteActions = ({ invite }: { invite: HttpTypes.AdminInvite }) => {
       }),
       cancelText: t("actions.cancel"),
       confirmText: t("actions.delete"),
-    })
+    });
 
     if (!res) {
-      return
+      return;
     }
 
-    await revokeAsync()
-  }
+    toast.success("Deleted successfully");
+
+    await revokeAsync();
+  };
 
   const handleResend = async () => {
-    await resendAsync()
-  }
+    await resendAsync();
+    toast.success("Invite resent successfully!");
+  };
 
   const handleCopyInviteLink = () => {
-    const inviteUrl = `${INVITE_URL}${invite.token}`
-    copy(inviteUrl)
-  }
+    const inviteLink = `${INVITE_URL}${invite.token}`;
+    navigator.clipboard.writeText(inviteLink).then(() => {
+      toast.success("Link copied!");
+    });
+  };
 
   return (
     <ActionMenu
@@ -250,60 +295,50 @@ const InviteActions = ({ invite }: { invite: HttpTypes.AdminInvite }) => {
         },
       ]}
     />
-  )
-}
+  );
+};
 
-const columnHelper = createColumnHelper<HttpTypes.AdminInvite>()
+const columnHelper = createColumnHelper<HttpTypes.AdminInvite>();
 
 const useColumns = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return useMemo(
     () => [
       columnHelper.accessor("email", {
         header: t("fields.email"),
         cell: ({ getValue }) => {
-          return getValue()
+          return getValue();
         },
       }),
       columnHelper.accessor("accepted", {
         header: t("fields.status"),
         cell: ({ getValue, row }) => {
-          const accepted = getValue()
-          const expired = new Date(row.original.expires_at) < new Date()
+          const accepted = getValue();
+          const expired = new Date(row.original.expires_at) < new Date();
 
           if (accepted) {
             return (
               <Tooltip
                 content={t("users.acceptedOnDate", {
-                  date: format(
-                    new Date(row.original.updated_at),
-                    "dd MMM, yyyy"
-                  ),
+                  date: format(new Date(row.original.updated_at), "dd MMM, yyyy"),
                 })}
               >
-                <StatusBadge color="green">
-                  {t("users.inviteStatus.accepted")}
-                </StatusBadge>
+                <StatusBadge color="green">{t("users.inviteStatus.accepted")}</StatusBadge>
               </Tooltip>
-            )
+            );
           }
 
           if (expired) {
             return (
               <Tooltip
                 content={t("users.expiredOnDate", {
-                  date: format(
-                    new Date(row.original.expires_at),
-                    "dd MMM, yyyy"
-                  ),
+                  date: format(new Date(row.original.expires_at), "dd MMM, yyyy"),
                 })}
               >
-                <StatusBadge color="red">
-                  {t("users.inviteStatus.expired")}
-                </StatusBadge>
+                <StatusBadge color="red">{t("users.inviteStatus.expired")}</StatusBadge>
               </Tooltip>
-            )
+            );
           }
 
           return (
@@ -316,30 +351,37 @@ const useColumns = () => {
                     <span key="untill" className="font-medium" />,
                   ]}
                   values={{
-                    from: format(
-                      new Date(row.original.created_at),
-                      "dd MMM, yyyy"
-                    ),
-                    until: format(
-                      new Date(row.original.expires_at),
-                      "dd MMM, yyyy"
-                    ),
+                    from: format(new Date(row.original.created_at), "dd MMM, yyyy"),
+                    until: format(new Date(row.original.expires_at), "dd MMM, yyyy"),
                   }}
                 />
               }
             >
-              <StatusBadge color="orange">
-                {t("users.inviteStatus.pending")}
-              </StatusBadge>
+              <StatusBadge color="orange">{t("users.inviteStatus.pending")}</StatusBadge>
             </Tooltip>
-          )
+          );
         },
       }),
+      columnHelper.accessor("created_at", {
+        header: t("fields.createdAt"),
+        cell: ({ getValue }) => {
+          const date = getValue();
+          return date ? format(new Date(date), "MMM d, yyyy") : "-";
+        },
+      }),
+      columnHelper.accessor("updated_at", {
+        header: t("fields.updatedAt"),
+        cell: ({ getValue }) => {
+          const date = getValue();
+          return date ? format(new Date(date), "MMM d, yyyy") : "-";
+        },
+      }),
+
       columnHelper.display({
         id: "actions",
         cell: ({ row }) => <InviteActions invite={row.original} />,
       }),
     ],
     [t]
-  )
-}
+  );
+};

@@ -1,26 +1,23 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { InformationCircleSolid } from "@medusajs/icons"
-import { HttpTypes } from "@medusajs/types"
-import { Button, Heading, Input, Text, toast, Tooltip } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { InformationCircleSolid } from "@medusajs/icons";
+import { HttpTypes } from "@medusajs/types";
+import { Button, Heading, Input, Text, toast, Tooltip } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
-import { Form } from "../../../../../components/common/form"
-import { SwitchBox } from "../../../../../components/common/switch-box"
-import { PercentageInput } from "../../../../../components/inputs/percentage-input"
-import { ProvinceSelect } from "../../../../../components/inputs/province-select"
-import {
-  RouteFocusModal,
-  useRouteModal,
-} from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useCreateTaxRegion } from "../../../../../hooks/api/tax-regions"
-import { getCountryProvinceObjectByIso2 } from "../../../../../lib/data/country-states"
+import { Form } from "../../../../../components/common/form";
+import { SwitchBox } from "../../../../../components/common/switch-box";
+import { PercentageInput } from "../../../../../components/inputs/percentage-input";
+import { ProvinceSelect } from "../../../../../components/inputs/province-select";
+import { RouteFocusModal, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useCreateTaxRegion } from "../../../../../hooks/api/tax-regions";
+import { getCountryProvinceObjectByIso2 } from "../../../../../lib/data/country-states";
 
 type TaxRegionProvinceCreateFormProps = {
-  parent: HttpTypes.AdminTaxRegion
-}
+  parent: HttpTypes.AdminTaxRegion;
+};
 
 const CreateTaxRegionProvinceSchema = z.object({
   province_code: z.string().min(1),
@@ -33,13 +30,11 @@ const CreateTaxRegionProvinceSchema = z.object({
     })
     .optional(),
   is_combinable: z.boolean().optional(),
-})
+});
 
-export const TaxRegionProvinceCreateForm = ({
-  parent,
-}: TaxRegionProvinceCreateFormProps) => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
+export const TaxRegionProvinceCreateForm = ({ parent }: TaxRegionProvinceCreateFormProps) => {
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
 
   const form = useForm<z.infer<typeof CreateTaxRegionProvinceSchema>>({
     defaultValues: {
@@ -52,11 +47,11 @@ export const TaxRegionProvinceCreateForm = ({
       },
     },
     resolver: zodResolver(CreateTaxRegionProvinceSchema),
-  })
+  });
 
-  const { mutateAsync, isPending } = useCreateTaxRegion()
+  const { mutateAsync, isPending } = useCreateTaxRegion();
 
-  const handleSubmit = form.handleSubmit(async (values) => {
+  const handleSubmit = form.handleSubmit(async values => {
     const defaultRate =
       values.name && values.rate?.float
         ? {
@@ -65,7 +60,7 @@ export const TaxRegionProvinceCreateForm = ({
             code: values.code,
             is_combinable: values.is_combinable,
           }
-        : undefined
+        : undefined;
 
     await mutateAsync(
       {
@@ -76,31 +71,24 @@ export const TaxRegionProvinceCreateForm = ({
       },
       {
         onSuccess: ({ tax_region }) => {
-          toast.success(t("taxRegions.create.successToast"))
-          handleSuccess(
-            `/settings/tax-regions/${parent.id}/provinces/${tax_region.id}`
-          )
+          toast.success(t("taxRegions.create.successToast"));
+          handleSuccess(`/settings/tax-regions/${parent.id}/provinces/${tax_region.id}`);
         },
-        onError: (error) => {
-          toast.error(error.message)
+        onError: error => {
+          toast.error(error.message);
         },
       }
-    )
-  })
+    );
+  });
 
-  const countryProvinceObject = getCountryProvinceObjectByIso2(
-    parent.country_code!
-  )
+  const countryProvinceObject = getCountryProvinceObjectByIso2(parent.country_code!);
 
-  const type = countryProvinceObject?.type || "sublevel"
-  const label = t(`taxRegions.fields.sublevels.labels.${type}`)
+  const type = countryProvinceObject?.type || "sublevel";
+  const label = t(`taxRegions.fields.sublevels.labels.${type}`);
 
   return (
     <RouteFocusModal.Form form={form}>
-      <KeyboundForm
-        onSubmit={handleSubmit}
-        className="flex h-full flex-col overflow-hidden"
-      >
+      <KeyboundForm onSubmit={handleSubmit} className="flex h-full flex-col overflow-hidden">
         <RouteFocusModal.Header />
         <RouteFocusModal.Body className="flex flex-1 flex-col overflow-hidden">
           <div className="flex flex-1 flex-col items-center overflow-y-auto">
@@ -128,17 +116,14 @@ export const TaxRegionProvinceCreateForm = ({
                         </Form.Label>
                         <Form.Control>
                           {countryProvinceObject ? (
-                            <ProvinceSelect
-                              country_code={parent.country_code!}
-                              {...field}
-                            />
+                            <ProvinceSelect country_code={parent.country_code!} {...field} />
                           ) : (
                             <Input {...field} placeholder="KR-26" />
                           )}
                         </Form.Control>
                         <Form.ErrorMessage />
                       </Form.Item>
-                    )
+                    );
                   }}
                 />
               </div>
@@ -147,16 +132,10 @@ export const TaxRegionProvinceCreateForm = ({
                   <Heading level="h2" className="!txt-compact-small-plus">
                     {t("taxRegions.fields.defaultTaxRate.label")}
                   </Heading>
-                  <Text
-                    size="small"
-                    leading="compact"
-                    className="text-ui-fg-muted"
-                  >
+                  <Text size="small" leading="compact" className="text-ui-fg-muted">
                     ({t("fields.optional")})
                   </Text>
-                  <Tooltip
-                    content={t("taxRegions.fields.defaultTaxRate.tooltip")}
-                  >
+                  <Tooltip content={t("taxRegions.fields.defaultTaxRate.tooltip")}>
                     <InformationCircleSolid className="text-ui-fg-muted" />
                   </Tooltip>
                 </div>
@@ -173,7 +152,7 @@ export const TaxRegionProvinceCreateForm = ({
                           </Form.Control>
                           <Form.ErrorMessage />
                         </Form.Item>
-                      )
+                      );
                     }}
                   />
                   <Form.Field
@@ -182,9 +161,7 @@ export const TaxRegionProvinceCreateForm = ({
                     render={({ field: { value, onChange, ...field } }) => {
                       return (
                         <Form.Item>
-                          <Form.Label>
-                            {t("taxRegions.fields.taxRate")}
-                          </Form.Label>
+                          <Form.Label>{t("taxRegions.fields.taxRate")}</Form.Label>
                           <Form.Control>
                             <PercentageInput
                               {...field}
@@ -200,7 +177,7 @@ export const TaxRegionProvinceCreateForm = ({
                           </Form.Control>
                           <Form.ErrorMessage />
                         </Form.Item>
-                      )
+                      );
                     }}
                   />
                   <Form.Field
@@ -209,15 +186,13 @@ export const TaxRegionProvinceCreateForm = ({
                     render={({ field }) => {
                       return (
                         <Form.Item>
-                          <Form.Label>
-                            {t("taxRegions.fields.taxCode")}
-                          </Form.Label>
+                          <Form.Label>{t("taxRegions.fields.taxCode")}</Form.Label>
                           <Form.Control>
                             <Input {...field} />
                           </Form.Control>
                           <Form.ErrorMessage />
                         </Form.Item>
-                      )
+                      );
                     }}
                   />
                 </div>
@@ -245,5 +220,5 @@ export const TaxRegionProvinceCreateForm = ({
         </RouteFocusModal.Footer>
       </KeyboundForm>
     </RouteFocusModal.Form>
-  )
-}
+  );
+};

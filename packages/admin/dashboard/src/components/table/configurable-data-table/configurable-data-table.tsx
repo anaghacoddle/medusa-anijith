@@ -1,35 +1,34 @@
-import { useState, ReactNode } from "react"
-import { Container, Button } from "@medusajs/ui"
-import { useTranslation } from "react-i18next"
-import { DataTable } from "../../data-table"
-import { SaveViewDialog } from "../save-view-dialog"
-import { SaveViewDropdown } from "./save-view-dropdown"
-import { useTableConfiguration } from "../../../hooks/table/use-table-configuration"
-import { useConfigurableTableColumns } from "../../../hooks/table/columns/use-configurable-table-columns"
-import { getEntityAdapter } from "../../../lib/table/entity-adapters"
-import { TableAdapter } from "../../../lib/table/table-adapters"
+import { useState, ReactNode } from "react";
+import { Container, Button } from "@medusajs/ui";
+import { useTranslation } from "react-i18next";
+import { DataTable } from "../../data-table";
+import { SaveViewDialog } from "../save-view-dialog";
+import { SaveViewDropdown } from "./save-view-dropdown";
+import { useTableConfiguration } from "../../../hooks/table/use-table-configuration";
+import { useConfigurableTableColumns } from "../../../hooks/table/columns/use-configurable-table-columns";
+import { getEntityAdapter } from "../../../lib/table/entity-adapters";
+import { TableAdapter } from "../../../lib/table/table-adapters";
 
 type DataTableActionProps = {
-  label: string
-  disabled?: boolean
+  label: string;
+  disabled?: boolean;
 } & (
-    | {
-      to: string
+  | {
+      to: string;
     }
-    | {
-      onClick: () => void
+  | {
+      onClick: () => void;
     }
-  )
-
+);
 
 export interface ConfigurableDataTableProps<TData> {
-  adapter: TableAdapter<TData>
-  heading?: string
-  subHeading?: string
-  pageSize?: number
-  queryPrefix?: string
-  layout?: "fill" | "auto"
-  actions?: DataTableActionProps[]
+  adapter: TableAdapter<TData>;
+  heading?: string;
+  subHeading?: string;
+  pageSize?: number;
+  queryPrefix?: string;
+  layout?: "fill" | "auto";
+  actions?: DataTableActionProps[];
 }
 
 export function ConfigurableDataTable<TData>({
@@ -41,15 +40,15 @@ export function ConfigurableDataTable<TData>({
   layout = "fill",
   actions,
 }: ConfigurableDataTableProps<TData>) {
-  const { t } = useTranslation()
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false)
-  const [editingView, setEditingView] = useState<any>(null)
+  const { t } = useTranslation();
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [editingView, setEditingView] = useState<any>(null);
 
-  const entity = adapter.entity
-  const entityName = adapter.entityName
-  const filters = adapter.filters || []
-  const pageSize = pageSizeProp || adapter.pageSize || 20
-  const queryPrefix = queryPrefixProp || adapter.queryPrefix || ""
+  const entity = adapter.entity;
+  const entityName = adapter.entityName;
+  const filters = adapter.filters || [];
+  const pageSize = pageSizeProp || adapter.pageSize || 20;
+  const queryPrefix = queryPrefixProp || adapter.queryPrefix || "";
 
   const {
     activeView,
@@ -73,37 +72,36 @@ export function ConfigurableDataTable<TData>({
     pageSize,
     queryPrefix,
     filters,
-  })
+  });
 
-  const parsedQueryParams = { ...queryParams }
+  const parsedQueryParams = { ...queryParams };
   filters.forEach(filter => {
-    const filterKey = filter.id
+    const filterKey = filter.id;
     if (parsedQueryParams[filterKey] !== undefined) {
       try {
-        parsedQueryParams[filterKey] = JSON.parse(parsedQueryParams[filterKey])
+        parsedQueryParams[filterKey] = JSON.parse(parsedQueryParams[filterKey]);
       } catch {
         // If parsing fails, keep the original value
       }
     }
-  })
+  });
 
   const searchParams = {
     ...parsedQueryParams,
     fields: requiredFields,
     limit: pageSize,
     offset: parsedQueryParams.offset ? Number(parsedQueryParams.offset) : 0,
-  }
+  };
 
-  const fetchResult = adapter.useData(requiredFields, searchParams)
+  const fetchResult = adapter.useData(requiredFields, searchParams);
 
-  const columnAdapter = adapter.columnAdapter || getEntityAdapter(entity)
-  const generatedColumns = useConfigurableTableColumns(entity, apiColumns || [], columnAdapter)
-  const columns = (adapter.getColumns && apiColumns)
-    ? adapter.getColumns(apiColumns)
-    : generatedColumns
+  const columnAdapter = adapter.columnAdapter || getEntityAdapter(entity);
+  const generatedColumns = useConfigurableTableColumns(entity, apiColumns || [], columnAdapter);
+  const columns =
+    adapter.getColumns && apiColumns ? adapter.getColumns(apiColumns) : generatedColumns;
 
   if (fetchResult.isError) {
-    throw fetchResult.error
+    throw fetchResult.error;
   }
 
   const handleSaveAsDefault = async () => {
@@ -117,8 +115,8 @@ export function ConfigurableDataTable<TData>({
             filters: currentConfiguration.filters || {},
             sorting: currentConfiguration.sorting || null,
             search: currentConfiguration.search || "",
-          }
-        })
+          },
+        });
       } else {
         await createView.mutateAsync({
           name: "Default",
@@ -130,16 +128,16 @@ export function ConfigurableDataTable<TData>({
             filters: currentConfiguration.filters || {},
             sorting: currentConfiguration.sorting || null,
             search: currentConfiguration.search || "",
-          }
-        })
+          },
+        });
       }
     } catch (_) {
       // Error is handled by the hook
     }
-  }
+  };
 
   const handleUpdateExisting = async () => {
-    if (!activeView) return
+    if (!activeView) return;
 
     try {
       await updateView.mutateAsync({
@@ -150,27 +148,22 @@ export function ConfigurableDataTable<TData>({
           filters: currentConfiguration.filters || {},
           sorting: currentConfiguration.sorting || null,
           search: currentConfiguration.search || "",
-        }
-      })
+        },
+      });
     } catch (_) {
       // Error is handled by the hook
     }
-  }
+  };
 
   const handleSaveAsNew = () => {
-    setSaveDialogOpen(true)
-    setEditingView(null)
-  }
+    setSaveDialogOpen(true);
+    setEditingView(null);
+  };
 
   // Filter bar content with save controls
   const filterBarContent = hasConfigurationChanged ? (
     <>
-      <Button
-        variant="secondary"
-        size="small"
-        type="button"
-        onClick={handleClearConfiguration}
-      >
+      <Button variant="secondary" size="small" type="button" onClick={handleClearConfiguration}>
         {t("actions.clear")}
       </Button>
       <SaveViewDropdown
@@ -182,7 +175,7 @@ export function ConfigurableDataTable<TData>({
         onSaveAsNew={handleSaveAsNew}
       />
     </>
-  ) : null
+  ) : null;
 
   return (
     <Container className="divide-y p-0">
@@ -209,11 +202,13 @@ export function ConfigurableDataTable<TData>({
         currentColumns={currentColumns}
         filterBarContent={filterBarContent}
         rowHref={adapter.getRowHref as ((row: any) => string) | undefined}
-        emptyState={adapter.emptyState || {
-          empty: {
-            heading: t(`${entity}.list.noRecordsMessage` as any),
+        emptyState={
+          adapter.emptyState || {
+            empty: {
+              heading: t(`${entity}.list.noRecordsMessage` as any),
+            },
           }
-        }}
+        }
         prefix={queryPrefix}
         actions={actions}
         enableFilterMenu={false}
@@ -226,15 +221,15 @@ export function ConfigurableDataTable<TData>({
           currentConfiguration={currentConfiguration}
           editingView={editingView}
           onClose={() => {
-            setSaveDialogOpen(false)
-            setEditingView(null)
+            setSaveDialogOpen(false);
+            setEditingView(null);
           }}
           onSaved={() => {
-            setSaveDialogOpen(false)
-            setEditingView(null)
+            setSaveDialogOpen(false);
+            setEditingView(null);
           }}
         />
       )}
     </Container>
-  )
+  );
 }

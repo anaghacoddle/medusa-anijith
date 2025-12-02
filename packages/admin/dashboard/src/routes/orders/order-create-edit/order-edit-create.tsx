@@ -53,7 +53,7 @@ export const OrderEditCreate = () => {
     }
 
     run()
-  }, [preview])
+  }, [preview, createOrderEdit, navigate, t])
 
   return (
     <RouteFocusModal>

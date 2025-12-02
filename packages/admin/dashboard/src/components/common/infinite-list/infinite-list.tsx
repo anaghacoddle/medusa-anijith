@@ -1,17 +1,17 @@
-import { QueryKey, useInfiniteQuery } from "@tanstack/react-query"
-import { ReactNode, useEffect, useMemo, useRef } from "react"
-import { toast } from "@medusajs/ui"
-import { Spinner } from "@medusajs/icons"
+import { QueryKey, useInfiniteQuery } from "@tanstack/react-query";
+import { ReactNode, useEffect, useMemo, useRef } from "react";
+import { toast } from "@medusajs/ui";
+import { Spinner } from "@medusajs/icons";
 
 type InfiniteListProps<TResponse, TEntity, TParams> = {
-  queryKey: QueryKey
-  queryFn: (params: TParams) => Promise<TResponse>
-  queryOptions?: { enabled?: boolean }
-  renderItem: (item: TEntity) => ReactNode
-  renderEmpty: () => ReactNode
-  responseKey: keyof TResponse
-  pageSize?: number
-}
+  queryKey: QueryKey;
+  queryFn: (params: TParams) => Promise<TResponse>;
+  queryOptions?: { enabled?: boolean };
+  renderItem: (item: TEntity) => ReactNode;
+  renderEmpty: () => ReactNode;
+  responseKey: keyof TResponse;
+  pageSize?: number;
+};
 
 export const InfiniteList = <
   TResponse extends { count: number; offset: number; limit: number },
@@ -41,26 +41,24 @@ export const InfiniteList = <
       return await queryFn({
         limit: pageSize,
         offset: pageParam,
-      } as TParams)
+      } as TParams);
     },
     initialPageParam: 0,
     maxPages: 5,
-    getNextPageParam: (lastPage) => {
-      const moreItemsExist = lastPage.count > lastPage.offset + lastPage.limit
-      return moreItemsExist ? lastPage.offset + lastPage.limit : undefined
+    getNextPageParam: lastPage => {
+      const moreItemsExist = lastPage.count > lastPage.offset + lastPage.limit;
+      return moreItemsExist ? lastPage.offset + lastPage.limit : undefined;
     },
-    getPreviousPageParam: (firstPage) => {
-      const moreItemsExist = firstPage.offset !== 0
-      return moreItemsExist
-        ? Math.max(firstPage.offset - firstPage.limit, 0)
-        : undefined
+    getPreviousPageParam: firstPage => {
+      const moreItemsExist = firstPage.offset !== 0;
+      return moreItemsExist ? Math.max(firstPage.offset - firstPage.limit, 0) : undefined;
     },
     ...queryOptions,
-  })
+  });
 
   const items = useMemo(() => {
-    return data?.pages.flatMap((p) => p[responseKey] as TEntity[]) ?? []
-  }, [data, responseKey])
+    return data?.pages.flatMap(p => p[responseKey] as TEntity[]) ?? [];
+  }, [data, responseKey]);
 
   const parentRef = useRef<HTMLDivElement>(null)
   const startObserver = useRef<IntersectionObserver>()
@@ -75,14 +73,14 @@ export const InfiniteList = <
 
   useEffect(() => {
     if (isPending) {
-      return
+      return;
     }
 
     // Define the new observers after we stop fetching
     if (!isFetching) {
       // Define the new observers after paginating
       startObserver.current = new IntersectionObserver(
-        (entries) => {
+        entries => {
           if (entries[0].isIntersecting && hasPreviousPage) {
             startObserver.current?.disconnect()
             fetchPreviousPageRef.current()
@@ -91,10 +89,10 @@ export const InfiniteList = <
         {
           threshold: 0.5,
         }
-      )
+      );
 
       endObserver.current = new IntersectionObserver(
-        (entries) => {
+        entries => {
           if (entries[0].isIntersecting && hasNextPage) {
             endObserver.current?.disconnect()
             fetchNextPageRef.current()
@@ -103,14 +101,14 @@ export const InfiniteList = <
         {
           threshold: 0.5,
         }
-      )
+      );
 
       // Register the new observers to observe the new first and last children
       if (parentRef.current?.firstChild) {
-        startObserver.current?.observe(parentRef.current.firstChild as Element)
+        startObserver.current?.observe(parentRef.current.firstChild as Element);
       }
       if (parentRef.current?.lastChild) {
-        endObserver.current?.observe(parentRef.current.lastChild as Element)
+        endObserver.current?.observe(parentRef.current.lastChild as Element);
       }
     }
 
@@ -128,22 +126,22 @@ export const InfiniteList = <
 
   useEffect(() => {
     if (error) {
-      toast.error(error.message)
+      toast.error(error.message);
     }
-  }, [error])
+  }, [error]);
 
   if (isPending) {
     return (
       <div className="flex h-full flex-col items-center justify-center">
         <Spinner className="animate-spin" />
       </div>
-    )
+    );
   }
 
   return (
     <div ref={parentRef} className="h-full">
       {items?.length
-        ? items.map((item) => <div key={item.id}>{renderItem(item)}</div>)
+        ? items.map(item => <div key={item.id}>{renderItem(item)}</div>)
         : renderEmpty()}
 
       {isFetching && (
@@ -152,5 +150,5 @@ export const InfiniteList = <
         </div>
       )}
     </div>
-  )
-}
+  );
+};

@@ -1,11 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  InformationCircleSolid,
-  Plus,
-  TriangleDownMini,
-  XMark,
-  XMarkMini,
-} from "@medusajs/icons"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { InformationCircleSolid, Plus, TriangleDownMini, XMark, XMarkMini } from "@medusajs/icons";
 import {
   Badge,
   Button,
@@ -17,9 +11,9 @@ import {
   Label,
   Text,
   Tooltip,
-} from "@medusajs/ui"
-import { Accordion as RadixAccordion } from "radix-ui"
-import React, { Fragment, ReactNode, useRef, useState } from "react"
+} from "@medusajs/ui";
+import { Accordion as RadixAccordion } from "radix-ui";
+import React, { Fragment, ReactNode, useRef, useState } from "react";
 import {
   Control,
   ControllerRenderProps,
@@ -27,51 +21,47 @@ import {
   useForm,
   useFormContext,
   useWatch,
-} from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
+} from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
 
-import { formatValue } from "react-currency-input-field"
-import { Form } from "../../../../../components/common/form"
-import { StackedFocusModal } from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useCombinedRefs } from "../../../../../hooks/use-combined-refs"
-import { castNumber } from "../../../../../lib/cast-number"
-import { CurrencyInfo } from "../../../../../lib/data/currencies"
-import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
-import { CreateShippingOptionSchemaType } from "../../../location-service-zone-shipping-option-create/components/create-shipping-options-form/schema"
+import { formatValue } from "react-currency-input-field";
+import { Form } from "../../../../../components/common/form";
+import { StackedFocusModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useCombinedRefs } from "../../../../../hooks/use-combined-refs";
+import { castNumber } from "../../../../../lib/cast-number";
+import { CurrencyInfo } from "../../../../../lib/data/currencies";
+import { getLocaleAmount } from "../../../../../lib/money-amount-helpers";
+import { CreateShippingOptionSchemaType } from "../../../location-service-zone-shipping-option-create/components/create-shipping-options-form/schema";
 import {
   CondtionalPriceRuleSchema,
   CondtionalPriceRuleSchemaType,
   UpdateConditionalPriceRuleSchema,
   UpdateConditionalPriceRuleSchemaType,
-} from "../../schema"
-import { ConditionalPriceInfo } from "../../types"
-import { getCustomShippingOptionPriceFieldName } from "../../utils/get-custom-shipping-option-price-field-info"
-import { useShippingOptionPrice } from "../shipping-option-price-provider"
+} from "../../schema";
+import { ConditionalPriceInfo } from "../../types";
+import { getCustomShippingOptionPriceFieldName } from "../../utils/get-custom-shipping-option-price-field-info";
+import { useShippingOptionPrice } from "../shipping-option-price-provider";
 
-const RULE_ITEM_PREFIX = "rule-item"
+const RULE_ITEM_PREFIX = "rule-item";
 
-const getRuleValue = (index: number) => `${RULE_ITEM_PREFIX}-${index}`
+const getRuleValue = (index: number) => `${RULE_ITEM_PREFIX}-${index}`;
 
 interface ConditionalPriceFormProps {
-  info: ConditionalPriceInfo
-  variant: "create" | "update"
+  info: ConditionalPriceInfo;
+  variant: "create" | "update";
 }
 
-export const ConditionalPriceForm = ({
-  info,
-  variant,
-}: ConditionalPriceFormProps) => {
-  const { t } = useTranslation()
-  const { getValues, setValue: setFormValue } =
-    useFormContext<CreateShippingOptionSchemaType>()
-  const { onCloseConditionalPricesModal } = useShippingOptionPrice()
+export const ConditionalPriceForm = ({ info, variant }: ConditionalPriceFormProps) => {
+  const { t } = useTranslation();
+  const { getValues, setValue: setFormValue } = useFormContext<CreateShippingOptionSchemaType>();
+  const { onCloseConditionalPricesModal } = useShippingOptionPrice();
 
-  const [value, setValue] = useState<string[]>([getRuleValue(0)])
+  const [value, setValue] = useState<string[]>([getRuleValue(0)]);
 
-  const { field, type, currency, name: header } = info
+  const { field, type, currency, name: header } = info;
 
-  const name = getCustomShippingOptionPriceFieldName(field, type)
+  const name = getCustomShippingOptionPriceFieldName(field, type);
 
   const conditionalPriceForm = useForm<
     CondtionalPriceRuleSchemaType | UpdateConditionalPriceRuleSchemaType
@@ -86,65 +76,63 @@ export const ConditionalPriceForm = ({
       ],
     },
     resolver: zodResolver(
-      variant === "create"
-        ? CondtionalPriceRuleSchema
-        : UpdateConditionalPriceRuleSchema
+      variant === "create" ? CondtionalPriceRuleSchema : UpdateConditionalPriceRuleSchema
     ),
-  })
+  });
 
   const { fields, append, remove } = useFieldArray({
     control: conditionalPriceForm.control,
     name: "prices",
-  })
+  });
 
   const handleAdd = () => {
     append({
       amount: "",
       gte: "",
       lte: null,
-    })
+    });
 
-    setValue([...value, getRuleValue(fields.length)])
-  }
+    setValue([...value, getRuleValue(fields.length)]);
+  };
 
   const handleRemove = (index: number) => {
-    remove(index)
-  }
+    remove(index);
+  };
 
   const handleOnSubmit = conditionalPriceForm.handleSubmit(
-    (values) => {
+    values => {
       setFormValue(name, values.prices, {
         shouldDirty: true,
         shouldValidate: true,
         shouldTouch: true,
-      })
-      onCloseConditionalPricesModal()
+      });
+      onCloseConditionalPricesModal();
     },
-    (e) => {
-      const indexesWithErrors = Object.keys(e.prices || {})
-      setValue((prev) => {
-        const values = new Set(prev)
+    e => {
+      const indexesWithErrors = Object.keys(e.prices || {});
+      setValue(prev => {
+        const values = new Set(prev);
 
-        indexesWithErrors.forEach((index) => {
-          values.add(getRuleValue(Number(index)))
-        })
+        indexesWithErrors.forEach(index => {
+          values.add(getRuleValue(Number(index)));
+        });
 
-        return Array.from(values)
-      })
+        return Array.from(values);
+      });
     }
-  )
+  );
 
   // Intercept the Cmd + Enter key to only save the inner form.
   const handleOnKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
     if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-      console.log("Fired")
+      console.log("Fired");
 
-      event.preventDefault()
-      event.stopPropagation()
+      event.preventDefault();
+      event.stopPropagation();
 
-      handleOnSubmit()
+      handleOnSubmit();
     }
-  }
+  };
 
   return (
     <Form {...conditionalPriceForm}>
@@ -162,19 +150,14 @@ export const ConditionalPriceForm = ({
                   <div>
                     <StackedFocusModal.Title asChild>
                       <Heading>
-                        {t(
-                          "stockLocations.shippingOptions.conditionalPrices.header",
-                          {
-                            name: header,
-                          }
-                        )}
+                        {t("stockLocations.shippingOptions.conditionalPrices.header", {
+                          name: header,
+                        })}
                       </Heading>
                     </StackedFocusModal.Title>
                     <StackedFocusModal.Description asChild>
                       <Text size="small" className="text-ui-fg-subtle">
-                        {t(
-                          "stockLocations.shippingOptions.conditionalPrices.description"
-                        )}
+                        {t("stockLocations.shippingOptions.conditionalPrices.description")}
                       </Text>
                     </StackedFocusModal.Description>
                   </div>
@@ -190,15 +173,8 @@ export const ConditionalPriceForm = ({
                     ))}
                   </ConditionalPriceList>
                   <div className="flex items-center justify-end">
-                    <Button
-                      variant="secondary"
-                      size="small"
-                      type="button"
-                      onClick={handleAdd}
-                    >
-                      {t(
-                        "stockLocations.shippingOptions.conditionalPrices.actions.addPrice"
-                      )}
+                    <Button variant="secondary" size="small" type="button" onClick={handleAdd}>
+                      {t("stockLocations.shippingOptions.conditionalPrices.actions.addPrice")}
                     </Button>
                   </div>
                 </div>
@@ -220,20 +196,16 @@ export const ConditionalPriceForm = ({
         </StackedFocusModal.Content>
       </KeyboundForm>
     </Form>
-  )
-}
+  );
+};
 
 interface ConditionalPriceListProps {
-  children?: ReactNode
-  value: string[]
-  onValueChange: (value: string[]) => void
+  children?: ReactNode;
+  value: string[];
+  onValueChange: (value: string[]) => void;
 }
 
-const ConditionalPriceList = ({
-  children,
-  value,
-  onValueChange,
-}: ConditionalPriceListProps) => {
+const ConditionalPriceList = ({ children, value, onValueChange }: ConditionalPriceListProps) => {
   return (
     <RadixAccordion.Root
       type="multiple"
@@ -244,14 +216,14 @@ const ConditionalPriceList = ({
     >
       {children}
     </RadixAccordion.Root>
-  )
-}
+  );
+};
 
 interface ConditionalPriceItemProps {
-  index: number
-  currency: CurrencyInfo
-  onRemove: (index: number) => void
-  control: Control<CondtionalPriceRuleSchemaType>
+  index: number;
+  currency: CurrencyInfo;
+  onRemove: (index: number) => void;
+  control: Control<CondtionalPriceRuleSchemaType>;
 }
 
 const ConditionalPriceItem = ({
@@ -260,36 +232,26 @@ const ConditionalPriceItem = ({
   onRemove,
   control,
 }: ConditionalPriceItemProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const handleRemove = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation()
-    onRemove(index)
-  }
+    e.stopPropagation();
+    onRemove(index);
+  };
 
   return (
     <RadixAccordion.Item
       value={getRuleValue(index)}
-      className={clx(
-        "bg-ui-bg-component shadow-elevation-card-rest rounded-lg"
-      )}
+      className={clx("bg-ui-bg-component shadow-elevation-card-rest rounded-lg")}
     >
       <RadixAccordion.Trigger asChild>
         <div className="group/trigger flex w-full cursor-pointer items-start justify-between gap-x-2 p-3">
           <div className="flex flex-1 flex-wrap items-center justify-between gap-2">
             <div className="flex h-7 items-center">
-              <AmountDisplay
-                index={index}
-                currency={currency}
-                control={control}
-              />
+              <AmountDisplay index={index} currency={currency} control={control} />
             </div>
             <div className="flex min-h-7 items-center">
-              <ConditionDisplay
-                index={index}
-                currency={currency}
-                control={control}
-              />
+              <ConditionDisplay index={index} currency={currency} control={control} />
             </div>
           </div>
           <div className="flex items-center gap-x-2">
@@ -322,9 +284,7 @@ const ConditionalPriceItem = ({
                 <div className="grid grid-cols-2 items-start gap-x-2 p-3">
                   <div className="flex h-8 items-center">
                     <Form.Label>
-                      {t(
-                        "stockLocations.shippingOptions.conditionalPrices.rules.amount"
-                      )}
+                      {t("stockLocations.shippingOptions.conditionalPrices.rules.amount")}
                     </Form.Label>
                   </div>
                   <div className="flex flex-col gap-y-1">
@@ -350,7 +310,7 @@ const ConditionalPriceItem = ({
                   </div>
                 </div>
               </Form.Item>
-            )
+            );
           }}
         />
         <Divider variant="dashed" />
@@ -361,13 +321,11 @@ const ConditionalPriceItem = ({
             return (
               <OperatorInput
                 field={field}
-                label={t(
-                  "stockLocations.shippingOptions.conditionalPrices.rules.gte"
-                )}
+                label={t("stockLocations.shippingOptions.conditionalPrices.rules.gte")}
                 currency={currency}
                 placeholder="1000"
               />
-            )
+            );
           }}
         />
         <Divider variant="dashed" />
@@ -378,62 +336,51 @@ const ConditionalPriceItem = ({
             return (
               <OperatorInput
                 field={field}
-                label={t(
-                  "stockLocations.shippingOptions.conditionalPrices.rules.lte"
-                )}
+                label={t("stockLocations.shippingOptions.conditionalPrices.rules.lte")}
                 currency={currency}
                 placeholder="1000"
               />
-            )
+            );
           }}
         />
-        <ReadOnlyConditions
-          index={index}
-          control={control}
-          currency={currency}
-        />
+        <ReadOnlyConditions index={index} control={control} currency={currency} />
       </RadixAccordion.Content>
     </RadixAccordion.Item>
-  )
-}
+  );
+};
 
 interface OperatorInputProps {
-  currency: CurrencyInfo
-  placeholder: string
-  label: string
+  currency: CurrencyInfo;
+  placeholder: string;
+  label: string;
   field: ControllerRenderProps<
     CondtionalPriceRuleSchemaType,
     `prices.${number}.lte` | `prices.${number}.gte`
-  >
+  >;
 }
 
-const OperatorInput = ({
-  field,
-  label,
-  currency,
-  placeholder,
-}: OperatorInputProps) => {
-  const innerRef = useRef<HTMLInputElement>(null)
+const OperatorInput = ({ field, label, currency, placeholder }: OperatorInputProps) => {
+  const innerRef = useRef<HTMLInputElement>(null);
 
-  const { value, onChange, ref, ...props } = field
+  const { value, onChange, ref, ...props } = field;
 
-  const refs = useCombinedRefs(innerRef, ref)
+  const refs = useCombinedRefs(innerRef, ref);
 
   const action = () => {
     if (value === null) {
-      onChange("")
+      onChange("");
 
       requestAnimationFrame(() => {
-        innerRef.current?.focus()
-      })
+        innerRef.current?.focus();
+      });
 
-      return
+      return;
     }
 
-    onChange(null)
-  }
+    onChange(null);
+  };
 
-  const isNull = value === null
+  const isNull = value === null;
 
   return (
     <Form.Item>
@@ -469,27 +416,27 @@ const OperatorInput = ({
         )}
       </div>
     </Form.Item>
-  )
-}
+  );
+};
 
 const ReadOnlyConditions = ({
   index,
   control,
   currency,
 }: {
-  index: number
-  control: Control<CondtionalPriceRuleSchemaType>
-  currency: CurrencyInfo
+  index: number;
+  control: Control<CondtionalPriceRuleSchemaType>;
+  currency: CurrencyInfo;
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const item = useWatch({
     control,
     name: `prices.${index}`,
-  })
+  });
 
   if (item.eq == null && item.gt == null && item.lt == null) {
-    return null
+    return null;
   }
 
   return (
@@ -497,14 +444,10 @@ const ReadOnlyConditions = ({
       <Divider variant="dashed" />
       <div className="flex items-center gap-x-1 px-3 pt-3">
         <Text size="small" leading="compact" weight="plus">
-          {t(
-            "stockLocations.shippingOptions.conditionalPrices.customRules.label"
-          )}
+          {t("stockLocations.shippingOptions.conditionalPrices.customRules.label")}
         </Text>
         <Tooltip
-          content={t(
-            "stockLocations.shippingOptions.conditionalPrices.customRules.tooltip"
-          )}
+          content={t("stockLocations.shippingOptions.conditionalPrices.customRules.tooltip")}
         >
           <InformationCircleSolid className="text-ui-fg-muted" />
         </Tooltip>
@@ -514,9 +457,7 @@ const ReadOnlyConditions = ({
           <div className="grid grid-cols-2 items-start gap-x-2 p-3">
             <div className="flex h-8 items-center">
               <Label weight="plus" size="small">
-                {t(
-                  "stockLocations.shippingOptions.conditionalPrices.customRules.eq"
-                )}
+                {t("stockLocations.shippingOptions.conditionalPrices.customRules.eq")}
               </Label>
             </div>
             <CurrencyInput
@@ -534,9 +475,7 @@ const ReadOnlyConditions = ({
             <div className="grid grid-cols-2 items-start gap-x-2 p-3">
               <div className="flex h-8 items-center">
                 <Label weight="plus" size="small">
-                  {t(
-                    "stockLocations.shippingOptions.conditionalPrices.customRules.gt"
-                  )}
+                  {t("stockLocations.shippingOptions.conditionalPrices.customRules.gt")}
                 </Label>
               </div>
               <CurrencyInput
@@ -555,9 +494,7 @@ const ReadOnlyConditions = ({
             <div className="grid grid-cols-2 items-start gap-x-2 p-3">
               <div className="flex h-8 items-center">
                 <Label weight="plus" size="small">
-                  {t(
-                    "stockLocations.shippingOptions.conditionalPrices.customRules.lt"
-                  )}
+                  {t("stockLocations.shippingOptions.conditionalPrices.customRules.lt")}
                 </Label>
               </div>
               <CurrencyInput
@@ -572,73 +509,71 @@ const ReadOnlyConditions = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const AmountDisplay = ({
   index,
   currency,
   control,
 }: {
-  index: number
-  currency: CurrencyInfo
-  control: Control<CondtionalPriceRuleSchemaType>
+  index: number;
+  currency: CurrencyInfo;
+  control: Control<CondtionalPriceRuleSchemaType>;
 }) => {
   const amount = useWatch({
     control,
     name: `prices.${index}.amount`,
-  })
+  });
 
   if (amount === "" || amount === undefined) {
     return (
       <Text size="small" weight="plus">
         -
       </Text>
-    )
+    );
   }
 
-  const castAmount = castNumber(amount)
+  const castAmount = castNumber(amount);
 
   return (
     <Text size="small" weight="plus">
       {getLocaleAmount(castAmount, currency.code)}
     </Text>
-  )
-}
+  );
+};
 
 const ConditionContainer = ({ children }: { children: ReactNode }) => (
-  <div className="text-ui-fg-subtle txt-small flex flex-wrap items-center gap-1.5">
-    {children}
-  </div>
-)
+  <div className="text-ui-fg-subtle txt-small flex flex-wrap items-center gap-1.5">{children}</div>
+);
 
 const ConditionDisplay = ({
   index,
   currency,
   control,
 }: {
-  index: number
-  currency: CurrencyInfo
-  control: Control<CondtionalPriceRuleSchemaType>
+  index: number;
+  currency: CurrencyInfo;
+  control: Control<CondtionalPriceRuleSchemaType>;
 }) => {
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useTranslation();
 
   const gte = useWatch({
     control,
     name: `prices.${index}.gte`,
-  })
+  });
 
   const lte = useWatch({
     control,
     name: `prices.${index}.lte`,
-  })
+  });
 
   const renderCondition = () => {
-    const castGte = gte ? castNumber(gte) : undefined
-    const castLte = lte ? castNumber(lte) : undefined
+    const castGte = gte ? castNumber(gte) : undefined;
+    const castLte = lte ? castNumber(lte) : undefined;
 
     if (!castGte && !castLte) {
-      return null
+      return null;
     }
 
     if (castGte && !castLte) {
@@ -659,7 +594,7 @@ const ConditionDisplay = ({
             }}
           />
         </ConditionContainer>
-      )
+      );
     }
 
     if (!castGte && castLte) {
@@ -680,7 +615,7 @@ const ConditionDisplay = ({
             }}
           />
         </ConditionContainer>
-      )
+      );
     }
 
     if (castGte && castLte) {
@@ -703,11 +638,11 @@ const ConditionDisplay = ({
             }}
           />
         </ConditionContainer>
-      )
+      );
     }
 
-    return null
-  }
+    return null;
+  };
 
-  return renderCondition()
-}
+  return renderCondition();
+};

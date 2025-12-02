@@ -63,6 +63,6 @@ export const useOrderEditItemsTableColumns = (currencyCode: string) => {
         header: t("fields.title"),
       }),
     ],
-    [t, currencyCode]
+    [t]
   )
 }

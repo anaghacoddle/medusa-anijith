@@ -1,8 +1,8 @@
-import { Switch } from "@medusajs/ui"
-import { ReactNode } from "react"
-import { ControllerProps, FieldPath, FieldValues } from "react-hook-form"
+import { Switch } from "@medusajs/ui";
+import { ReactNode } from "react";
+import { ControllerProps, FieldPath, FieldValues } from "react-hook-form";
 
-import { Form } from "../../common/form"
+import { Form } from "../../common/form";
 
 interface HeadlessControllerProps<
   TFieldValues extends FieldValues = FieldValues,
@@ -13,15 +13,15 @@ interface SwitchBoxProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends HeadlessControllerProps<TFieldValues, TName> {
-  label: string
-  description: string
-  optional?: boolean
-  tooltip?: ReactNode
+  label: string;
+  description: string;
+  optional?: boolean;
+  tooltip?: ReactNode;
   /**
    * Callback for performing additional actions when the checked state changes.
    * This does not intercept the form control, it is only used for injecting side-effects.
    */
-  onCheckedChange?: (checked: boolean) => void
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 /**
@@ -54,9 +54,9 @@ export const SwitchBox = <
                   dir="ltr"
                   {...field}
                   checked={value}
-                  onCheckedChange={(e) => {
-                    onCheckedChange?.(e)
-                    onChange(e)
+                  onCheckedChange={e => {
+                    onCheckedChange?.(e);
+                    onChange(e);
                   }}
                 />
               </Form.Control>
@@ -69,8 +69,8 @@ export const SwitchBox = <
             </div>
             <Form.ErrorMessage />
           </Form.Item>
-        )
+        );
       }}
     />
-  )
-}
+  );
+};

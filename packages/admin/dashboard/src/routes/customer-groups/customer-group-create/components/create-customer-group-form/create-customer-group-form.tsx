@@ -1,35 +1,32 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button, Heading, Input, Text, toast } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import * as zod from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Heading, Input, Text, toast } from "@medusajs/ui";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import * as zod from "zod";
 
-import { Form } from "../../../../../components/common/form"
-import {
-  RouteFocusModal,
-  useRouteModal,
-} from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useCreateCustomerGroup } from "../../../../../hooks/api/customer-groups"
+import { Form } from "../../../../../components/common/form";
+import { RouteFocusModal, useRouteModal } from "../../../../../components/modals";
+import { KeyboundForm } from "../../../../../components/utilities/keybound-form";
+import { useCreateCustomerGroup } from "../../../../../hooks/api/customer-groups";
 
 export const CreateCustomerGroupSchema = zod.object({
   name: zod.string().min(1),
-})
+});
 
 export const CreateCustomerGroupForm = () => {
-  const { t } = useTranslation()
-  const { handleSuccess } = useRouteModal()
+  const { t } = useTranslation();
+  const { handleSuccess } = useRouteModal();
 
   const form = useForm<zod.infer<typeof CreateCustomerGroupSchema>>({
     defaultValues: {
       name: "",
     },
     resolver: zodResolver(CreateCustomerGroupSchema),
-  })
+  });
 
-  const { mutateAsync, isPending } = useCreateCustomerGroup()
+  const { mutateAsync, isPending } = useCreateCustomerGroup();
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async data => {
     await mutateAsync(
       {
         name: data.name,
@@ -40,23 +37,20 @@ export const CreateCustomerGroupForm = () => {
             t("customerGroups.create.successToast", {
               name: customer_group.name,
             })
-          )
+          );
 
-          handleSuccess(`/customer-groups/${customer_group.id}`)
+          handleSuccess(`/customer-groups/${customer_group.id}`);
         },
-        onError: (error) => {
-          toast.error(error.message)
+        onError: error => {
+          toast.error(error.message);
         },
       }
-    )
-  })
+    );
+  });
 
   return (
     <RouteFocusModal.Form form={form}>
-      <KeyboundForm
-        className="flex h-full flex-col overflow-hidden"
-        onSubmit={handleSubmit}
-      >
+      <KeyboundForm className="flex h-full flex-col overflow-hidden" onSubmit={handleSubmit}>
         <RouteFocusModal.Header />
         <RouteFocusModal.Body className="flex flex-col items-center pt-[72px]">
           <div className="flex size-full max-w-[720px] flex-col gap-y-8">
@@ -77,13 +71,13 @@ export const CreateCustomerGroupForm = () => {
                 render={({ field }) => {
                   return (
                     <Form.Item>
-                      <Form.Label>{t("fields.name")}</Form.Label>
+                      <Form.Label>{t("fields.name")}*</Form.Label>
                       <Form.Control>
                         <Input {...field} />
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
-                  )
+                  );
                 }}
               />
             </div>
@@ -95,16 +89,11 @@ export const CreateCustomerGroupForm = () => {
               {t("actions.cancel")}
             </Button>
           </RouteFocusModal.Close>
-          <Button
-            type="submit"
-            variant="primary"
-            size="small"
-            isLoading={isPending}
-          >
+          <Button type="submit" variant="primary" size="small" isLoading={isPending}>
             {t("actions.create")}
           </Button>
         </RouteFocusModal.Footer>
       </KeyboundForm>
     </RouteFocusModal.Form>
-  )
-}
+  );
+};

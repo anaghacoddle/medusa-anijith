@@ -1,6 +1,6 @@
-import { OrderCreditLineDTO } from "@medusajs/framework/types"
-import { ArrowDownRightMini, DocumentText, XCircle } from "@medusajs/icons"
-import { AdminOrder, AdminPayment, HttpTypes } from "@medusajs/types"
+import { OrderCreditLineDTO } from "@medusajs/framework/types";
+import { ArrowDownRightMini, DocumentText, XCircle } from "@medusajs/icons";
+import { AdminOrder, AdminPayment, HttpTypes } from "@medusajs/types";
 import {
   Badge,
   Button,
@@ -11,37 +11,31 @@ import {
   toast,
   Tooltip,
   usePrompt,
-} from "@medusajs/ui"
-import { format } from "date-fns"
-import { Trans, useTranslation } from "react-i18next"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import DisplayId from "../../../../../components/common/display-id/display-id"
-import { useCapturePayment } from "../../../../../hooks/api"
-import { formatCurrency } from "../../../../../lib/format-currency"
-import {
-  getLocaleAmount,
-  getStylizedAmount,
-} from "../../../../../lib/money-amount-helpers"
-import { getOrderPaymentStatus } from "../../../../../lib/order-helpers"
-import { getPaymentsFromOrder } from "../../../../../lib/orders"
-import { getTotalCaptured, getTotalPending } from "../../../../../lib/payment"
-import { getLoyaltyPlugin } from "../../../../../lib/plugins"
+} from "@medusajs/ui";
+import { format } from "date-fns";
+import { Trans, useTranslation } from "react-i18next";
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import DisplayId from "../../../../../components/common/display-id/display-id";
+import { useCapturePayment } from "../../../../../hooks/api";
+import { formatCurrency } from "../../../../../lib/format-currency";
+import { getLocaleAmount, getStylizedAmount } from "../../../../../lib/money-amount-helpers";
+import { getOrderPaymentStatus } from "../../../../../lib/order-helpers";
+import { getPaymentsFromOrder } from "../../../../../lib/orders";
+import { getTotalCaptured, getTotalPending } from "../../../../../lib/payment";
+import { getLoyaltyPlugin } from "../../../../../lib/plugins";
 
 type OrderPaymentSectionProps = {
-  order: HttpTypes.AdminOrder
-  plugins: HttpTypes.AdminPlugin[]
-}
+  order: HttpTypes.AdminOrder;
+  plugins: HttpTypes.AdminPlugin[];
+};
 
-export const OrderPaymentSection = ({
-  order,
-  plugins,
-}: OrderPaymentSectionProps) => {
-  const payments = getPaymentsFromOrder(order)
+export const OrderPaymentSection = ({ order, plugins }: OrderPaymentSectionProps) => {
+  const payments = getPaymentsFromOrder(order);
 
   const refunds = payments
-    .map((payment) => payment?.refunds)
+    .map(payment => payment?.refunds)
     .flat(1)
-    .filter(Boolean) as HttpTypes.AdminRefund[]
+    .filter(Boolean) as HttpTypes.AdminRefund[];
 
   return (
     <Container className="divide-y divide-dashed p-0">
@@ -57,12 +51,12 @@ export const OrderPaymentSection = ({
 
       <Total order={order} />
     </Container>
-  )
-}
+  );
+};
 
 const Header = ({ order }: { order: HttpTypes.AdminOrder }) => {
-  const { t } = useTranslation()
-  const { label, color } = getOrderPaymentStatus(t, order.payment_status)
+  const { t } = useTranslation();
+  const { label, color } = getOrderPaymentStatus(t, order.payment_status);
 
   return (
     <div className="flex items-center justify-between px-6 py-4">
@@ -72,32 +66,28 @@ const Header = ({ order }: { order: HttpTypes.AdminOrder }) => {
         {label}
       </StatusBadge>
     </div>
-  )
-}
+  );
+};
 
 const Refund = ({
   refund,
   currencyCode,
 }: {
-  refund: HttpTypes.AdminRefund
-  currencyCode: string
+  refund: HttpTypes.AdminRefund;
+  currencyCode: string;
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const RefundReasonBadge = refund?.refund_reason && (
-    <Badge
-      size="2xsmall"
-      className="cursor-default select-none capitalize"
-      rounded="full"
-    >
+    <Badge size="2xsmall" className="cursor-default select-none capitalize" rounded="full">
       {refund.refund_reason.label}
     </Badge>
-  )
+  );
 
   const RefundNoteIndicator = refund.note && (
     <Tooltip content={refund.note}>
       <DocumentText className="text-ui-tag-neutral-icon ml-1 inline" />
     </Tooltip>
-  )
+  );
 
   return (
     <div className="bg-ui-bg-subtle text-ui-fg-subtle grid grid-cols-[1fr_1fr_1fr_20px] items-center gap-x-4 px-6 py-4">
@@ -121,8 +111,8 @@ const Refund = ({
         </Text>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const Payment = ({
   order,
@@ -130,14 +120,14 @@ const Payment = ({
   refunds,
   currencyCode,
 }: {
-  order: HttpTypes.AdminOrder
-  payment: HttpTypes.AdminPayment
-  refunds: HttpTypes.AdminRefund[]
-  currencyCode: string
+  order: HttpTypes.AdminOrder;
+  payment: HttpTypes.AdminPayment;
+  refunds: HttpTypes.AdminRefund[];
+  currencyCode: string;
 }) => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
-  const { mutateAsync } = useCapturePayment(order.id, payment.id)
+  const { t } = useTranslation();
+  const prompt = usePrompt();
+  const { mutateAsync } = useCapturePayment(order.id, payment.id);
 
   const handleCapture = async () => {
     const res = await prompt({
@@ -148,10 +138,10 @@ const Payment = ({
       confirmText: t("actions.confirm"),
       cancelText: t("actions.cancel"),
       variant: "confirmation",
-    })
+    });
 
     if (!res) {
-      return
+      return;
     }
 
     await mutateAsync(
@@ -162,55 +152,43 @@ const Payment = ({
             t("orders.payment.capturePaymentSuccess", {
               amount: formatCurrency(payment.amount as number, currencyCode),
             })
-          )
+          );
         },
-        onError: (error) => {
-          toast.error(error.message)
+        onError: error => {
+          toast.error(error.message);
         },
       }
-    )
-  }
+    );
+  };
 
   const getPaymentStatusAttributes = (payment: AdminPayment) => {
     if (payment.canceled_at) {
-      return ["Canceled", "red"]
+      return ["Canceled", "red"];
     } else if (payment.captured_at) {
-      return ["Captured", "green"]
+      return ["Captured", "green"];
     } else {
-      return ["Pending", "orange"]
+      return ["Pending", "orange"];
     }
-  }
+  };
 
   const [status, color] = getPaymentStatusAttributes(payment) as [
     string,
     "green" | "orange" | "red",
-  ]
+  ];
 
-  const showCapture =
-    payment.captured_at === null && payment.canceled_at === null
+  const showCapture = payment.captured_at === null && payment.canceled_at === null;
 
-  const totalRefunded = payment.refunds.reduce(
-    (acc, next) => next.amount + acc,
-    0
-  )
+  const totalRefunded = payment.refunds.reduce((acc, next) => next.amount + acc, 0);
 
   return (
     <div className="divide-y divide-dashed">
       <div className="text-ui-fg-subtle grid grid-cols-[1fr_1fr_1fr_20px] items-center gap-x-4 px-6 py-4 sm:grid-cols-[1fr_1fr_1fr_1fr_20px]">
         <div className="w-full min-w-[60px] overflow-hidden">
-          <Text
-            size="small"
-            leading="compact"
-            weight="plus"
-            className="truncate"
-          >
+          <Text size="small" leading="compact" weight="plus" className="truncate">
             <DisplayId id={payment.id} />
           </Text>
           <Text size="small" leading="compact">
-            {format(
-              new Date(payment.created_at as string),
-              "dd MMM, yyyy, HH:mm:ss"
-            )}
+            {format(new Date(payment.created_at as string), "dd MMM, yyyy, HH:mm:ss")}
           </Text>
         </div>
         <div className="hidden items-center justify-end sm:flex">
@@ -258,63 +236,45 @@ const Payment = ({
             </Text>
           </div>
 
-          <Button
-            className="shrink-0"
-            size="small"
-            variant="secondary"
-            onClick={handleCapture}
-          >
-            <span className="hidden sm:block">
-              {t("orders.payment.capture")}
-            </span>
-            <span className="sm:hidden">
-              {t("orders.payment.capture_short")}
-            </span>
+          <Button className="shrink-0" size="small" variant="secondary" onClick={handleCapture}>
+            <span className="hidden sm:block">{t("orders.payment.capture")}</span>
+            <span className="sm:hidden">{t("orders.payment.capture_short")}</span>
           </Button>
         </div>
       )}
-      {refunds.map((refund) => (
+      {refunds.map(refund => (
         <Refund key={refund.id} refund={refund} currencyCode={currencyCode} />
       ))}
     </div>
-  )
-}
+  );
+};
 
 const CreditLine = ({
   creditLine,
   currencyCode,
   plugins,
 }: {
-  creditLine: OrderCreditLineDTO
-  currencyCode: string
-  plugins: HttpTypes.AdminPlugin[]
+  creditLine: OrderCreditLineDTO;
+  currencyCode: string;
+  plugins: HttpTypes.AdminPlugin[];
 }) => {
-  const loyaltyPlugin = getLoyaltyPlugin(plugins)
+  const loyaltyPlugin = getLoyaltyPlugin(plugins);
 
   if (!loyaltyPlugin) {
-    return null
+    return null;
   }
 
-  const prettyReference = creditLine.reference
-    ?.split("_")
-    .join(" ")
-    .split("-")
-    .join(" ")
+  const prettyReference = creditLine.reference?.split("_").join(" ").split("-").join(" ");
 
   const prettyReferenceId = creditLine.reference_id ? (
     <DisplayId id={creditLine.reference_id} />
-  ) : null
+  ) : null;
 
   return (
     <div className="divide-y divide-dashed">
       <div className="text-ui-fg-subtle grid grid-cols-[1fr_1fr_20px] items-center gap-x-4 px-6 py-4 sm:grid-cols-[1fr_1fr_1fr_20px]">
         <div className="w-full min-w-[60px] overflow-hidden">
-          <Text
-            size="small"
-            leading="compact"
-            weight="plus"
-            className="truncate"
-          >
+          <Text size="small" leading="compact" weight="plus" className="truncate">
             {loyaltyPlugin ? (
               <Text size="small" leading="compact" weight="plus">
                 Store credit refund
@@ -324,10 +284,7 @@ const CreditLine = ({
             )}
           </Text>
           <Text size="small" leading="compact">
-            {format(
-              new Date(creditLine.created_at as string),
-              "dd MMM, yyyy, HH:mm:ss"
-            )}
+            {format(new Date(creditLine.created_at as string), "dd MMM, yyyy, HH:mm:ss")}
           </Text>
         </div>
         <div className="hidden items-center justify-end sm:flex">
@@ -342,8 +299,8 @@ const CreditLine = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const PaymentBreakdown = ({
   order,
@@ -352,44 +309,41 @@ const PaymentBreakdown = ({
   currencyCode,
   plugins,
 }: {
-  order: HttpTypes.AdminOrder
-  payments: HttpTypes.AdminPayment[]
-  refunds: HttpTypes.AdminRefund[]
-  currencyCode: string
-  plugins: HttpTypes.AdminPlugin[]
+  order: HttpTypes.AdminOrder;
+  payments: HttpTypes.AdminPayment[];
+  refunds: HttpTypes.AdminRefund[];
+  currencyCode: string;
+  plugins: HttpTypes.AdminPlugin[];
 }) => {
   /**
    * Refunds that are not associated with a payment.
    */
-  const orderRefunds = refunds.filter((refund) => refund.payment_id === null)
-  const creditLines = order.credit_lines ?? []
-  const creditLineRefunds = creditLines.filter(
-    (creditLine) => (creditLine.amount as number) < 0
-  )
+  const orderRefunds = refunds.filter(refund => refund.payment_id === null);
+  const creditLines = order.credit_lines ?? [];
+  const creditLineRefunds = creditLines.filter(creditLine => (creditLine.amount as number) < 0);
 
   const entries = [...orderRefunds, ...payments, ...creditLineRefunds]
     .sort((a, b) => {
       return (
-        new Date(a.created_at as string).getTime() -
-        new Date(b.created_at as string).getTime()
-      )
+        new Date(a.created_at as string).getTime() - new Date(b.created_at as string).getTime()
+      );
     })
-    .map((entry) => {
-      let type = entry.id.startsWith("pay_") ? "payment" : "refund"
+    .map(entry => {
+      let type = entry.id.startsWith("pay_") ? "payment" : "refund";
 
       if (entry.id.startsWith("ordcl_")) {
-        type = "credit_line_refund"
+        type = "credit_line_refund";
       }
 
-      return { event: entry, type }
+      return { event: entry, type };
     }) as (
     | { type: "payment"; event: HttpTypes.AdminPayment }
     | { type: "refund"; event: HttpTypes.AdminRefund }
     | {
-        type: "credit_line_refund"
-        event: OrderCreditLineDTO
+        type: "credit_line_refund";
+        event: OrderCreditLineDTO;
       }
-  )[]
+  )[];
 
   return (
     <div className="flex flex-col divide-y divide-dashed">
@@ -401,20 +355,12 @@ const PaymentBreakdown = ({
                 key={event.id}
                 order={order}
                 payment={event}
-                refunds={refunds.filter(
-                  (refund) => refund.payment_id === event.id
-                )}
+                refunds={refunds.filter(refund => refund.payment_id === event.id)}
                 currencyCode={currencyCode}
               />
-            )
+            );
           case "refund":
-            return (
-              <Refund
-                key={event.id}
-                refund={event}
-                currencyCode={currencyCode}
-              />
-            )
+            return <Refund key={event.id} refund={event} currencyCode={currencyCode} />;
           case "credit_line_refund":
             return (
               <CreditLine
@@ -423,16 +369,16 @@ const PaymentBreakdown = ({
                 currencyCode={currencyCode}
                 plugins={plugins}
               />
-            )
+            );
         }
       })}
     </div>
-  )
-}
+  );
+};
 
 const Total = ({ order }: { order: AdminOrder }) => {
-  const { t } = useTranslation()
-  const totalPending = getTotalPending(order.payment_collections)
+  const { t } = useTranslation();
+  const totalPending = getTotalPending(order.payment_collections);
 
   return (
     <div className="flex flex-col gap-y-4 px-6 py-4">
@@ -442,10 +388,7 @@ const Total = ({ order }: { order: AdminOrder }) => {
         </Text>
 
         <Text size="small" weight="plus" leading="compact">
-          {getStylizedAmount(
-            getTotalCaptured(order.payment_collections),
-            order.currency_code
-          )}
+          {getStylizedAmount(getTotalCaptured(order.payment_collections), order.currency_code)}
         </Text>
       </div>
 
@@ -461,5 +404,5 @@ const Total = ({ order }: { order: AdminOrder }) => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};

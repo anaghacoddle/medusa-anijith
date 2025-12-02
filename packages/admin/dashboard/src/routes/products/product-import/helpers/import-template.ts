@@ -8,5 +8,5 @@ const ProductImportCSV =
 ,sweatpants-v2,Medusa Sweatpants,,"Reimagine the feeling of classic sweatpants. With our cotton sweatpants, everyday essentials no longer have to be ordinary.",published,https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-front.png,400,,,,,,,,,,,,,TRUE,,,XL,,,FALSE,TRUE,,,,,,,,,29.5,33.5,Size,XL,https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-front.png,https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-back.png`
 
 export const getProductImportCsvTemplate = () => {
-  return encodeURI(ProductImportCSV)
-}
+  return encodeURI(ProductImportCSV);
+};

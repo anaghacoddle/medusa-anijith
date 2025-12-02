@@ -1,33 +1,27 @@
-import { PencilSquare, Trash } from "@medusajs/icons"
-import type { HttpTypes } from "@medusajs/types"
-import {
-  Button,
-  Container,
-  Heading,
-  Text,
-  toast,
-  usePrompt,
-} from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
+import { PencilSquare, Trash } from "@medusajs/icons";
+import type { HttpTypes } from "@medusajs/types";
+import { Button, Container, Heading, Text, toast, usePrompt } from "@medusajs/ui";
+import { keepPreviousData } from "@tanstack/react-query";
+import { createColumnHelper } from "@tanstack/react-table";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { _DataTable } from "../../../../../components/table/data-table"
-import { useDeleteRegion, useRegions } from "../../../../../hooks/api/regions"
-import { useRegionTableColumns } from "../../../../../hooks/table/columns/use-region-table-columns"
-import { useRegionTableFilters } from "../../../../../hooks/table/filters/use-region-table-filters"
-import { useRegionTableQuery } from "../../../../../hooks/table/query/use-region-table-query"
-import { useDataTable } from "../../../../../hooks/use-data-table"
+import { ActionMenu } from "../../../../../components/common/action-menu";
+import { _DataTable } from "../../../../../components/table/data-table";
+import { useDeleteRegion, useRegions } from "../../../../../hooks/api/regions";
+import { useRegionTableColumns } from "../../../../../hooks/table/columns/use-region-table-columns";
+import { useRegionTableFilters } from "../../../../../hooks/table/filters/use-region-table-filters";
+import { useRegionTableQuery } from "../../../../../hooks/table/query/use-region-table-query";
+import { useDataTable } from "../../../../../hooks/use-data-table";
+import { usePermission } from "../../../../../hooks/use-permission";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export const RegionListTable = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  const { searchParams, raw } = useRegionTableQuery({ pageSize: PAGE_SIZE })
+  const { searchParams, raw } = useRegionTableQuery({ pageSize: PAGE_SIZE });
   const {
     regions,
     count,
@@ -42,24 +36,24 @@ export const RegionListTable = () => {
     {
       placeholderData: keepPreviousData,
     }
-  )
+  );
 
-  const filters = useRegionTableFilters()
-  const columns = useColumns()
+  const filters = useRegionTableFilters();
+  const columns = useColumns();
 
   const { table } = useDataTable({
     data: (regions ?? []) as HttpTypes.AdminRegion[],
     columns,
     count,
     enablePagination: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
     pageSize: PAGE_SIZE,
-  })
+  });
 
   if (isError) {
-    throw error
+    throw error;
   }
-
+  const { hasPermission } = usePermission();
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
@@ -69,11 +63,11 @@ export const RegionListTable = () => {
             {t("regions.subtitle")}
           </Text>
         </div>
-        <Link to="/settings/regions/create">
-          <Button size="small" variant="secondary">
-            {t("actions.create")}
+        {hasPermission("/admin/regions", "POST") && (
+          <Button size="small" variant="secondary" asChild>
+            <Link to="create">{t("actions.create")}</Link>
           </Button>
-        </Link>
+        )}
       </div>
 
       <_DataTable
@@ -88,7 +82,7 @@ export const RegionListTable = () => {
           { key: "created_at", label: t("fields.createdAt") },
           { key: "updated_at", label: t("fields.updatedAt") },
         ]}
-        navigateTo={(row) => `${row.original.id}`}
+        navigateTo={row => `${row.original.id}`}
         pagination
         search
         queryObject={raw}
@@ -97,14 +91,15 @@ export const RegionListTable = () => {
         }}
       />
     </Container>
-  )
-}
+  );
+};
 
 const RegionActions = ({ region }: { region: HttpTypes.AdminRegion }) => {
-  const { t } = useTranslation()
-  const prompt = usePrompt()
+  const { t } = useTranslation();
+  const prompt = usePrompt();
+  const { hasPermission } = usePermission();
 
-  const { mutateAsync } = useDeleteRegion(region.id)
+  const { mutateAsync } = useDeleteRegion(region.id);
 
   const handleDelete = async () => {
     const res = await prompt({
@@ -116,21 +111,21 @@ const RegionActions = ({ region }: { region: HttpTypes.AdminRegion }) => {
       verificationInstruction: t("general.typeToConfirm"),
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
-    })
+    });
 
     if (!res) {
-      return
+      return;
     }
 
     await mutateAsync(undefined, {
       onSuccess: () => {
-        toast.success(t("regions.toast.delete"))
+        toast.success(t("regions.toast.delete"));
       },
-      onError: (e) => {
-        toast.error(e.message)
+      onError: e => {
+        toast.error(e.message);
       },
-    })
-  }
+    });
+  };
 
   return (
     <ActionMenu
@@ -141,6 +136,8 @@ const RegionActions = ({ region }: { region: HttpTypes.AdminRegion }) => {
               label: t("actions.edit"),
               to: `/settings/regions/${region.id}/edit`,
               icon: <PencilSquare />,
+              disabled:
+                !hasPermission("/admin/regions", "PUT") || !hasPermission("/admin/regions", "POST"),
             },
           ],
         },
@@ -150,18 +147,19 @@ const RegionActions = ({ region }: { region: HttpTypes.AdminRegion }) => {
               label: t("actions.delete"),
               onClick: handleDelete,
               icon: <Trash />,
+              disabled: !hasPermission("/admin/regions", "DELETE"),
             },
           ],
         },
       ]}
     />
-  )
-}
+  );
+};
 
-const columnHelper = createColumnHelper<HttpTypes.AdminRegion>()
+const columnHelper = createColumnHelper<HttpTypes.AdminRegion>();
 
 const useColumns = () => {
-  const base = useRegionTableColumns()
+  const base = useRegionTableColumns();
 
   return useMemo(
     () => [
@@ -169,10 +167,10 @@ const useColumns = () => {
       columnHelper.display({
         id: "actions",
         cell: ({ row }) => {
-          return <RegionActions region={row.original} />
+          return <RegionActions region={row.original} />;
         },
       }),
     ],
     [base]
-  )
-}
+  );
+};

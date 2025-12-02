@@ -1,1 +1,1 @@
-export * from "./edit-product-variant-media-form"
+export * from "./edit-product-variant-media-form";

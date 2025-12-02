@@ -1,27 +1,23 @@
-import { FetchError } from "@medusajs/js-sdk"
-import { HttpTypes } from "@medusajs/types"
+import { FetchError } from "@medusajs/js-sdk";
+import { HttpTypes } from "@medusajs/types";
 import {
   QueryKey,
   UseMutationOptions,
   UseQueryOptions,
   useMutation,
   useQuery,
-} from "@tanstack/react-query"
+} from "@tanstack/react-query";
 
-import { sdk } from "../../lib/client"
-import { queryClient } from "../../lib/query-client"
-import { queryKeysFactory } from "../../lib/query-key-factory"
-import { variantsQueryKeys } from "./products"
+import { sdk } from "../../lib/client";
+import { queryClient } from "../../lib/query-client";
+import { queryKeysFactory } from "../../lib/query-key-factory";
+import { variantsQueryKeys } from "./products";
 
-const INVENTORY_ITEMS_QUERY_KEY = "inventory_items" as const
-export const inventoryItemsQueryKeys = queryKeysFactory(
-  INVENTORY_ITEMS_QUERY_KEY
-)
+const INVENTORY_ITEMS_QUERY_KEY = "inventory_items" as const;
+export const inventoryItemsQueryKeys = queryKeysFactory(INVENTORY_ITEMS_QUERY_KEY);
 
-const INVENTORY_ITEM_LEVELS_QUERY_KEY = "inventory_item_levels" as const
-export const inventoryItemLevelsQueryKeys = queryKeysFactory(
-  INVENTORY_ITEM_LEVELS_QUERY_KEY
-)
+const INVENTORY_ITEM_LEVELS_QUERY_KEY = "inventory_item_levels" as const;
+export const inventoryItemLevelsQueryKeys = queryKeysFactory(INVENTORY_ITEM_LEVELS_QUERY_KEY);
 
 export const useInventoryItems = (
   query?: HttpTypes.AdminInventoryItemParams,
@@ -39,10 +35,10 @@ export const useInventoryItems = (
     queryFn: () => sdk.admin.inventoryItem.list(query),
     queryKey: inventoryItemsQueryKeys.list(query),
     ...options,
-  })
+  });
 
-  return { ...data, ...rest }
-}
+  return { ...data, ...rest };
+};
 
 export const useInventoryItem = (
   id: string,
@@ -61,10 +57,10 @@ export const useInventoryItem = (
     queryFn: () => sdk.admin.inventoryItem.retrieve(id, query),
     queryKey: inventoryItemsQueryKeys.detail(id),
     ...options,
-  })
+  });
 
-  return { ...data, ...rest }
-}
+  return { ...data, ...rest };
+};
 
 export const useCreateInventoryItem = (
   options?: UseMutationOptions<
@@ -79,12 +75,12 @@ export const useCreateInventoryItem = (
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.lists(),
-      })
-      options?.onSuccess?.(data, variables, context)
+      });
+      options?.onSuccess?.(data, variables, context);
     },
     ...options,
-  })
-}
+  });
+};
 
 export const useUpdateInventoryItem = (
   id: string,
@@ -100,66 +96,57 @@ export const useUpdateInventoryItem = (
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.lists(),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.detail(id),
-      })
-      options?.onSuccess?.(data, variables, context)
+      });
+      options?.onSuccess?.(data, variables, context);
     },
     ...options,
-  })
-}
+  });
+};
 
 export const useDeleteInventoryItem = (
   id: string,
-  options?: UseMutationOptions<
-    HttpTypes.AdminInventoryItemDeleteResponse,
-    FetchError,
-    void
-  >
+  options?: UseMutationOptions<HttpTypes.AdminInventoryItemDeleteResponse, FetchError, void>
 ) => {
   return useMutation({
     mutationFn: () => sdk.admin.inventoryItem.delete(id),
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.lists(),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.detail(id),
-      })
-      options?.onSuccess?.(data, variables, context)
+      });
+      options?.onSuccess?.(data, variables, context);
     },
     ...options,
-  })
-}
+  });
+};
 
 export const useDeleteInventoryItemLevel = (
   inventoryItemId: string,
   locationId: string,
-  options?: UseMutationOptions<
-    HttpTypes.AdminInventoryLevelDeleteResponse,
-    FetchError,
-    void
-  >
+  options?: UseMutationOptions<HttpTypes.AdminInventoryLevelDeleteResponse, FetchError, void>
 ) => {
   return useMutation({
-    mutationFn: () =>
-      sdk.admin.inventoryItem.deleteLevel(inventoryItemId, locationId),
+    mutationFn: () => sdk.admin.inventoryItem.deleteLevel(inventoryItemId, locationId),
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.lists(),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.detail(inventoryItemId),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: inventoryItemLevelsQueryKeys.detail(inventoryItemId),
-      })
-      options?.onSuccess?.(data, variables, context)
+      });
+      options?.onSuccess?.(data, variables, context);
     },
     ...options,
-  })
-}
+  });
+};
 
 export const useInventoryItemLevels = (
   inventoryItemId: string,
@@ -181,10 +168,10 @@ export const useInventoryItemLevels = (
       inventoryItemId,
     }),
     ...options,
-  })
+  });
 
-  return { ...data, ...rest }
-}
+  return { ...data, ...rest };
+};
 
 export const useUpdateInventoryLevel = (
   inventoryItemId: string,
@@ -201,21 +188,21 @@ export const useUpdateInventoryLevel = (
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.lists(),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.detail(inventoryItemId),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: inventoryItemLevelsQueryKeys.detail(inventoryItemId),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: variantsQueryKeys.details(),
-      })
-      options?.onSuccess?.(data, variables, context)
+      });
+      options?.onSuccess?.(data, variables, context);
     },
     ...options,
-  })
-}
+  });
+};
 
 export const useBatchInventoryItemLocationLevels = (
   inventoryItemId: string,
@@ -226,29 +213,26 @@ export const useBatchInventoryItemLocationLevels = (
   >
 ) => {
   return useMutation({
-    mutationFn: (payload) =>
-      sdk.admin.inventoryItem.batchInventoryItemLocationLevels(
-        inventoryItemId,
-        payload
-      ),
+    mutationFn: payload =>
+      sdk.admin.inventoryItem.batchInventoryItemLocationLevels(inventoryItemId, payload),
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.lists(),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.detail(inventoryItemId),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: inventoryItemLevelsQueryKeys.detail(inventoryItemId),
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: inventoryItemLevelsQueryKeys.list({ inventoryItemId }),
-      })
-      options?.onSuccess?.(data, variables, context)
+      });
+      options?.onSuccess?.(data, variables, context);
     },
     ...options,
-  })
-}
+  });
+};
 
 export const useBatchInventoryItemsLocationLevels = (
   options?: UseMutationOptions<
@@ -258,17 +242,16 @@ export const useBatchInventoryItemsLocationLevels = (
   >
 ) => {
   return useMutation({
-    mutationFn: (payload) =>
-      sdk.admin.inventoryItem.batchInventoryItemsLocationLevels(payload),
+    mutationFn: payload => sdk.admin.inventoryItem.batchInventoryItemsLocationLevels(payload),
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({
         queryKey: inventoryItemsQueryKeys.all,
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: variantsQueryKeys.lists(),
-      })
-      options?.onSuccess?.(data, variables, context)
+      });
+      options?.onSuccess?.(data, variables, context);
     },
     ...options,
-  })
-}
+  });
+};
